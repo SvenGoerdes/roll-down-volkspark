@@ -1,0 +1,10 @@
+name = "roll-down-ideas"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[vars]
+GITHUB_REPO = "SvenGoerdes/roll-down-volkspark"
+
+# Secret, not in this file: GITHUB_TOKEN (fine-grained token, only this repo, Issues: read & write)
+# bunx wrangler secret put GITHUB_TOKEN

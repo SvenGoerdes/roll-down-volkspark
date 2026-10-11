@@ -117,3 +117,75 @@ h2 { font-size: 40px; font-weight: 900; }
   animation: pulse 1.4s ease-in-out infinite;
 }
 @keyframes pulse { 50% { transform: scale(1.05); } }
+
+#ideas { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+#idea-btn {
+  position: absolute;
+  right: 14px;
+  bottom: calc(env(safe-area-inset-bottom) + 14px);
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px 10px 12px;
+  font: 700 15px/1 system-ui, sans-serif;
+  color: #1c2a1a;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  font-size: 20px;
+}
+#idea-btn span { font-size: 15px; }
+body[data-state="playing"] #idea-btn, #ideas.open #idea-btn { display: none; }
+
+#ideas .backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+#ideas.open .backdrop { opacity: 1; pointer-events: auto; }
+
+.sheet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 18px 16px calc(env(safe-area-inset-bottom) + 18px);
+  background: #fdfbf5;
+  color: #1c2a1a;
+  border-radius: 20px 20px 0 0;
+  display: grid;
+  gap: 10px;
+  transform: translateY(105%);
+  transition: transform 0.3s ease-out;
+  pointer-events: auto;
+  touch-action: auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+#ideas.open .sheet { transform: none; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; }
+.sheet h3 { font-size: 19px; }
+#idea-close { border: 0; background: none; font-size: 22px; padding: 4px 8px; color: inherit; }
+.sheet textarea, .sheet input {
+  width: 100%;
+  font: 16px/1.4 system-ui, sans-serif; /* 16px keeps iOS from zooming in */
+  padding: 10px 12px;
+  border: 1.5px solid #c9c3b3;
+  border-radius: 12px;
+  background: #fff;
+  color: inherit;
+  resize: none;
+}
+.sheet textarea:focus, .sheet input:focus { outline: none; border-color: #e4a812; }
+.sheet .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.sheet button[type="submit"] {
+  border: 0;
+  border-radius: 999px;
+  padding: 13px;
+  font: 800 17px system-ui, sans-serif;
+  background: #ffd23f;
+  color: #1c2a1a;
+}
+.sheet button[type="submit"]:disabled { opacity: 0.6; }
+#idea-status { font-size: 14px; min-height: 1.2em; text-align: center; }
+#idea-status.ok { color: #2e7d32; font-weight: 700; }
+#idea-status.err { color: #c62828; font-weight: 700; }

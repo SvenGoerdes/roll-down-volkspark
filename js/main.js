@@ -3,6 +3,7 @@ import {
 } from './config.js';
 import { speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt } from './logic.js';
 import { buildSeasonBackgrounds } from './seasons.js';
+import { setupIdeas } from './ideas.js';
 import {
   computeView, drawBackground, drawGround, drawWall, drawPuddle, drawPickup, drawPlayer, drawParticles,
 } from './render.js';
@@ -29,6 +30,7 @@ const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } ca
 
 let view, backgrounds, gabion;
 let state = 'loading';
+const setState = (s) => { state = s; document.body.dataset.state = s; };
 let game;
 let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
@@ -115,7 +117,7 @@ function crash() {
   game.shake = 0.5;
   game.flash = 0.6;
   navigator.vibrate?.([120, 60, 200]);
-  state = 'over';
+  setState('over');
   const best = Math.max(readBest(), game.passed);
   writeBest(best);
   hud.final.textContent = game.passed;
@@ -295,13 +297,14 @@ function frame(now) {
 
 function start() {
   game = newGame();
-  state = 'playing';
+  setState('playing');
   hud.start.classList.remove('show');
   hud.over.classList.remove('show');
   showBanner(`${season().icon} ${season().name}`, season().hint);
 }
 
 function onPointerDown(e) {
+  if (e.target?.closest?.('#ideas')) return;
   if (state === 'start') start();
   else if (state === 'over') {
     if (hud.over.dataset.ready === '1') start();
@@ -327,6 +330,7 @@ function bindInput() {
   window.addEventListener('pointerup', () => { input.dragging = false; });
   window.addEventListener('pointercancel', () => { input.dragging = false; });
   window.addEventListener('keydown', (e) => {
+    if (e.target.closest?.('#ideas')) return;
     input.keys.add(e.key);
     if ((e.key === ' ' || e.key === 'Enter') && state !== 'playing') onPointerDown({ clientX: 0 });
   });
@@ -348,9 +352,10 @@ async function init() {
     return;
   }
   game = newGame();
+  setupIdeas(() => ({ score: game.passed, season: season().name }));
   hud.bestStart.textContent = readBest();
   hud.start.classList.add('show');
-  state = 'start';
+  setState('start');
   last = performance.now();
   requestAnimationFrame(frame);
 }

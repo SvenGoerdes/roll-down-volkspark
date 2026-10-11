@@ -55,6 +55,23 @@
       <p class="small">Rekord: <span id="best">0</span></p>
       <p class="tap">Tippen für nächste Runde</p>
     </section>
+
+    <div id="ideas">
+      <button id="idea-btn" type="button" aria-label="Idee vorschlagen">💡<span>Idee?</span></button>
+      <div class="backdrop"></div>
+      <form id="idea-form" class="sheet" autocomplete="off">
+        <div class="sheet-head">
+          <h3>💡 Was fehlt im Spiel?</h3>
+          <button id="idea-close" type="button" aria-label="Schließen">✕</button>
+        </div>
+        <textarea name="text" rows="4" maxlength="1000" minlength="5" required
+          placeholder="Neues Powerup, andere Jahreszeit, Bug gefunden …"></textarea>
+        <input name="name" maxlength="40" placeholder="Dein Name (optional)">
+        <input name="website" class="hp" tabindex="-1" aria-hidden="true">
+        <button type="submit">Abschicken</button>
+        <p id="idea-status" role="status"></p>
+      </form>
+    </div>
   </main>
   <script type="module" src="js/main.js"></script>
 </body>

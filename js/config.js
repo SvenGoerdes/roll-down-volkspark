@@ -43,3 +43,6 @@ export const POWERUPS = {
   widen: { icon: '↔️', name: 'Breite Lücken', hint: 'Lücken größer', duration: 7 },
 };
 export const POWERUP_CHANCE = 0.3;
+
+// Cloudflare Worker that turns ideas into GitHub issues (see worker/)
+export const IDEAS_URL = 'https://roll-down-ideas.WORKERS_SUBDOMAIN.workers.dev';

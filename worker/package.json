@@ -1,0 +1,5 @@
+{
+  "name": "roll-down-ideas",
+  "private": true,
+  "scripts": { "deploy": "wrangler deploy" }
+}
