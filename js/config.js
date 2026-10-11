@@ -45,4 +45,4 @@ export const POWERUPS = {
 export const POWERUP_CHANCE = 0.3;
 
 // Cloudflare Worker that turns ideas into GitHub issues (see worker/)
-export const IDEAS_URL = 'https://roll-down-ideas.WORKERS_SUBDOMAIN.workers.dev';
+export const IDEAS_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';

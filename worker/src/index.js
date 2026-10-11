@@ -53,7 +53,7 @@ export default {
       body: JSON.stringify(toIssue(idea)),
     });
     if (!res.ok) {
-      console.error('GitHub API', res.status, await res.text());
+      console.error('GitHub API', res.status, res.headers.get('x-accepted-github-permissions'), await res.text());
       return json({ error: 'Speichern fehlgeschlagen – probier es später nochmal' }, 502, headers);
     }
     return json({ ok: true }, 201, headers);
