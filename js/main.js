@@ -1,0 +1,366 @@
+import {
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON,
+} from './config.js';
+import { speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt } from './logic.js';
+import { buildSeasonBackgrounds } from './seasons.js';
+import {
+  computeView, drawBackground, drawGround, drawWall, drawPuddle, drawPickup, drawPlayer, drawParticles,
+} from './render.js';
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const $ = (id) => document.getElementById(id);
+const hud = {
+  score: $('score'), speed: $('speed'), season: $('season'), powers: $('powers'),
+  wind: $('wind'), banner: $('banner'), start: $('start'), over: $('over'),
+  final: $('final'), best: $('best'), bestStart: $('best-start'),
+};
+
+const loadImage = (src) => new Promise((ok, fail) => {
+  const img = new Image();
+  img.onload = () => ok(img);
+  img.onerror = () => fail(new Error(`Bild fehlt: ${src}`));
+  img.src = src;
+});
+
+const BEST_KEY = 'rollDownBest';
+const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
+const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch { /* private mode */ } };
+
+let view, backgrounds, gabion;
+let state = 'loading';
+let game;
+let last = 0;
+const input = { dragging: false, lastX: 0, keys: new Set() };
+
+function newGame() {
+  return {
+    time: 0, travelled: 0, passed: 0, spawned: 0, nextSpawnIn: 0, lastGapX: 0,
+    walls: [], pickups: [], puddles: [], particles: [],
+    seasonIdx: 0, prevSeasonIdx: null, seasonFade: 1,
+    player: { x: 0, vx: 0, target: 0, spin: 0, helmet: false, slippery: 0 },
+    effects: { slowmo: 0, widen: 0 },
+    wind: { force: 0, target: 0, nextGust: 4 },
+    shake: 0, flash: 0, slowFactor: 1,
+  };
+}
+
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = Math.min(window.innerWidth, Math.round(window.innerHeight * 0.66));
+  const H = window.innerHeight;
+  canvas.style.width = `${W}px`;
+  canvas.style.height = `${H}px`;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  view = computeView(W, H);
+}
+
+const season = () => SEASONS[game.seasonIdx];
+
+function spawnWall() {
+  const s = SEASONS[seasonIndexAt(game.spawned, WALLS_PER_SEASON, SEASONS.length)];
+  const gaps = makeGaps(game.spawned, game.lastGapX, s, Math.random);
+  game.lastGapX = gaps[0].x;
+  game.walls.push({ z: SPAWN_Z, gaps, index: game.spawned, snowy: s.id === 'winter' });
+  const spacing = spacingAt(game.spawned);
+  if (Math.random() < POWERUP_CHANCE && game.spawned > 1) {
+    const types = Object.keys(POWERUPS);
+    game.pickups.push({
+      z: SPAWN_Z + spacing / 2, type: types[(Math.random() * types.length) | 0],
+      x: (Math.random() - 0.5) * (CORRIDOR - 2),
+    });
+  }
+  if (s.id === 'spring' && game.spawned > 2 && Math.random() < 0.6) {
+    game.puddles.push({ z: SPAWN_Z + spacing * (0.3 + Math.random() * 0.4), x: (Math.random() - 0.5) * (CORRIDOR - 2), r: 0.9 + Math.random() * 0.6 });
+  }
+  game.spawned++;
+  game.nextSpawnIn = spacing;
+}
+
+function showBanner(text, sub) {
+  hud.banner.innerHTML = `<strong>${text}</strong><span>${sub}</span>`;
+  hud.banner.classList.remove('show');
+  void hud.banner.offsetWidth; // restart the CSS animation
+  hud.banner.classList.add('show');
+}
+
+function setSeason(idx) {
+  if (idx === game.seasonIdx) return;
+  game.prevSeasonIdx = game.seasonIdx;
+  game.seasonIdx = idx;
+  game.seasonFade = 0;
+  const s = season();
+  showBanner(`${s.icon} ${s.name}`, s.hint);
+}
+
+function collect(type) {
+  const p = POWERUPS[type];
+  if (type === 'helmet') game.player.helmet = true;
+  else game.effects[type] = p.duration;
+  showBanner(`${p.icon} ${p.name}`, p.hint);
+  navigator.vibrate?.(30);
+}
+
+function crash() {
+  if (game.player.helmet) {
+    game.player.helmet = false;
+    game.shake = 0.3;
+    game.flash = 0.25;
+    navigator.vibrate?.(80);
+    showBanner('⛑️ Helm kaputt', 'Glück gehabt!');
+    return;
+  }
+  game.shake = 0.5;
+  game.flash = 0.6;
+  navigator.vibrate?.([120, 60, 200]);
+  state = 'over';
+  const best = Math.max(readBest(), game.passed);
+  writeBest(best);
+  hud.final.textContent = game.passed;
+  hud.best.textContent = best;
+  setTimeout(() => hud.over.classList.add('show'), 500);
+  hud.over.dataset.ready = '0';
+  setTimeout(() => { hud.over.dataset.ready = '1'; }, 1100);
+}
+
+function updateWind(dt) {
+  const w = game.wind;
+  if (season().id !== 'autumn') { w.target = 0; }
+  else if ((w.nextGust -= dt) <= 0) {
+    const strength = 180 + Math.min(game.passed, 60) * 2;
+    w.target = w.target ? 0 : (Math.random() < 0.5 ? -1 : 1) * strength;
+    w.nextGust = w.target ? 1.6 + Math.random() : 2 + Math.random() * 2.5;
+  }
+  w.force += (w.target - w.force) * Math.min(1, dt * 3);
+}
+
+function updatePlayer(dt, speed) {
+  const p = game.player;
+  const keyDir = (input.keys.has('ArrowRight') || input.keys.has('d') ? 1 : 0)
+    - (input.keys.has('ArrowLeft') || input.keys.has('a') ? 1 : 0);
+  const limit = CORRIDOR / 2 - PLAYER_R;
+  p.target = Math.max(-limit, Math.min(limit, p.target + keyDir * 10 * dt));
+  // spring toward the finger; ice and puddles make it loose and overshooting
+  const icy = season().id === 'winter' || p.slippery > 0;
+  const k = icy ? 45 : 320, c = icy ? 4.5 : 36;
+  const a = k * (p.target - p.x) - c * p.vx + game.wind.force;
+  p.vx += a * dt;
+  p.x += p.vx * dt;
+  if (Math.abs(p.x) > limit) { p.x = Math.sign(p.x) * limit; p.vx *= -0.3; }
+  p.spin += (speed * dt) / PLAYER_R * 0.35 + p.vx * dt * 0.8;
+  p.slippery = Math.max(0, p.slippery - dt);
+}
+
+function updateParticles(dt) {
+  const s = season(), cfg = s.particle;
+  const list = game.particles;
+  const spawn = cfg.rate * dt * (view.W / 400);
+  const count = Math.floor(spawn) + (Math.random() < spawn % 1 ? 1 : 0);
+  for (let i = 0; i < count; i++) {
+    list.push({
+      x: Math.random() * view.W * 1.2 - view.W * 0.1, y: -10,
+      vx: (Math.random() - 0.5) * 20, vy: cfg.fall * (0.6 + Math.random() * 0.8),
+      size: cfg.size[0] + Math.random() * (cfg.size[1] - cfg.size[0]),
+      rot: Math.random() * 6, vr: (Math.random() - 0.5) * 6,
+      color: cfg.colors[(Math.random() * cfg.colors.length) | 0], leaf: s.id === 'autumn',
+    });
+  }
+  const windPx = game.wind.force * 0.6;
+  for (const p of list) {
+    p.x += (p.vx + windPx) * dt + Math.sin(game.time * 2 + p.rot) * 0.3;
+    p.y += p.vy * dt;
+    p.rot += p.vr * dt;
+  }
+  game.particles = list.filter((p) => p.y < view.H + 20 && p.x > -60 && p.x < view.W + 60).slice(-250);
+}
+
+function update(dt) {
+  game.time += dt;
+  const eff = game.effects;
+  eff.slowmo = Math.max(0, eff.slowmo - dt);
+  eff.widen = Math.max(0, eff.widen - dt);
+  game.slowFactor += ((eff.slowmo > 0 ? 0.55 : 1) - game.slowFactor) * Math.min(1, dt * 4);
+  game.seasonFade = Math.min(1, game.seasonFade + dt / 1.5);
+
+  const speed = speedAt(game.time) * season().speedMul * game.slowFactor;
+  const dz = speed * dt;
+  game.travelled += dz;
+
+  game.nextSpawnIn -= dz;
+  if (game.nextSpawnIn <= 0) spawnWall();
+
+  updateWind(dt);
+  updatePlayer(dt, speed);
+  const p = game.player;
+  const widenFactor = eff.widen > 0 ? 1.6 : 1;
+
+  for (const w of game.walls) {
+    const before = w.z;
+    w.z -= dz;
+    if (before > PLAYER_Z && w.z <= PLAYER_Z) {
+      const gaps = w.gaps.map((g) => widened(g, widenFactor));
+      if (passesWall(p.x, PLAYER_R * 0.75, gaps)) {
+        game.passed++;
+        setSeason(seasonIndexAt(game.passed, WALLS_PER_SEASON, SEASONS.length));
+      } else {
+        crash();
+        w.broken = true;
+        if (state === 'over') return;
+      }
+    }
+  }
+  for (const item of game.pickups) {
+    const before = item.z;
+    item.z -= dz;
+    if (!item.taken && before > PLAYER_Z && item.z <= PLAYER_Z && Math.abs(item.x - p.x) < 1) {
+      item.taken = true;
+      collect(item.type);
+    }
+  }
+  for (const pd of game.puddles) {
+    const before = pd.z;
+    pd.z -= dz;
+    if (before > PLAYER_Z && pd.z <= PLAYER_Z && Math.abs(pd.x - p.x) < pd.r) p.slippery = 1.4;
+  }
+  game.walls = game.walls.filter((w) => w.z > 0.6 && !w.broken);
+  game.pickups = game.pickups.filter((i) => i.z > 0.6 && !i.taken);
+  game.puddles = game.puddles.filter((pd) => pd.z > 0.6);
+  updateParticles(dt);
+  updateHud(speed);
+}
+
+function updateHud(speed) {
+  hud.score.textContent = game.passed;
+  hud.speed.textContent = `${Math.round(speed * 1.6)} km/h`;
+  const s = season();
+  hud.season.textContent = `${s.icon} ${s.name}`;
+  const parts = [];
+  if (game.player.helmet) parts.push(`<span class="pw">${POWERUPS.helmet.icon}</span>`);
+  for (const key of ['slowmo', 'widen']) {
+    const left = game.effects[key];
+    if (left > 0) {
+      const pct = (left / POWERUPS[key].duration) * 100;
+      parts.push(`<span class="pw">${POWERUPS[key].icon}<i style="width:${pct}%"></i></span>`);
+    }
+  }
+  hud.powers.innerHTML = parts.join('');
+  const wf = game.wind.force;
+  hud.wind.textContent = Math.abs(wf) > 40 ? (wf > 0 ? '💨 →' : '← 💨') : '';
+}
+
+function render() {
+  const s = season();
+  const prev = game.prevSeasonIdx !== null ? SEASONS[game.prevSeasonIdx] : null;
+  ctx.save();
+  if (game.shake > 0) {
+    const m = game.shake * 14;
+    ctx.translate((Math.random() - 0.5) * m, (Math.random() - 0.5) * m);
+  }
+  drawBackground(ctx, view, backgrounds[s.id], prev && backgrounds[prev.id], game.seasonFade, game.player.x);
+  drawGround(ctx, view, s, game.travelled);
+
+  const widenFactor = game.effects.widen > 0 ? 1.6 : 1;
+  const things = [
+    ...game.puddles.map((o) => ({ z: o.z + 0.01, draw: () => drawPuddle(ctx, view, o) })),
+    ...game.walls.map((o) => ({ z: o.z, draw: () => drawWall(ctx, view, o.z, o.gaps.map((g) => widened(g, widenFactor)), gabion, o.snowy) })),
+    ...game.pickups.map((o) => ({ z: o.z, draw: () => drawPickup(ctx, view, o, POWERUPS[o.type].icon, game.time) })),
+    { z: PLAYER_Z - 0.001, draw: () => drawPlayer(ctx, view, game.player, game.time) },
+  ].sort((a, b) => b.z - a.z);
+  for (const t of things) t.draw();
+
+  drawParticles(ctx, game.particles);
+  if (game.effects.slowmo > 0) {
+    ctx.fillStyle = 'rgba(80,120,255,0.12)';
+    ctx.fillRect(0, 0, view.W, view.H);
+  }
+  if (game.flash > 0) {
+    ctx.fillStyle = `rgba(255,40,40,${game.flash * 0.6})`;
+    ctx.fillRect(0, 0, view.W, view.H);
+  }
+  ctx.restore();
+}
+
+function frame(now) {
+  const dt = Math.min((now - last) / 1000, 1 / 30);
+  last = now;
+  if (state === 'playing') update(dt);
+  else if (state === 'start') { game.time += dt; game.player.spin += dt * 2; updateParticles(dt); }
+  game.shake = Math.max(0, game.shake - dt);
+  game.flash = Math.max(0, game.flash - dt);
+  render();
+  requestAnimationFrame(frame);
+}
+
+function start() {
+  game = newGame();
+  state = 'playing';
+  hud.start.classList.remove('show');
+  hud.over.classList.remove('show');
+  showBanner(`${season().icon} ${season().name}`, season().hint);
+}
+
+function onPointerDown(e) {
+  if (state === 'start') start();
+  else if (state === 'over') {
+    if (hud.over.dataset.ready === '1') start();
+    return;
+  }
+  input.dragging = true;
+  input.lastX = e.clientX;
+}
+
+function onPointerMove(e) {
+  if (!input.dragging || state !== 'playing') return;
+  const dx = e.clientX - input.lastX;
+  input.lastX = e.clientX;
+  const unitsPerPx = PLAYER_Z / view.F;
+  const limit = CORRIDOR / 2 - PLAYER_R;
+  const p = game.player;
+  p.target = Math.max(-limit, Math.min(limit, p.target + dx * unitsPerPx * 1.4));
+}
+
+function bindInput() {
+  window.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', () => { input.dragging = false; });
+  window.addEventListener('pointercancel', () => { input.dragging = false; });
+  window.addEventListener('keydown', (e) => {
+    input.keys.add(e.key);
+    if ((e.key === ' ' || e.key === 'Enter') && state !== 'playing') onPointerDown({ clientX: 0 });
+  });
+  window.addEventListener('keyup', (e) => input.keys.delete(e.key));
+  window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', () => { last = performance.now(); });
+}
+
+async function init() {
+  resize();
+  bindInput();
+  try {
+    const [park, tex] = await Promise.all([loadImage('assets/park.jpg'), loadImage('assets/gabion.jpg')]);
+    gabion = tex;
+    backgrounds = buildSeasonBackgrounds(park, SEASONS);
+  } catch (err) {
+    hud.start.querySelector('.tap').textContent = 'Laden fehlgeschlagen – bitte neu laden.';
+    console.error(err);
+    return;
+  }
+  game = newGame();
+  hud.bestStart.textContent = readBest();
+  hud.start.classList.add('show');
+  state = 'start';
+  last = performance.now();
+  requestAnimationFrame(frame);
+}
+
+init();
+
+// Hook for local testing: open index.html#debug
+if (location.hash === '#debug') {
+  window.rollDown = {
+    game: () => game, start, setSeason: (i) => setSeason(i),
+    spawn: spawnWall, update: (dt) => update(dt),
+  };
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#2f4a2a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Roll Down">
+  <title>Roll Down Volkspark</title>
+  <meta name="description" content="Roll den Berg im Volkspark Friedrichshain runter und triff die Lücken in den Steinmauern.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="stage">
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div class="row">
+        <div class="chip big"><span id="score">0</span><small>Mauern</small></div>
+        <div class="stack">
+          <div class="chip" id="season"></div>
+          <div class="chip" id="speed"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div id="powers"></div>
+        <div id="wind"></div>
+      </div>
+    </div>
+
+    <div id="banner"></div>
+
+    <section id="start" class="overlay">
+      <h1>Roll Down<br><span>Volkspark</span></h1>
+      <p>Roll den Berg runter und triff die Lücken in den Mauern.</p>
+      <ul class="legend">
+        <li><b>👆</b>Wischen: links / rechts</li>
+        <li><b>⛑️</b>Helm: übersteht einen Crash</li>
+        <li><b>⏳</b>Zeitlupe für 5 Sekunden</li>
+        <li><b>↔️</b>Breitere Lücken für 7 Sekunden</li>
+        <li><b>🌸☀️🍂❄️</b>Jede Jahreszeit spielt sich anders</li>
+      </ul>
+      <p class="tap">Tippen zum Starten</p>
+      <p class="small">Rekord: <span id="best-start">0</span></p>
+    </section>
+
+    <section id="over" class="overlay">
+      <h2>Autsch! 🧱</h2>
+      <p class="result"><span id="final">0</span> Mauern</p>
+      <p class="small">Rekord: <span id="best">0</span></p>
+      <p class="tap">Tippen für nächste Runde</p>
+    </section>
+  </main>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
