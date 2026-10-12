@@ -1,7 +1,7 @@
 import { test, expect } from 'bun:test';
 import { CORRIDOR, WALL_EXT, SEASONS } from '../js/config.js';
 import {
-  speedAt, gapWidthAt, spacingAt, seasonIndexAt, makeGaps, widened, passesWall, solidSegments,
+  speedAt, gapWidthAt, spacingAt, seasonIndexAt, makeGaps, widened, passesWall, solidSegments, slipAmount, skidStrength,
 } from '../js/logic.js';
 
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
@@ -54,4 +54,18 @@ test('widened gap is bigger but capped', () => {
 test('solid segments cover everything but the gaps', () => {
   const segs = solidSegments([{ x: 2, w: 2 }, { x: -2, w: 1 }]);
   expect(segs).toEqual([[-WALL_EXT, -2.5], [-1.5, 1], [3, WALL_EXT]]);
+});
+
+test('slipAmount: ice is full, puddle fades out', () => {
+  expect(slipAmount(true, 0)).toBe(1);
+  expect(slipAmount(false, 0)).toBe(0);
+  expect(slipAmount(false, 1.4)).toBe(1);
+  expect(slipAmount(false, 0.25)).toBeCloseTo(0.5);
+});
+
+test('skidStrength: needs slip and sideways speed', () => {
+  expect(skidStrength(10, 0)).toBe(0);
+  expect(skidStrength(0.5, 1)).toBe(0);
+  expect(skidStrength(-10, 1)).toBe(1);
+  expect(skidStrength(3.7, 1)).toBeCloseTo(0.5);
 });

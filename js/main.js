@@ -1,11 +1,12 @@
 import {
   CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON,
 } from './config.js';
-import { speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt } from './logic.js';
+import { speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, slipAmount, skidStrength } from './logic.js';
 import { buildSeasonBackgrounds } from './seasons.js';
 import { setupIdeas } from './ideas.js';
 import {
-  computeView, drawBackground, drawGround, drawWall, drawPuddle, drawPickup, drawPlayer, drawParticles,
+  computeView, project, drawBackground, drawGround, drawWall, drawPuddle, drawPickup, drawPlayer, drawParticles,
+  drawIceSheen, drawSkidMarks, drawSpray,
 } from './render.js';
 
 const canvas = document.getElementById('game');
@@ -38,9 +39,9 @@ const input = { dragging: false, lastX: 0, keys: new Set() };
 function newGame() {
   return {
     time: 0, travelled: 0, passed: 0, spawned: 0, nextSpawnIn: 0, lastGapX: 0,
-    walls: [], pickups: [], puddles: [], particles: [],
+    walls: [], pickups: [], puddles: [], particles: [], skids: [], spray: [],
     seasonIdx: 0, prevSeasonIdx: null, seasonFade: 1,
-    player: { x: 0, vx: 0, target: 0, spin: 0, helmet: false, slippery: 0 },
+    player: { x: 0, vx: 0, target: 0, spin: 0, helmet: false, slippery: 0, slip: 0 },
     effects: { slowmo: 0, widen: 0 },
     wind: { force: 0, target: 0, nextGust: 4 },
     shake: 0, flash: 0, slowFactor: 1,
@@ -153,6 +154,31 @@ function updatePlayer(dt, speed) {
   if (Math.abs(p.x) > limit) { p.x = Math.sign(p.x) * limit; p.vx *= -0.3; }
   p.spin += (speed * dt) / PLAYER_R * 0.35 + p.vx * dt * 0.8;
   p.slippery = Math.max(0, p.slippery - dt);
+  p.slip = slipAmount(season().id === 'winter', p.slippery);
+}
+
+// skid marks stay on the ground and scroll toward the camera; spray flies off the player
+function updateSkids(dt, dz) {
+  const p = game.player, str = skidStrength(p.vx, p.slip);
+  for (const m of game.skids) m.z -= dz;
+  game.skids = game.skids.filter((m) => m.z > 2);
+  if (str > 0) {
+    game.skids.push({ x: p.x, z: PLAYER_Z, a: str });
+    if (game.skids.length > 70) game.skids.shift();
+    const ground = project(view, p.x, PLAYER_Z);
+    const snow = season().id === 'winter';
+    const n = Math.ceil(str * 2.5);
+    for (let i = 0; i < n; i++) {
+      game.spray.push({
+        x: ground.sx, y: ground.sy - ground.s * 0.3,
+        vx: -Math.sign(p.vx) * (30 + Math.random() * 90) * (0.5 + str), vy: -(40 + Math.random() * 90),
+        size: ground.s * (0.05 + Math.random() * 0.07), life: 0.5, max: 0.5,
+        color: snow ? '#ffffff' : '#bfe0ff',
+      });
+    }
+  }
+  for (const s of game.spray) { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 420 * dt; s.life -= dt; }
+  game.spray = game.spray.filter((s) => s.life > 0).slice(-60);
 }
 
 function updateParticles(dt) {
@@ -196,6 +222,7 @@ function update(dt) {
   updateWind(dt);
   updatePlayer(dt, speed);
   const p = game.player;
+  updateSkids(dt, dz);
   const widenFactor = eff.widen > 0 ? 1.6 : 1;
 
   for (const w of game.walls) {
@@ -224,7 +251,10 @@ function update(dt) {
   for (const pd of game.puddles) {
     const before = pd.z;
     pd.z -= dz;
-    if (before > PLAYER_Z && pd.z <= PLAYER_Z && Math.abs(pd.x - p.x) < pd.r) p.slippery = 1.4;
+    if (before > PLAYER_Z && pd.z <= PLAYER_Z && Math.abs(pd.x - p.x) < pd.r) {
+      if (p.slippery <= 0) showBanner('💧 Rutschig!', 'Gegenlenken dauert länger');
+      p.slippery = 1.4;
+    }
   }
   game.walls = game.walls.filter((w) => w.z > 0.6 && !w.broken);
   game.pickups = game.pickups.filter((i) => i.z > 0.6 && !i.taken);
@@ -262,6 +292,8 @@ function render() {
   }
   drawBackground(ctx, view, backgrounds[s.id], prev && backgrounds[prev.id], game.seasonFade, game.player.x);
   drawGround(ctx, view, s, game.travelled);
+  if (s.id === 'winter') drawIceSheen(ctx, view, game.travelled);
+  drawSkidMarks(ctx, view, game.skids, s.id === 'winter');
 
   const widenFactor = game.effects.widen > 0 ? 1.6 : 1;
   const things = [
@@ -272,6 +304,7 @@ function render() {
   ].sort((a, b) => b.z - a.z);
   for (const t of things) t.draw();
 
+  drawSpray(ctx, game.spray);
   drawParticles(ctx, game.particles);
   if (game.effects.slowmo > 0) {
     ctx.fillStyle = 'rgba(80,120,255,0.12)';

@@ -104,6 +104,16 @@ export function drawPuddle(ctx, view, p) {
   ctx.beginPath();
   ctx.ellipse(sx - p.r * s * 0.3, sy - p.r * s * 0.04, p.r * s * 0.35, p.r * s * 0.05, 0, 0, Math.PI * 2);
   ctx.fill();
+  // wet look: dark rim and a sky reflection streak
+  ctx.strokeStyle = 'rgba(30,60,90,0.5)';
+  ctx.lineWidth = Math.max(1, p.r * s * 0.05);
+  ctx.beginPath();
+  ctx.ellipse(sx, sy, p.r * s, p.r * s * 0.22, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.beginPath();
+  ctx.ellipse(sx + p.r * s * 0.25, sy + p.r * s * 0.06, p.r * s * 0.5, p.r * s * 0.035, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.globalAlpha = 1;
 }
 
@@ -145,6 +155,7 @@ export function drawPlayer(ctx, view, player, time) {
 
   ctx.save();
   ctx.translate(sx, sy);
+  ctx.transform(1, 0, -clamp(player.vx * 0.05, -0.4, 0.4) * (player.slip || 0), 1, 0, 0); // lean into the slide
   ctx.rotate(player.spin);
   const limb = (angle, len, width, color) => {
     ctx.save();
@@ -191,6 +202,61 @@ export function drawPlayer(ctx, view, player, time) {
       ctx.fill();
     }
   }
+}
+
+// Glossy ice: a light sheen over the path plus streaks that scroll with the ground.
+export function drawIceSheen(ctx, view, travelled) {
+  const { W, H, horizonY, F, CH, cx } = view;
+  const pw = (CORRIDOR / 2) * (H - horizonY) / CH;
+  const g = ctx.createLinearGradient(0, horizonY, 0, H);
+  g.addColorStop(0, 'rgba(255,255,255,0)');
+  g.addColorStop(0.5, 'rgba(235,248,255,0.22)');
+  g.addColorStop(1, 'rgba(255,255,255,0.4)');
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - pw, horizonY, pw * 2, H - horizonY);
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 26; i++) {
+    const z = 5 + ((i * 6.1 - travelled) % 60 + 60) % 60;
+    const x = (((i * 7.7) % 9) - 4.5) * 0.9;
+    const a = project(view, x, z), b = project(view, x + 0.3, z + 2.8);
+    ctx.strokeStyle = `rgba(255,255,255,${0.55 * (1 - clamp((z - 5) / 60, 0, 1))})`;
+    ctx.lineWidth = Math.max(1.5, 0.16 * a.s);
+    ctx.beginPath();
+    ctx.moveTo(a.sx, a.sy);
+    ctx.lineTo(b.sx, b.sy);
+    ctx.stroke();
+  }
+}
+
+// Two parallel tracks where the player slid sideways.
+export function drawSkidMarks(ctx, view, skids, snowy) {
+  if (skids.length < 2) return;
+  ctx.lineCap = 'butt';
+  ctx.lineJoin = 'round';
+  for (const side of [-0.35, 0.35]) {
+    for (let i = 1; i < skids.length; i++) {
+      const m = skids[i], q = skids[i - 1];
+      if (q.z - m.z > 3) continue;
+      const a = project(view, q.x + side, q.z), b = project(view, m.x + side, m.z);
+      ctx.strokeStyle = snowy ? `rgba(70,95,125,${0.5 * m.a})` : `rgba(40,70,110,${0.45 * m.a})`;
+      ctx.lineWidth = Math.max(1, 0.12 * b.s);
+      ctx.beginPath();
+      ctx.moveTo(a.sx, a.sy);
+      ctx.lineTo(b.sx, b.sy);
+      ctx.stroke();
+    }
+  }
+}
+
+export function drawSpray(ctx, spray) {
+  for (const s of spray) {
+    ctx.globalAlpha = Math.min(1, (s.life / s.max) * 1.5);
+    ctx.fillStyle = s.color;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 }
 
 export function drawParticles(ctx, particles) {
