@@ -13,4 +13,4 @@ GITHUB_REPO = "SvenGoerdes/roll-down-volkspark"
 # npx wrangler kv namespace create LEADERBOARD
 [[kv_namespaces]]
 binding = "LEADERBOARD"
-id = "TODO_KV_ID"
+id = "e42cf73197c745cabb3ad460b85e6014"
