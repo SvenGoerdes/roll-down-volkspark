@@ -5,8 +5,11 @@ import { speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt } from
 import { buildSeasonBackgrounds } from './seasons.js';
 import { setupIdeas } from './ideas.js';
 import {
-  computeView, drawBackground, drawGround, drawWall, drawPuddle, drawPickup, drawPlayer, drawParticles,
+  computeView, project, drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup, drawPlayer, drawParticles,
+  drawScenery, drawSpeedLines, drawGrade, drawFx, warmUp,
 } from './render.js';
+import { sceneryAt } from './scenery.js';
+import { burstStones, burstSparkles, stepFx } from './fx.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -38,7 +41,7 @@ const input = { dragging: false, lastX: 0, keys: new Set() };
 function newGame() {
   return {
     time: 0, travelled: 0, passed: 0, spawned: 0, nextSpawnIn: 0, lastGapX: 0,
-    walls: [], pickups: [], puddles: [], particles: [],
+    walls: [], pickups: [], puddles: [], particles: [], fx: [],
     seasonIdx: 0, prevSeasonIdx: null, seasonFade: 1,
     player: { x: 0, vx: 0, target: 0, spin: 0, helmet: false, slippery: 0 },
     effects: { slowmo: 0, widen: 0 },
@@ -97,8 +100,13 @@ function setSeason(idx) {
   showBanner(`${s.icon} ${s.name}`, s.hint);
 }
 
+// Screen position and scale of the player, for effects that start there.
+const playerSpot = () => project(view, game.player.x, PLAYER_Z, PLAYER_R);
+
 function collect(type) {
   const p = POWERUPS[type];
+  const at = playerSpot();
+  burstSparkles(game.fx, at.sx, at.sy, at.s / 45);
   if (type === 'helmet') game.player.helmet = true;
   else game.effects[type] = p.duration;
   showBanner(`${p.icon} ${p.name}`, p.hint);
@@ -106,6 +114,8 @@ function collect(type) {
 }
 
 function crash() {
+  const at = playerSpot();
+  burstStones(game.fx, at.sx, at.sy, at.s / 45);
   if (game.player.helmet) {
     game.player.helmet = false;
     game.shake = 0.3;
@@ -116,6 +126,7 @@ function crash() {
   }
   game.shake = 0.5;
   game.flash = 0.6;
+  game.player.dazed = true;
   navigator.vibrate?.([120, 60, 200]);
   setState('over');
   const best = Math.max(readBest(), game.passed);
@@ -166,7 +177,7 @@ function updateParticles(dt) {
       vx: (Math.random() - 0.5) * 20, vy: cfg.fall * (0.6 + Math.random() * 0.8),
       size: cfg.size[0] + Math.random() * (cfg.size[1] - cfg.size[0]),
       rot: Math.random() * 6, vr: (Math.random() - 0.5) * 6,
-      color: cfg.colors[(Math.random() * cfg.colors.length) | 0], leaf: s.id === 'autumn',
+      color: cfg.colors[(Math.random() * cfg.colors.length) | 0], leaf: s.id === 'autumn', petal: s.id === 'spring',
     });
   }
   const windPx = game.wind.force * 0.6;
@@ -234,7 +245,13 @@ function update(dt) {
 }
 
 function updateHud(speed) {
-  hud.score.textContent = game.passed;
+  if (hud.score.textContent !== String(game.passed)) {
+    hud.score.textContent = game.passed;
+    const chip = hud.score.parentElement;
+    chip.classList.remove('pop');
+    void chip.offsetWidth; // restart the CSS animation
+    chip.classList.add('pop');
+  }
   hud.speed.textContent = `${Math.round(speed * 1.6)} km/h`;
   const s = season();
   hud.season.textContent = `${s.icon} ${s.name}`;
@@ -262,17 +279,27 @@ function render() {
   }
   drawBackground(ctx, view, backgrounds[s.id], prev && backgrounds[prev.id], game.seasonFade, game.player.x);
   drawGround(ctx, view, s, game.travelled);
+  drawHorizon(ctx, view, s, prev, game.seasonFade, game.player.x);
 
+  const speed = speedAt(game.time) * s.speedMul * game.slowFactor;
+  // plants beyond the last wall of this season already show the next one
+  const edge = game.walls.find((w) => seasonIndexAt(w.index + 1, WALLS_PER_SEASON, SEASONS.length) !== game.seasonIdx);
+  const ahead = edge ? SEASONS[seasonIndexAt(edge.index + 1, WALLS_PER_SEASON, SEASONS.length)].id : s.id;
   const widenFactor = game.effects.widen > 0 ? 1.6 : 1;
   const things = [
+    ...sceneryAt(game.travelled).map((o) => ({ z: o.z, draw: () => drawScenery(ctx, view, o, edge && o.z > edge.z ? ahead : s.id) })),
     ...game.puddles.map((o) => ({ z: o.z + 0.01, draw: () => drawPuddle(ctx, view, o) })),
-    ...game.walls.map((o) => ({ z: o.z, draw: () => drawWall(ctx, view, o.z, o.gaps.map((g) => widened(g, widenFactor)), gabion, o.snowy) })),
+    // the wall you crashed into stays behind you, so you can see yourself dazed in front of it
+    ...game.walls.map((o) => ({ z: o.broken ? PLAYER_Z + 0.5 : o.z, draw: () => drawWall(ctx, view, o.z, o.gaps.map((g) => widened(g, widenFactor)), gabion, o.snowy, s.fog) })),
     ...game.pickups.map((o) => ({ z: o.z, draw: () => drawPickup(ctx, view, o, POWERUPS[o.type].icon, game.time) })),
-    { z: PLAYER_Z - 0.001, draw: () => drawPlayer(ctx, view, game.player, game.time) },
+    { z: PLAYER_Z - 0.001, draw: () => drawPlayer(ctx, view, game.player, game.time, state === 'playing' ? speed : 0) },
   ].sort((a, b) => b.z - a.z);
   for (const t of things) t.draw();
 
   drawParticles(ctx, game.particles);
+  if (state === 'playing') drawSpeedLines(ctx, view, speed, game.time);
+  drawGrade(ctx, view, s, prev, game.seasonFade);
+  drawFx(ctx, game.fx);
   if (game.effects.slowmo > 0) {
     ctx.fillStyle = 'rgba(80,120,255,0.12)';
     ctx.fillRect(0, 0, view.W, view.H);
@@ -288,7 +315,8 @@ function frame(now) {
   const dt = Math.min((now - last) / 1000, 1 / 30);
   last = now;
   if (state === 'playing') update(dt);
-  else if (state === 'start') { game.time += dt; game.player.spin += dt * 2; updateParticles(dt); }
+  else if (state === 'start') { game.time += dt; game.travelled += dt * 6; game.player.spin += dt * 2; updateParticles(dt); }
+  game.fx = stepFx(game.fx, dt);
   game.shake = Math.max(0, game.shake - dt);
   game.flash = Math.max(0, game.flash - dt);
   render();
@@ -346,6 +374,7 @@ async function init() {
     const [park, tex] = await Promise.all([loadImage('assets/park.jpg'), loadImage('assets/gabion.jpg')]);
     gabion = tex;
     backgrounds = buildSeasonBackgrounds(park, SEASONS);
+    warmUp(SEASONS);
   } catch (err) {
     hud.start.querySelector('.tap').textContent = 'Laden fehlgeschlagen – bitte neu laden.';
     console.error(err);
