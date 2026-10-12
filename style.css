@@ -134,6 +134,7 @@ h2 { font-size: 40px; font-weight: 900; }
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   font-size: 20px;
 }
+body:has(#ideas.open) #board-btn, body:has(#board.open) #idea-btn { display: none; }
 #board-btn { right: auto; left: 14px; padding: 10px 14px 10px 12px; }
 #idea-btn span, #board-btn span { font-size: 15px; }
 body[data-state="playing"] #idea-btn, #ideas.open #idea-btn,
@@ -156,6 +157,9 @@ body[data-state="playing"] #board-btn, #board.open #board-btn { display: none; }
   border-radius: 20px 20px 0 0;
   display: grid;
   gap: 10px;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
   transform: translateY(105%);
   transition: transform 0.3s ease-out;
   pointer-events: auto;
@@ -197,7 +201,7 @@ body[data-state="playing"] #board-btn, #board.open #board-btn { display: none; }
 #board-status { font-size: 14px; min-height: 1.2em; text-align: center; }
 #board-status.ok { color: #2e7d32; font-weight: 700; }
 #board-status.err { color: #c62828; font-weight: 700; }
-#board-list { position: relative; list-style: none; max-height: 45vh; overflow-y: auto; display: grid; gap: 2px; }
+#board-list { position: relative; list-style: none; max-height: 45vh; max-height: 45dvh; overflow-y: auto; display: grid; gap: 2px; }
 #board-list:empty { display: none; }
 #board-list li {
   display: grid; grid-template-columns: 2.4em 1fr auto; gap: 8px; align-items: center;

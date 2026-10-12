@@ -35,10 +35,10 @@ test('sorts by score, earlier first on ties, and cuts the list', () => {
   expect(list.map((e) => e.name)).toEqual(['B', 'A', 'C']);
   const full = Array.from({ length: 20 }, (_, i) => ({ name: `P${i}`, score: 100 + i, season: '', at: i }));
   const low = addScore(full, { name: 'Neu', score: 1, season: '' }, 99);
-  expect(low.improved).toBe(false);
+  expect(low.status).toBe('too_low');
   expect(low.list).toHaveLength(20);
   const high = addScore(full, { name: 'Neu', score: 500, season: '' }, 99);
-  expect(high.improved).toBe(true);
+  expect(high.status).toBe('added');
   expect(high.list).toHaveLength(20);
   expect(high.list[0].name).toBe('Neu');
 });
@@ -46,12 +46,16 @@ test('sorts by score, earlier first on ties, and cuts the list', () => {
 test('one entry per name, case-insensitive, only a higher score replaces', () => {
   const a = addScore([], { name: 'Kim', score: 10, season: '' }, 1).list;
   const same = addScore(a, { name: 'kim', score: 10, season: '' }, 2);
-  expect(same.improved).toBe(false);
+  expect(same.status).toBe('exists');
   expect(same.list).toBe(a);
   const better = addScore(a, { name: 'KIM', score: 11, season: '' }, 3);
-  expect(better.improved).toBe(true);
+  expect(better.status).toBe('added');
   expect(better.list.map((e) => [e.name, e.score])).toEqual([['KIM', 11]]);
   expect(a[0].score).toBe(10);
+});
+
+test('normalizes names to NFC so dedupe sees the same name', () => {
+  expect(parseScore({ name: 'Zoe\u0308', score: 1 }).entry.name).toBe('Zo\u00eb');
 });
 
 test('limiter blocks after max hits and frees up after the window', () => {
@@ -61,4 +65,10 @@ test('limiter blocks after max hits and frees up after the window', () => {
   expect(limited(hits, 'ip', 2, 2)).toBe(true);
   expect(limited(hits, 'other', 2, 2)).toBe(false);
   expect(limited(hits, 'ip', 2, 3600_005)).toBe(false);
+});
+
+test('limiter prunes idle keys', () => {
+  const hits = new Map(Array.from({ length: 600 }, (_, i) => [`ip${i}`, [0]]));
+  limited(hits, 'new', 5, 4000_000);
+  expect(hits.size).toBe(1);
 });

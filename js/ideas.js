@@ -1,8 +1,5 @@
 import { WORKER_URL } from './config.js';
-
-const NAME_KEY = 'rollDownName';
-const readName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
-const writeName = (v) => { try { localStorage.setItem(NAME_KEY, v); } catch { /* private mode */ } };
+import { readName, writeName, netError, FETCH_TIMEOUT } from './name.js';
 
 // Wires the 💡 button and the idea form. `context()` returns { score, season } of the last run.
 export function setupIdeas(context) {
@@ -16,7 +13,7 @@ export function setupIdeas(context) {
     root.classList.add('open');
     form.elements.name.value = readName();
     status.textContent = '';
-    setTimeout(() => text.focus(), 50);
+    setTimeout(() => text.focus({ preventScroll: true }), 50);
   };
   const close = () => {
     root.classList.remove('open');
@@ -37,6 +34,7 @@ export function setupIdeas(context) {
     try {
       const res = await fetch(`${WORKER_URL}/ideas`, {
         method: 'POST',
+        signal: AbortSignal.timeout(FETCH_TIMEOUT),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text.value, name, website: form.elements.website.value, ...context() }),
       });
@@ -47,7 +45,7 @@ export function setupIdeas(context) {
       status.className = 'ok';
       setTimeout(close, 1600);
     } catch (err) {
-      status.textContent = err.message === 'Failed to fetch' ? 'Keine Verbindung – probier es gleich nochmal' : err.message;
+      status.textContent = netError(err);
       status.className = 'err';
     } finally {
       send.disabled = false;

@@ -1,18 +1,18 @@
 import { WORKER_URL } from './config.js';
-
-const NAME_KEY = 'rollDownName';
-const readName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
-const writeName = (v) => { try { localStorage.setItem(NAME_KEY, v); } catch { /* private mode */ } };
+import { readName, writeName, netError, FETCH_TIMEOUT } from './name.js';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
-const offline = (err) => (err.message === 'Failed to fetch' ? 'Keine Verbindung – probier es gleich nochmal' : err.message);
+const DONE = {
+  added: 'Eingetragen! 🙌',
+  exists: 'Dein Eintrag steht schon drin – mit gleich vielen oder mehr Mauern.',
+  too_low: 'Zu wenig für die Top 20 – nächstes Mal!',
+};
+const same = (a, b) => a.toLowerCase() === b.toLowerCase();
 
 async function call(path, body) {
-  const res = await fetch(`${WORKER_URL}${path}`, body && {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  const init = { signal: AbortSignal.timeout(FETCH_TIMEOUT) };
+  if (body) Object.assign(init, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const res = await fetch(`${WORKER_URL}${path}`, init);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Bestenliste nicht erreichbar');
   return data;
@@ -29,6 +29,7 @@ export function setupLeaderboard() {
   const send = entry.querySelector('button');
   const offerBtn = document.getElementById('submit-score');
   let pending = null; // { score, season } of the run that can still be entered
+  let mine = null; // { name, score, entries } of our last successful POST
 
   // Entries come from other people: only textContent, never innerHTML.
   const render = (entries) => {
@@ -45,8 +46,8 @@ export function setupLeaderboard() {
       if (me && e.name.toLowerCase() === me) li.className = 'me';
       return li;
     }));
-    const mine = list.querySelector('.me');
-    if (mine) list.scrollTop = mine.offsetTop - list.clientHeight / 2; // not scrollIntoView: it scrolls the whole page
+    const row = list.querySelector('.me');
+    if (row) list.scrollTop = row.offsetTop - list.clientHeight / 2; // not scrollIntoView: it scrolls the whole page
   };
   const message = (text, cls = '') => { status.textContent = text; status.className = cls; };
 
@@ -54,11 +55,13 @@ export function setupLeaderboard() {
     list.replaceChildren();
     message('Lädt …');
     try {
-      const { entries } = await call('/leaderboard');
+      let { entries } = await call('/leaderboard');
+      // KV reads can lag behind our own write: keep the list the POST gave us until the GET catches up
+      if (mine && !entries.some((e) => same(e.name, mine.name) && e.score >= mine.score)) entries = mine.entries;
       message(entries.length ? '' : 'Noch keine Einträge – sei der Erste!');
       render(entries);
     } catch (err) {
-      message(offline(err), 'err');
+      message(netError(err), 'err');
     }
   }
 
@@ -89,13 +92,14 @@ export function setupLeaderboard() {
     message('Wird gesendet …');
     try {
       const data = await call('/scores', { name, ...pending });
+      if (data.status !== 'too_low') mine = { name, score: pending.score, entries: data.entries };
       pending = null;
       entry.hidden = true;
       offerBtn.hidden = true;
-      message(data.improved ? 'Eingetragen! 🙌' : 'Dein Eintrag steht schon drin – mit gleich vielen oder mehr Mauern.', 'ok');
+      message(DONE[data.status], data.status === 'too_low' ? '' : 'ok');
       render(data.entries);
     } catch (err) {
-      message(offline(err), 'err');
+      message(netError(err), 'err');
     } finally {
       send.disabled = false;
     }
