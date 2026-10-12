@@ -118,8 +118,8 @@ h2 { font-size: 40px; font-weight: 900; }
 }
 @keyframes pulse { 50% { transform: scale(1.05); } }
 
-#ideas { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
-#idea-btn {
+#ideas, #board { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+#idea-btn, #board-btn {
   position: absolute;
   right: 14px;
   bottom: calc(env(safe-area-inset-bottom) + 14px);
@@ -134,16 +134,19 @@ h2 { font-size: 40px; font-weight: 900; }
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   font-size: 20px;
 }
-#idea-btn span { font-size: 15px; }
-body[data-state="playing"] #idea-btn, #ideas.open #idea-btn { display: none; }
+body:has(#ideas.open) #board-btn, body:has(#board.open) #idea-btn { display: none; }
+#board-btn { right: auto; left: 14px; padding: 10px 14px 10px 12px; }
+#idea-btn span, #board-btn span { font-size: 15px; }
+body[data-state="playing"] #idea-btn, #ideas.open #idea-btn,
+body[data-state="playing"] #board-btn, #board.open #board-btn { display: none; }
 
-#ideas .backdrop {
+#ideas .backdrop, #board .backdrop {
   position: absolute; inset: 0;
   background: rgba(0, 0, 0, 0.5);
   opacity: 0;
   transition: opacity 0.25s;
 }
-#ideas.open .backdrop { opacity: 1; pointer-events: auto; }
+#ideas.open .backdrop, #board.open .backdrop { opacity: 1; pointer-events: auto; }
 
 .sheet {
   position: absolute;
@@ -154,6 +157,9 @@ body[data-state="playing"] #idea-btn, #ideas.open #idea-btn { display: none; }
   border-radius: 20px 20px 0 0;
   display: grid;
   gap: 10px;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
   transform: translateY(105%);
   transition: transform 0.3s ease-out;
   pointer-events: auto;
@@ -161,10 +167,10 @@ body[data-state="playing"] #idea-btn, #ideas.open #idea-btn { display: none; }
   -webkit-user-select: text;
   user-select: text;
 }
-#ideas.open .sheet { transform: none; }
+#ideas.open .sheet, #board.open .sheet { transform: none; }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; }
 .sheet h3 { font-size: 19px; }
-#idea-close { border: 0; background: none; font-size: 22px; padding: 4px 8px; color: inherit; }
+#idea-close, #board-close { border: 0; background: none; font-size: 22px; padding: 4px 8px; color: inherit; }
 .sheet textarea, .sheet input {
   width: 100%;
   font: 16px/1.4 system-ui, sans-serif; /* 16px keeps iOS from zooming in */
@@ -189,3 +195,28 @@ body[data-state="playing"] #idea-btn, #ideas.open #idea-btn { display: none; }
 #idea-status { font-size: 14px; min-height: 1.2em; text-align: center; }
 #idea-status.ok { color: #2e7d32; font-weight: 700; }
 #idea-status.err { color: #c62828; font-weight: 700; }
+
+#board-entry { display: grid; gap: 10px; }
+#board-entry[hidden] { display: none; }
+#board-status { font-size: 14px; min-height: 1.2em; text-align: center; }
+#board-status.ok { color: #2e7d32; font-weight: 700; }
+#board-status.err { color: #c62828; font-weight: 700; }
+#board-list { position: relative; list-style: none; max-height: 45vh; max-height: 45dvh; overflow-y: auto; display: grid; gap: 2px; }
+#board-list:empty { display: none; }
+#board-list li {
+  display: grid; grid-template-columns: 2.4em 1fr auto; gap: 8px; align-items: center;
+  padding: 7px 10px; border-radius: 10px; font-size: 16px;
+}
+#board-list li span:last-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#board-list li.me { background: #ffd23f; font-weight: 800; }
+#board-list b { font-weight: 800; }
+
+#submit-score {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 20px;
+  font: 800 16px system-ui, sans-serif;
+  background: #fff;
+  color: #1c2a1a;
+}
+#submit-score[hidden] { display: none; }

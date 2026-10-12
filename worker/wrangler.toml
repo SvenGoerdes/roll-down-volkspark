@@ -8,3 +8,9 @@ GITHUB_REPO = "SvenGoerdes/roll-down-volkspark"
 
 # Secret, not in this file: GITHUB_TOKEN (fine-grained token, only this repo, Issues: read & write)
 # bunx wrangler secret put GITHUB_TOKEN
+
+# Leaderboard storage. Create once, then paste the printed id below:
+# npx wrangler kv namespace create LEADERBOARD
+[[kv_namespaces]]
+binding = "LEADERBOARD"
+id = "TODO_KV_ID"
