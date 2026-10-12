@@ -42,3 +42,9 @@ export function solidSegments(gaps) {
   segs.push([from, WALL_EXT]);
   return segs.filter(([a, b]) => b > a);
 }
+
+// How slippery the ground feels, 0..1: ice is always 1, a puddle fades out over its last 0.5s.
+export const slipAmount = (winter, puddleLeft) => (winter ? 1 : clamp(puddleLeft / 0.5, 0, 1));
+
+// Sideways skid strength 0..1 from lateral speed; small drifts leave no mark.
+export const skidStrength = (vx, slip) => (slip > 0 ? clamp((Math.abs(vx) - 1.2) / 5, 0, 1) * slip : 0);
