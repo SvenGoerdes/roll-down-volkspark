@@ -37,12 +37,17 @@ export const SEASONS = [
   },
 ];
 
-// Path surfaces change every SURFACE_LEN world units (see createSurfaceTrack)
-export const SURFACE_LEN = 40;
+// Path surfaces: the first stretch is dirt, then each one lasts SURFACE_LEN[0]..[1] world units.
+// bump = constant hop height; kick = random sideways stone hits (every [s], impulse [u/s]).
+export const SURFACE_FIRST = 150;
+export const SURFACE_LEN = [120, 220];
 export const SURFACES = {
-  dirt: { id: 'dirt', icon: '🟤', name: 'Erde', hint: 'Fester Boden', speedMul: 1, bump: 0 },
-  gravel: { id: 'gravel', icon: '🪨', name: 'Schotter', hint: 'Holprig – du hoppelst', speedMul: 1, bump: 1 },
-  grass: { id: 'grass', icon: '🌱', name: 'Gras', hint: 'Bremst dich ab', speedMul: 0.9, bump: 0 },
+  dirt: { id: 'dirt', icon: '🟤', name: 'Erde', hint: 'Fester Boden', speedMul: 1, bump: 0, kick: null },
+  gravel: {
+    id: 'gravel', icon: '🪨', name: 'Schotter', hint: 'Holprig – du hoppelst', speedMul: 1, bump: 0.12,
+    kick: { every: [0.12, 0.3], impulse: [1.2, 2.4] },
+  },
+  grass: { id: 'grass', icon: '🌱', name: 'Gras', hint: 'Bremst dich ab', speedMul: 0.9, bump: 0, kick: null },
 };
 export const SURFACE_ORDER = ['dirt', 'gravel', 'grass'];
 

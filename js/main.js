@@ -46,7 +46,7 @@ function newGame() {
     time: 0, travelled: 0, passed: 0, spawned: 0, nextSpawnIn: 0, lastGapX: 0,
     walls: [], pickups: [], puddles: [], particles: [],
     seasonIdx: 0, prevSeasonIdx: null, seasonFade: 1,
-    surfaceAt: surfaceTrack(), surface: SURFACES.dirt,
+    surfaceAt: surfaceTrack(), surface: SURFACES.dirt, nextKick: 0, bannerAt: 0,
     player: { x: 0, vx: 0, target: 0, spin: 0, helmet: false, slippery: 0, bump: 0 },
     effects: { slowmo: 0, widen: 0 },
     wind: { force: 0, target: 0, nextGust: 4 },
@@ -89,6 +89,7 @@ function spawnWall() {
 }
 
 function showBanner(text, sub) {
+  game.bannerAt = performance.now();
   hud.banner.innerHTML = `<strong>${text}</strong><span>${sub}</span>`;
   hud.banner.classList.remove('show');
   void hud.banner.offsetWidth; // restart the CSS animation
@@ -154,10 +155,15 @@ function updatePlayer(dt, speed) {
   // spring toward the finger; ice and puddles make it loose and overshooting
   const icy = season().id === 'winter' || p.slippery > 0;
   const k = icy ? 45 : 320, c = icy ? 4.5 : 36;
-  // gravel: random kicks sideways and a constant hop
-  const kick = game.surface.bump ? (Math.random() - 0.5) * 450 : 0;
-  p.bump += (game.surface.bump * 0.12 - p.bump) * Math.min(1, dt * 8);
-  const a = k * (p.target - p.x) - c * p.vx + game.wind.force + kick;
+  // gravel: a constant hop and now and then a stone knocks you sideways
+  const { bump, kick } = game.surface;
+  p.bump += (bump - p.bump) * Math.min(1, dt * 8);
+  if (kick && (game.nextKick -= dt) <= 0) {
+    const [e0, e1] = kick.every, [i0, i1] = kick.impulse;
+    game.nextKick = e0 + Math.random() * (e1 - e0);
+    p.vx += (Math.random() < 0.5 ? -1 : 1) * (i0 + Math.random() * (i1 - i0));
+  }
+  const a = k * (p.target - p.x) - c * p.vx + game.wind.force;
   p.vx += a * dt;
   p.x += p.vx * dt;
   if (Math.abs(p.x) > limit) { p.x = Math.sign(p.x) * limit; p.vx *= -0.3; }
@@ -199,7 +205,8 @@ function update(dt) {
   const under = game.surfaceAt(game.travelled + PLAYER_Z);
   if (under.id !== game.surface.id) {
     game.surface = under;
-    showBanner(`${under.icon} ${under.name}`, under.hint);
+    // no banner for plain dirt or while another one is still showing
+    if (under.id !== 'dirt' && performance.now() - game.bannerAt > 2400) showBanner(`${under.icon} ${under.name}`, under.hint);
   }
   const speed = speedAt(game.time) * season().speedMul * game.surface.speedMul * game.slowFactor;
   const dz = speed * dt;

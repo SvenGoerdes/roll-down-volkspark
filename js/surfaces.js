@@ -5,6 +5,7 @@ import { SURFACE_ORDER } from './config.js';
 export const TILE_W = 256;
 export const TILE_H = 512;
 export const TILE_UNITS = 8;
+export const TILE_LEVELS = 4; // mip levels besides the full size
 
 const rgba = ([r, g, b], a = 1) => `rgba(${r | 0},${g | 0},${b | 0},${a})`;
 const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
@@ -47,13 +48,14 @@ function paint(ctx, id, season, rnd) {
   if (id === 'dirt') {
     const base = winter ? mix(SNOW, season.path, 0.35) : shade(season.path, 0.95);
     ctx.fillStyle = rgba(base); ctx.fillRect(0, 0, TILE_W, TILE_H);
-    blob(40, 22, 9, () => rgba(winter ? [120, 96, 74] : shade(season.path, 0.8), winter ? 0.45 : 0.35));
+    if (winter) blob(120, 7, 3, () => rgba([128, 104, 82], 0.4));
+    else blob(40, 15, 6, () => rgba(shade(season.path, 0.8), 0.3));
     speck(900, 2.2, () => rgba(shade(base, 0.72 + rnd() * 0.5), 0.55));
     blob(60, 3, 1.8, () => rgba(shade(base, 0.6), 0.6));
     if (autumn) leaves(60);
     if (winter) blob(70, 4, 2, () => rgba([255, 255, 255], 0.7));
   } else if (id === 'gravel') {
-    const base = winter ? mix(SNOW, [150, 150, 154], 0.45) : mix([146, 142, 136], season.path, 0.15);
+    const base = winter ? [150, 152, 158] : mix([146, 142, 136], season.path, 0.15);
     ctx.fillStyle = rgba(base); ctx.fillRect(0, 0, TILE_W, TILE_H);
     for (let i = 0; i < 1500; i++) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, r = 2 + rnd() * 4.2, g = 0.62 + rnd() * 0.7, rot = rnd() * 3;
@@ -62,7 +64,7 @@ function paint(ctx, id, season, rnd) {
         ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(x + 0.8, yy + 1.2, r, r * 0.8, 0, 0, 7); ctx.fill();
         ctx.fillStyle = rgba(col); ctx.beginPath(); ctx.ellipse(x, yy, r, r * 0.8, rot, 0, 7); ctx.fill();
         ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fillRect(x - r * 0.4, yy - r * 0.5, r * 0.7, r * 0.3);
-        if (winter) { ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(x - r * 0.7, yy - r * 0.8, r * 1.4, r * 0.5); }
+        if (winter && i % 3 === 0) { ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(x - r * 0.7, yy - r * 0.8, r * 1.4, r * 0.5); }
       });
     }
     if (autumn) leaves(30);
@@ -81,26 +83,42 @@ function paint(ctx, id, season, rnd) {
   }
 }
 
-export function buildGroundTiles(seasons) {
+function buildTile(season, si, k, id) {
+  const c = document.createElement('canvas');
+  c.width = TILE_W; c.height = TILE_H;
+  paint(c.getContext('2d'), id, season, rngFor(1000 * si + k + 7));
+  // smaller copies keep far rows from aliasing into streaks
+  const mips = [c];
+  for (let l = 1; l <= TILE_LEVELS; l++) {
+    const m = document.createElement('canvas');
+    m.width = TILE_W >> l; m.height = TILE_H >> l;
+    const mctx = m.getContext('2d');
+    mctx.imageSmoothingQuality = 'high';
+    mctx.drawImage(mips[l - 1], 0, 0, m.width, m.height);
+    mips.push(m);
+  }
+  return mips;
+}
+
+// Tiles fill in as they are built: `tiles[seasonId][surfaceId]` may still be missing,
+// drawGround then falls back to flat colors. The first season is ready on return,
+// the others follow one tile per frame.
+export function buildGroundTiles(seasons, first = 0) {
   const tiles = {};
+  const jobs = [];
   seasons.forEach((season, si) => {
     tiles[season.id] = {};
-    SURFACE_ORDER.forEach((id, k) => {
-      const c = document.createElement('canvas');
-      c.width = TILE_W; c.height = TILE_H;
-      paint(c.getContext('2d'), id, season, rngFor(1000 * si + k + 7));
-      // half and quarter size copies keep far rows from aliasing into streaks
-      const mips = [c];
-      for (let l = 1; l < 3; l++) {
-        const m = document.createElement('canvas');
-        m.width = TILE_W >> l; m.height = TILE_H >> l;
-        const mctx = m.getContext('2d');
-        mctx.imageSmoothingQuality = 'high';
-        mctx.drawImage(mips[l - 1], 0, 0, m.width, m.height);
-        mips.push(m);
-      }
-      tiles[season.id][id] = mips;
-    });
+    SURFACE_ORDER.forEach((id, k) => jobs.push({ season, si, k, id }));
   });
+  const run = ({ season, si, k, id }) => { tiles[season.id][id] = buildTile(season, si, k, id); };
+  jobs.filter((j) => j.si === first).forEach(run);
+  const rest = jobs.filter((j) => j.si !== first);
+  const next = () => {
+    const job = rest.shift();
+    if (!job) return;
+    run(job);
+    requestAnimationFrame(next);
+  };
+  requestAnimationFrame(next);
   return tiles;
 }

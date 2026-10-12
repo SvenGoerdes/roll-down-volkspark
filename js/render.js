@@ -1,6 +1,6 @@
 import { CORRIDOR, WALL_H, PLAYER_R, PLAYER_Z, SPAWN_Z, PLAYER_SCREEN_Y, HORIZON } from './config.js';
-import { solidSegments } from './logic.js';
-import { TILE_W, TILE_H, TILE_UNITS } from './surfaces.js';
+import { solidSegments, stripSource } from './logic.js';
+import { TILE_W, TILE_H, TILE_UNITS, TILE_LEVELS } from './surfaces.js';
 
 const BG_RATIO = 685 / 900;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -36,6 +36,7 @@ export function drawBackground(ctx, view, bg, prevBg, fade, playerX) {
 export function drawGround(ctx, view, season, travelled, surfaceAt, tiles) {
   const { W, H, horizonY, F, CH, cx } = view;
   const half = CORRIDOR / 2;
+  const fogCss = rgb(season.fog);
   for (let y = horizonY; y < H; y += 2) {
     const z = (CH * F) / (y - horizonY + 1);
     const fog = clamp((z - 12) / 70, 0, 1) ** 0.7;
@@ -46,17 +47,30 @@ export function drawGround(ctx, view, season, travelled, surfaceAt, tiles) {
     ctx.fillRect(0, y, W, 2);
     ctx.fillStyle = rgb(mix(season.grass, season.fog, fog), stripe * 0.78);
     ctx.fillRect(cx - pw - edge, y, pw * 2 + edge * 2, 2);
-    const mips = tiles && tiles[season.id][surfaceAt(z + travelled).id];
+    const mips = tiles && tiles[season.id]?.[surfaceAt(z + travelled).id];
     if (mips) {
-      // map the tile in perspective: one strip of it per screen row
-      const w0 = z + travelled, w1 = (CH * F) / (y + 2 - horizonY + 1) + travelled;
-      const sh = Math.min(TILE_H / 2, Math.max(1, ((w0 - w1) / TILE_UNITS) * TILE_H));
-      const sy = Math.min(TILE_H - sh, ((((w1 % TILE_UNITS) + TILE_UNITS) % TILE_UNITS) / TILE_UNITS) * TILE_H);
-      const l = sh >= 4 ? 2 : sh >= 2 ? 1 : 0;
-      ctx.drawImage(mips[l], 0, sy / 2 ** l, TILE_W >> l, sh / 2 ** l, cx - pw, y, pw * 2, 2);
-      if (fog > 0.02) {
-        ctx.fillStyle = `rgba(${season.fog[0]},${season.fog[1]},${season.fog[2]},${fog})`;
+      if (fog > 0.97) {
+        ctx.fillStyle = fogCss;
         ctx.fillRect(cx - pw, y, pw * 2, 2);
+        continue;
+      }
+      // map the tile in perspective: one slice of it per screen row
+      const { level, parts } = stripSource(
+        (CH * F) / (y + 2 - horizonY + 1) + travelled, z + travelled, TILE_UNITS, TILE_H, TILE_LEVELS,
+      );
+      const q = 2 ** level;
+      for (const p of parts) {
+        ctx.drawImage(mips[level], 0, p.sy / q, TILE_W >> level, p.sh / q, cx - pw, y + 2 * p.f0, pw * 2, 2 * (p.f1 - p.f0));
+      }
+      if (stripe < 1) {
+        ctx.fillStyle = 'rgba(0,0,0,0.04)';
+        ctx.fillRect(cx - pw, y, pw * 2, 2);
+      }
+      if (fog > 0.02) {
+        ctx.globalAlpha = fog;
+        ctx.fillStyle = fogCss;
+        ctx.fillRect(cx - pw, y, pw * 2, 2);
+        ctx.globalAlpha = 1;
       }
       continue;
     }
