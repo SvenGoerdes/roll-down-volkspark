@@ -1,4 +1,4 @@
-import { IDEAS_URL } from './config.js';
+import { WORKER_URL } from './config.js';
 
 const NAME_KEY = 'rollDownName';
 const readName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
@@ -35,7 +35,7 @@ export function setupIdeas(context) {
     status.textContent = 'Wird gesendet …';
     status.className = '';
     try {
-      const res = await fetch(IDEAS_URL, {
+      const res = await fetch(`${WORKER_URL}/ideas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text.value, name, website: form.elements.website.value, ...context() }),

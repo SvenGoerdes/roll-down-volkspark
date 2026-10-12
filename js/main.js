@@ -4,6 +4,7 @@ import {
 import { speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt } from './logic.js';
 import { buildSeasonBackgrounds } from './seasons.js';
 import { setupIdeas } from './ideas.js';
+import { setupLeaderboard } from './leaderboard.js';
 import {
   computeView, drawBackground, drawGround, drawWall, drawPuddle, drawPickup, drawPlayer, drawParticles,
 } from './render.js';
@@ -28,7 +29,7 @@ const BEST_KEY = 'rollDownBest';
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
 const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch { /* private mode */ } };
 
-let view, backgrounds, gabion;
+let view, backgrounds, gabion, board;
 let state = 'loading';
 const setState = (s) => { state = s; document.body.dataset.state = s; };
 let game;
@@ -120,6 +121,7 @@ function crash() {
   setState('over');
   const best = Math.max(readBest(), game.passed);
   writeBest(best);
+  board.offer(game.passed, season().name);
   hud.final.textContent = game.passed;
   hud.best.textContent = best;
   setTimeout(() => hud.over.classList.add('show'), 500);
@@ -297,6 +299,7 @@ function frame(now) {
 
 function start() {
   game = newGame();
+  board.offer(null);
   setState('playing');
   hud.start.classList.remove('show');
   hud.over.classList.remove('show');
@@ -304,7 +307,7 @@ function start() {
 }
 
 function onPointerDown(e) {
-  if (e.target?.closest?.('#ideas')) return;
+  if (e.target?.closest?.('#ideas, #board, #over button')) return;
   if (state === 'start') start();
   else if (state === 'over') {
     if (hud.over.dataset.ready === '1') start();
@@ -330,7 +333,7 @@ function bindInput() {
   window.addEventListener('pointerup', () => { input.dragging = false; });
   window.addEventListener('pointercancel', () => { input.dragging = false; });
   window.addEventListener('keydown', (e) => {
-    if (e.target.closest?.('#ideas')) return;
+    if (e.target.closest?.('#ideas, #board, #over button')) return;
     input.keys.add(e.key);
     if ((e.key === ' ' || e.key === 'Enter') && state !== 'playing') onPointerDown({ clientX: 0 });
   });
@@ -352,6 +355,7 @@ async function init() {
     return;
   }
   game = newGame();
+  board = setupLeaderboard();
   setupIdeas(() => ({ score: game.passed, season: season().name }));
   hud.bestStart.textContent = readBest();
   hud.start.classList.add('show');

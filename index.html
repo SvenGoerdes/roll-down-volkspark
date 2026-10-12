@@ -53,6 +53,7 @@
       <h2>Autsch! 🧱</h2>
       <p class="result"><span id="final">0</span> Mauern</p>
       <p class="small">Rekord: <span id="best">0</span></p>
+      <button id="submit-score" type="button" hidden>🏆 In Bestenliste eintragen</button>
       <p class="tap">Tippen für nächste Runde</p>
     </section>
 
@@ -70,6 +71,23 @@
         <input name="website" class="hp" tabindex="-1" aria-hidden="true">
         <button type="submit">Abschicken</button>
         <p id="idea-status" role="status"></p>
+      </form>
+    </div>
+
+    <div id="board">
+      <button id="board-btn" type="button" aria-label="Bestenliste">🏆<span>Bestenliste</span></button>
+      <div class="backdrop"></div>
+      <form id="board-form" class="sheet" autocomplete="off">
+        <div class="sheet-head">
+          <h3>🏆 Bestenliste</h3>
+          <button id="board-close" type="button" aria-label="Schließen">✕</button>
+        </div>
+        <div id="board-entry" hidden>
+          <input name="name" maxlength="20" required placeholder="Dein Name">
+          <button type="submit"></button>
+        </div>
+        <p id="board-status" role="status"></p>
+        <ol id="board-list"></ol>
       </form>
     </div>
   </main>
