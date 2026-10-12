@@ -37,6 +37,15 @@ export const SEASONS = [
   },
 ];
 
+// Path surfaces change every SURFACE_LEN world units (see createSurfaceTrack)
+export const SURFACE_LEN = 40;
+export const SURFACES = {
+  dirt: { id: 'dirt', icon: '🟤', name: 'Erde', hint: 'Fester Boden', speedMul: 1, bump: 0 },
+  gravel: { id: 'gravel', icon: '🪨', name: 'Schotter', hint: 'Holprig – du hoppelst', speedMul: 1, bump: 1 },
+  grass: { id: 'grass', icon: '🌱', name: 'Gras', hint: 'Bremst dich ab', speedMul: 0.9, bump: 0 },
+};
+export const SURFACE_ORDER = ['dirt', 'gravel', 'grass'];
+
 export const POWERUPS = {
   helmet: { icon: '⛑️', name: 'Helm', hint: 'Übersteht einen Crash', duration: 0 },
   slowmo: { icon: '⏳', name: 'Zeitlupe', hint: 'Alles langsamer', duration: 5 },

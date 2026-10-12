@@ -1,7 +1,7 @@
 import { test, expect } from 'bun:test';
 import { CORRIDOR, WALL_EXT, SEASONS } from '../js/config.js';
 import {
-  speedAt, gapWidthAt, spacingAt, seasonIndexAt, makeGaps, widened, passesWall, solidSegments,
+  speedAt, gapWidthAt, spacingAt, seasonIndexAt, makeGaps, widened, passesWall, solidSegments, createSurfaceTrack,
 } from '../js/logic.js';
 
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
@@ -54,4 +54,20 @@ test('widened gap is bigger but capped', () => {
 test('solid segments cover everything but the gaps', () => {
   const segs = solidSegments([{ x: 2, w: 2 }, { x: -2, w: 1 }]);
   expect(segs).toEqual([[-WALL_EXT, -2.5], [-1.5, 1], [3, WALL_EXT]]);
+});
+
+test('surface track starts on dirt, is stable and never repeats back to back', () => {
+  const track = createSurfaceTrack(Math.random);
+  expect(track(0)).toBe('dirt');
+  expect(track(-5)).toBe('dirt');
+  const first = Array.from({ length: 200 }, (_, i) => track(i * 10));
+  expect(Array.from({ length: 200 }, (_, i) => track(i * 10))).toEqual(first);
+  const secs = [...new Set(first.map((_, i) => track(i * 40)))];
+  expect(secs.length).toBe(3);
+  for (let i = 1; i < 100; i++) expect(track(i * 40 + 1)).not.toBe(track((i - 1) * 40 + 1));
+});
+
+test('surface track follows the rng', () => {
+  expect(createSurfaceTrack(() => 0.1)(40)).toBe('gravel');
+  expect(createSurfaceTrack(() => 0.9)(40)).toBe('grass');
 });

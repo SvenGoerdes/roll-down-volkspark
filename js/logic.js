@@ -1,4 +1,4 @@
-import { CORRIDOR, WALL_EXT } from './config.js';
+import { CORRIDOR, WALL_EXT, SURFACE_LEN, SURFACE_ORDER } from './config.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -41,4 +41,14 @@ export function solidSegments(gaps) {
   }
   segs.push([from, WALL_EXT]);
   return segs.filter(([a, b]) => b > a);
+}
+
+// Endless sequence of path surfaces by distance; starts on dirt, never repeats back to back.
+export function createSurfaceTrack(rng, order = SURFACE_ORDER, len = SURFACE_LEN) {
+  const seq = [0];
+  return (dist) => {
+    const i = Math.max(0, Math.floor(dist / len));
+    while (seq.length <= i) seq.push((seq[seq.length - 1] + 1 + (rng() < 0.5 ? 0 : 1)) % order.length);
+    return order[seq[i]];
+  };
 }

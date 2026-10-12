@@ -1,5 +1,6 @@
 import { CORRIDOR, WALL_H, PLAYER_R, PLAYER_Z, SPAWN_Z, PLAYER_SCREEN_Y, HORIZON } from './config.js';
 import { solidSegments } from './logic.js';
+import { TILE_W, TILE_H, TILE_UNITS } from './surfaces.js';
 
 const BG_RATIO = 685 / 900;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -32,7 +33,7 @@ export function drawBackground(ctx, view, bg, prevBg, fade, playerX) {
   ctx.globalAlpha = 1;
 }
 
-export function drawGround(ctx, view, season, travelled) {
+export function drawGround(ctx, view, season, travelled, surfaceAt, tiles) {
   const { W, H, horizonY, F, CH, cx } = view;
   const half = CORRIDOR / 2;
   for (let y = horizonY; y < H; y += 2) {
@@ -45,6 +46,20 @@ export function drawGround(ctx, view, season, travelled) {
     ctx.fillRect(0, y, W, 2);
     ctx.fillStyle = rgb(mix(season.grass, season.fog, fog), stripe * 0.78);
     ctx.fillRect(cx - pw - edge, y, pw * 2 + edge * 2, 2);
+    const mips = tiles && tiles[season.id][surfaceAt(z + travelled).id];
+    if (mips) {
+      // map the tile in perspective: one strip of it per screen row
+      const w0 = z + travelled, w1 = (CH * F) / (y + 2 - horizonY + 1) + travelled;
+      const sh = Math.min(TILE_H / 2, Math.max(1, ((w0 - w1) / TILE_UNITS) * TILE_H));
+      const sy = Math.min(TILE_H - sh, ((((w1 % TILE_UNITS) + TILE_UNITS) % TILE_UNITS) / TILE_UNITS) * TILE_H);
+      const l = sh >= 4 ? 2 : sh >= 2 ? 1 : 0;
+      ctx.drawImage(mips[l], 0, sy / 2 ** l, TILE_W >> l, sh / 2 ** l, cx - pw, y, pw * 2, 2);
+      if (fog > 0.02) {
+        ctx.fillStyle = `rgba(${season.fog[0]},${season.fog[1]},${season.fog[2]},${fog})`;
+        ctx.fillRect(cx - pw, y, pw * 2, 2);
+      }
+      continue;
+    }
     ctx.fillStyle = rgb(mix(season.path, season.fog, fog), stripe);
     ctx.fillRect(cx - pw, y, pw * 2, 2);
   }
@@ -133,7 +148,7 @@ export function drawPickup(ctx, view, item, icon, time) {
 
 // A person curled into a ball, tumbling down the hill.
 export function drawPlayer(ctx, view, player, time) {
-  const hop = Math.abs(Math.sin(player.spin * 0.5)) * 0.18;
+  const hop = Math.abs(Math.sin(player.spin * 0.5)) * (0.18 + (player.bump || 0));
   const ground = project(view, player.x, PLAYER_Z);
   const { sx, sy, s } = project(view, player.x, PLAYER_Z, PLAYER_R + hop);
   const r = PLAYER_R * s;

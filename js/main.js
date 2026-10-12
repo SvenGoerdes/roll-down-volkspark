@@ -1,8 +1,9 @@
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON, SURFACES,
 } from './config.js';
-import { speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt } from './logic.js';
+import { speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, createSurfaceTrack } from './logic.js';
 import { buildSeasonBackgrounds } from './seasons.js';
+import { buildGroundTiles } from './surfaces.js';
 import { setupIdeas } from './ideas.js';
 import {
   computeView, drawBackground, drawGround, drawWall, drawPuddle, drawPickup, drawPlayer, drawParticles,
@@ -28,19 +29,25 @@ const BEST_KEY = 'rollDownBest';
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
 const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch { /* private mode */ } };
 
-let view, backgrounds, gabion;
+let view, backgrounds, gabion, groundTiles;
 let state = 'loading';
 const setState = (s) => { state = s; document.body.dataset.state = s; };
 let game;
 let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
 
+const surfaceTrack = () => {
+  const track = createSurfaceTrack(Math.random);
+  return (dist) => SURFACES[track(dist)];
+};
+
 function newGame() {
   return {
     time: 0, travelled: 0, passed: 0, spawned: 0, nextSpawnIn: 0, lastGapX: 0,
     walls: [], pickups: [], puddles: [], particles: [],
     seasonIdx: 0, prevSeasonIdx: null, seasonFade: 1,
-    player: { x: 0, vx: 0, target: 0, spin: 0, helmet: false, slippery: 0 },
+    surfaceAt: surfaceTrack(), surface: SURFACES.dirt,
+    player: { x: 0, vx: 0, target: 0, spin: 0, helmet: false, slippery: 0, bump: 0 },
     effects: { slowmo: 0, widen: 0 },
     wind: { force: 0, target: 0, nextGust: 4 },
     shake: 0, flash: 0, slowFactor: 1,
@@ -147,7 +154,10 @@ function updatePlayer(dt, speed) {
   // spring toward the finger; ice and puddles make it loose and overshooting
   const icy = season().id === 'winter' || p.slippery > 0;
   const k = icy ? 45 : 320, c = icy ? 4.5 : 36;
-  const a = k * (p.target - p.x) - c * p.vx + game.wind.force;
+  // gravel: random kicks sideways and a constant hop
+  const kick = game.surface.bump ? (Math.random() - 0.5) * 450 : 0;
+  p.bump += (game.surface.bump * 0.12 - p.bump) * Math.min(1, dt * 8);
+  const a = k * (p.target - p.x) - c * p.vx + game.wind.force + kick;
   p.vx += a * dt;
   p.x += p.vx * dt;
   if (Math.abs(p.x) > limit) { p.x = Math.sign(p.x) * limit; p.vx *= -0.3; }
@@ -186,7 +196,12 @@ function update(dt) {
   game.slowFactor += ((eff.slowmo > 0 ? 0.55 : 1) - game.slowFactor) * Math.min(1, dt * 4);
   game.seasonFade = Math.min(1, game.seasonFade + dt / 1.5);
 
-  const speed = speedAt(game.time) * season().speedMul * game.slowFactor;
+  const under = game.surfaceAt(game.travelled + PLAYER_Z);
+  if (under.id !== game.surface.id) {
+    game.surface = under;
+    showBanner(`${under.icon} ${under.name}`, under.hint);
+  }
+  const speed = speedAt(game.time) * season().speedMul * game.surface.speedMul * game.slowFactor;
   const dz = speed * dt;
   game.travelled += dz;
 
@@ -261,7 +276,7 @@ function render() {
     ctx.translate((Math.random() - 0.5) * m, (Math.random() - 0.5) * m);
   }
   drawBackground(ctx, view, backgrounds[s.id], prev && backgrounds[prev.id], game.seasonFade, game.player.x);
-  drawGround(ctx, view, s, game.travelled);
+  drawGround(ctx, view, s, game.travelled, game.surfaceAt, groundTiles);
 
   const widenFactor = game.effects.widen > 0 ? 1.6 : 1;
   const things = [
@@ -346,6 +361,7 @@ async function init() {
     const [park, tex] = await Promise.all([loadImage('assets/park.jpg'), loadImage('assets/gabion.jpg')]);
     gabion = tex;
     backgrounds = buildSeasonBackgrounds(park, SEASONS);
+    groundTiles = buildGroundTiles(SEASONS);
   } catch (err) {
     hud.start.querySelector('.tap').textContent = 'Laden fehlgeschlagen – bitte neu laden.';
     console.error(err);
