@@ -2,3 +2,4 @@
 *.HEIC
 node_modules/
 .wrangler/
+.claude/

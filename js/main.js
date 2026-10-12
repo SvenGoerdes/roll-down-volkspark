@@ -82,7 +82,11 @@ function spawnWall() {
 }
 
 function showBanner(text, sub) {
-  hud.banner.innerHTML = `<strong>${text}</strong><span>${sub}</span>`;
+  const strong = document.createElement('strong');
+  const span = document.createElement('span');
+  strong.textContent = text;
+  span.textContent = sub;
+  hud.banner.replaceChildren(strong, span);
   hud.banner.classList.remove('show');
   void hud.banner.offsetWidth; // restart the CSS animation
   hud.banner.classList.add('show');
@@ -247,7 +251,7 @@ function updateHud(speed) {
       parts.push(`<span class="pw">${POWERUPS[key].icon}<i style="width:${pct}%"></i></span>`);
     }
   }
-  hud.powers.innerHTML = parts.join('');
+  hud.powers.innerHTML = parts.join(''); // only our own icons, never player text
   const wf = game.wind.force;
   hud.wind.textContent = Math.abs(wf) > 40 ? (wf > 0 ? '💨 →' : '← 💨') : '';
 }
