@@ -69,3 +69,9 @@ test('skidStrength: needs slip and sideways speed', () => {
   expect(skidStrength(-10, 1)).toBe(1);
   expect(skidStrength(3.7, 1)).toBeCloseTo(0.5);
 });
+
+test('slip edge cases', () => {
+  expect(slipAmount(true, 0.3)).toBe(1);
+  expect(skidStrength(10, 0.5)).toBeCloseTo(0.5);
+  expect(skidStrength(1.2, 1)).toBe(0);
+});

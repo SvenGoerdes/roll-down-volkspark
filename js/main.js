@@ -39,7 +39,7 @@ const input = { dragging: false, lastX: 0, keys: new Set() };
 function newGame() {
   return {
     time: 0, travelled: 0, passed: 0, spawned: 0, nextSpawnIn: 0, lastGapX: 0,
-    walls: [], pickups: [], puddles: [], particles: [], skids: [], spray: [],
+    walls: [], pickups: [], puddles: [], particles: [], skids: [], spray: [], skidding: false,
     seasonIdx: 0, prevSeasonIdx: null, seasonFade: 1,
     player: { x: 0, vx: 0, target: 0, spin: 0, helmet: false, slippery: 0, slip: 0 },
     effects: { slowmo: 0, widen: 0 },
@@ -161,24 +161,26 @@ function updatePlayer(dt, speed) {
 function updateSkids(dt, dz) {
   const p = game.player, str = skidStrength(p.vx, p.slip);
   for (const m of game.skids) m.z -= dz;
-  game.skids = game.skids.filter((m) => m.z > 2);
+  while (game.skids.length && game.skids[0].z <= 2) game.skids.shift();
   if (str > 0) {
-    game.skids.push({ x: p.x, z: PLAYER_Z, a: str });
+    game.skids.push({ x: p.x, z: PLAYER_Z, a: str, brk: !game.skidding });
     if (game.skids.length > 70) game.skids.shift();
     const ground = project(view, p.x, PLAYER_Z);
     const snow = season().id === 'winter';
-    const n = Math.ceil(str * 2.5);
+    const k = view.W / 390, n = Math.ceil(str * 2.5);
     for (let i = 0; i < n; i++) {
       game.spray.push({
         x: ground.sx, y: ground.sy - ground.s * 0.3,
-        vx: -Math.sign(p.vx) * (30 + Math.random() * 90) * (0.5 + str), vy: -(40 + Math.random() * 90),
+        vx: -Math.sign(p.vx) * (30 + Math.random() * 90) * (0.5 + str) * k, vy: -(40 + Math.random() * 90) * k,
         size: ground.s * (0.05 + Math.random() * 0.07), life: 0.5, max: 0.5,
         color: snow ? '#ffffff' : '#bfe0ff',
       });
     }
   }
-  for (const s of game.spray) { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 420 * dt; s.life -= dt; }
-  game.spray = game.spray.filter((s) => s.life > 0).slice(-60);
+  for (const s of game.spray) { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 420 * (view.W / 390) * dt; s.life -= dt; }
+  game.skidding = str > 0;
+  game.spray = game.spray.filter((s) => s.life > 0);
+  if (game.spray.length > 60) game.spray.splice(0, game.spray.length - 60);
 }
 
 function updateParticles(dt) {
@@ -292,7 +294,7 @@ function render() {
   }
   drawBackground(ctx, view, backgrounds[s.id], prev && backgrounds[prev.id], game.seasonFade, game.player.x);
   drawGround(ctx, view, s, game.travelled);
-  if (s.id === 'winter') drawIceSheen(ctx, view, game.travelled);
+  if (s.id === 'winter') drawIceSheen(ctx, view, game.travelled, game.seasonFade);
   drawSkidMarks(ctx, view, game.skids, s.id === 'winter');
 
   const widenFactor = game.effects.widen > 0 ? 1.6 : 1;
