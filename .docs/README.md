@@ -5,6 +5,7 @@ Roll Down Volkspark is a browser game for phones. A kid tumbles down the hill in
 | File | What's in it |
 |---|---|
 | [architecture.md](architecture.md) | How the game and the worker are built today |
+| [art-bible.md](art-bible.md) | The art style and rules for making game art |
 | [operations.md](operations.md) | Run, test, deploy, secrets, infrastructure IDs |
 | [engineering-principles.md](engineering-principles.md) | How we work: KISS, tests, reviews, commits |
 | [history.md](history.md) | Timeline: what changed when, by whom, which commits |
