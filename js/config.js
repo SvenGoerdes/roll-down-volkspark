@@ -51,11 +51,13 @@ export const SURFACES = {
 };
 export const SURFACE_ORDER = ['dirt', 'gravel', 'grass'];
 
+// Each power-up has its own color, so you can tell them apart from far away.
 export const POWERUPS = {
-  helmet: { icon: '⛑️', name: 'Helm', hint: 'Übersteht einen Crash', duration: 0 },
-  slowmo: { icon: '⏳', name: 'Zeitlupe', hint: 'Alles langsamer', duration: 5 },
-  widen: { icon: '↔️', name: 'Breite Lücken', hint: 'Lücken größer', duration: 7 },
+  helmet: { id: 'helmet', icon: '⛑️', name: 'Helm', hint: 'Übersteht einen Crash', duration: 0, color: '#e23b3b', glow: '255,90,80' },
+  slowmo: { id: 'slowmo', icon: '⏳', name: 'Zeitlupe', hint: 'Alles langsamer', duration: 5, color: '#2f7de1', glow: '90,160,255' },
+  widen: { id: 'widen', icon: '↔️', name: 'Breite Lücken', hint: 'Lücken größer', duration: 7, color: '#1f9d55', glow: '80,220,140' },
 };
+export const MAX_HELMETS = 3;
 export const POWERUP_CHANCE = 0.3;
 
 // Cloudflare Worker: ideas → GitHub issues, shared leaderboard (see worker/)

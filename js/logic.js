@@ -9,6 +9,9 @@ export const gapWidthAt = (n) => Math.max(1.9, 3.2 - n * 0.022);
 
 export const spacingAt = (n) => Math.max(10, 18 - n * 0.08);
 
+// Helmets stack as extra lives, up to `max`.
+export const addHelmet = (n, max) => Math.min(max, n + 1);
+
 export const seasonIndexAt = (n, perSeason, count) => Math.floor(n / perSeason) % count;
 
 // Plants past the last wall of the current season already show the next one.

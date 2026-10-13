@@ -232,19 +232,19 @@ export function drawPuddle(ctx, view, p) {
   ctx.globalAlpha = 1;
 }
 
-export function drawPickup(ctx, view, item, icon, time) {
+export function drawPickup(ctx, view, item, look, time) {
   const bob = 0.7 + Math.sin(time * 4 + item.z) * 0.15;
   const { sx, sy, s } = project(view, item.x, item.z, bob);
-  const r = 0.55 * s;
+  const r = 0.72 * s;
   const fade = fadeIn(item.z), pulse = 0.5 + Math.sin(time * 6 + item.z) * 0.5;
   const ground = project(view, item.x, item.z);
   ctx.globalAlpha = fade * 0.5;
   ctx.drawImage(softDot('0,0,0'), ground.sx - r, ground.sy - r * 0.25, r * 2, r * 0.5);
   ctx.globalAlpha = fade * (0.35 + pulse * 0.3);
-  ctx.drawImage(softDot('255,214,80'), sx - r * 2.3, sy - r * 2.3, r * 4.6, r * 4.6);
+  ctx.drawImage(softDot(look.glow), sx - r * 2.3, sy - r * 2.3, r * 4.6, r * 4.6);
   ctx.globalAlpha = fade;
   const d = r * 2.37 * (1 + pulse * 0.05);
-  ctx.drawImage(pickupSprite(icon), sx - d / 2, sy - d / 2, d, d);
+  ctx.drawImage(pickupSprite(look.id, look.color), sx - d / 2, sy - d / 2, d, d);
   if (r > 5) {
     ctx.fillStyle = '#fff';
     for (let i = 0; i < 2; i++) {
@@ -282,7 +282,7 @@ export function drawPlayer(ctx, view, player, time, speed = 0) {
 
   const dpr = ctx.getTransform().a;
   const spin = player.dazed ? -0.4 : player.spin;
-  const body = kidSprite(r, dpr, player.helmet, player.dazed), d = body.width / dpr;
+  const body = kidSprite(r, dpr, player.helmets > 0, player.dazed), d = body.width / dpr;
   // squash on every touchdown, stretch when swerving
   const squash = player.dazed ? 0 : (1 - hop / hopMax) ** 6 * 0.11;
   const swerve = clamp(Math.abs(player.vx) * 0.008, 0, 0.08);

@@ -1,8 +1,8 @@
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON, SURFACES,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, MAX_HELMETS, WALLS_PER_SEASON, SURFACES,
 } from './config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, seasonAhead, slipAmount, skidStrength, createSurfaceTrack,
+  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, seasonAhead, slipAmount, skidStrength, createSurfaceTrack, addHelmet,
 } from './logic.js';
 import { buildSeasonBackgrounds } from './seasons.js';
 import { buildGroundTiles } from './surfaces.js';
@@ -56,7 +56,7 @@ function newGame() {
     walls: [], pickups: [], puddles: [], particles: [], skids: [], spray: [], skidding: false, fx: [],
     seasonIdx: 0, prevSeasonIdx: null, seasonFade: 1,
     surfaceAt: surfaceTrack(), surface: SURFACES.dirt, nextKick: 0, bannerAt: 0,
-    player: { x: 0, vx: 0, target: 0, spin: 0, helmet: false, slippery: 0, slip: 0, bump: 0 },
+    player: { x: 0, vx: 0, target: 0, spin: 0, helmets: 0, slippery: 0, slip: 0, bump: 0 },
     effects: { slowmo: 0, widen: 0 },
     wind: { force: 0, target: 0, nextGust: 4 },
     shake: 0, flash: 0, slowFactor: 1,
@@ -134,21 +134,27 @@ function collect(type) {
   const p = POWERUPS[type];
   const at = playerSpot();
   burstSparkles(game.fx, at.sx, at.sy, at.s / 45);
-  if (type === 'helmet') game.player.helmet = true;
-  else game.effects[type] = p.duration;
-  showBanner(`${p.icon} ${p.name}`, p.hint);
+  if (type === 'helmet') {
+    const before = game.player.helmets;
+    game.player.helmets = addHelmet(before, MAX_HELMETS);
+    const hint = game.player.helmets === before ? `Maximal ${MAX_HELMETS} Helme` : `${game.player.helmets} von ${MAX_HELMETS} – je ein Crash frei`;
+    showBanner(`${p.icon} ${p.name}`, hint);
+  } else {
+    game.effects[type] = p.duration;
+    showBanner(`${p.icon} ${p.name}`, p.hint);
+  }
   navigator.vibrate?.(30);
 }
 
 function crash() {
   const at = playerSpot();
   burstStones(game.fx, at.sx, at.sy, at.s / 45);
-  if (game.player.helmet) {
-    game.player.helmet = false;
+  if (game.player.helmets > 0) {
+    game.player.helmets--;
     game.shake = 0.3;
     game.flash = 0.25;
     navigator.vibrate?.(80);
-    showBanner('⛑️ Helm kaputt', 'Glück gehabt!');
+    showBanner('⛑️ Helm kaputt', game.player.helmets ? `Noch ${game.player.helmets} übrig` : 'Glück gehabt!');
     return;
   }
   game.shake = 0.5;
@@ -329,12 +335,12 @@ function updateHud(speed) {
   const s = season();
   hud.season.textContent = `${s.icon} ${s.name}`;
   const parts = [];
-  if (game.player.helmet) parts.push(`<span class="pw">${POWERUPS.helmet.icon}</span>`);
+  for (let i = 0; i < game.player.helmets; i++) parts.push(`<span class="pw helmet">${POWERUPS.helmet.icon}</span>`);
   for (const key of ['slowmo', 'widen']) {
     const left = game.effects[key];
     if (left > 0) {
       const pct = (left / POWERUPS[key].duration) * 100;
-      parts.push(`<span class="pw">${POWERUPS[key].icon}<i style="width:${pct}%"></i></span>`);
+      parts.push(`<span class="pw ${key}">${POWERUPS[key].icon}<i style="width:${pct}%"></i></span>`);
     }
   }
   hud.powers.innerHTML = parts.join(''); // only our own icons, never player text
@@ -362,7 +368,7 @@ function drawThing(o, look) {
       drawWall(ctx, view, o.z, gaps, gabion, o.snowy, look.s.fog);
       break;
     }
-    case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type].icon, game.time); break;
+    case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time); break;
     default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0);
   }
 }

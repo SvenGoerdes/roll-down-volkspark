@@ -2,7 +2,7 @@ import { test, expect } from 'bun:test';
 import { CORRIDOR, WALL_EXT, SEASONS } from '../js/config.js';
 import {
   speedAt, gapWidthAt, spacingAt, seasonIndexAt, makeGaps, widened, passesWall, solidSegments, slipAmount, skidStrength,
-  createSurfaceTrack, stripSource, seasonAhead,
+  createSurfaceTrack, stripSource, addHelmet, seasonAhead,
 } from '../js/logic.js';
 
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
@@ -137,4 +137,10 @@ test('stripSource picks a coarser mip for rows that cover more texture', () => {
   expect(stripSource(1, 1.07, 8, 512, 4).level).toBe(2);
   expect(stripSource(1, 20, 8, 512, 4).level).toBe(4);
   expect(stripSource(1, 1.07, 8, 512, 1).level).toBe(1);
+});
+
+test('helmets stack up to the cap', () => {
+  expect(addHelmet(0, 3)).toBe(1);
+  expect(addHelmet(2, 3)).toBe(3);
+  expect(addHelmet(3, 3)).toBe(3);
 });

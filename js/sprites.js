@@ -239,32 +239,76 @@ export const hedgeSprite = (season) => memo(`hedge:${season.id}`, () => {
 export const BUSH_ASPECT = BUSH.h / BUSH.w;
 export const TREE_ASPECT = TREE.h / TREE.w;
 
-// Glossy bubble around a power-up emoji.
-export const pickupSprite = (icon) => memo(`pickup:${icon}`, () => {
+// White symbol per power-up, drawn as shapes so it reads at any size.
+const GLYPHS = {
+  helmet(g, color) {
+    g.beginPath();
+    g.arc(64, 74, 32, Math.PI, 0);
+    g.closePath();
+    g.fill();
+    g.stroke();
+    g.beginPath();
+    g.roundRect(24, 72, 80, 11, 5);
+    g.fill();
+    g.stroke();
+    g.fillStyle = color;
+    g.fillRect(59, 47, 10, 22);
+    g.fillRect(53, 53, 22, 10);
+  },
+  slowmo(g, color) {
+    g.beginPath();
+    g.moveTo(40, 34); g.lineTo(88, 34); g.lineTo(64, 64);
+    g.lineTo(88, 94); g.lineTo(40, 94); g.lineTo(64, 64);
+    g.closePath();
+    g.fill();
+    g.stroke();
+    g.fillStyle = color;
+    g.beginPath();
+    g.moveTo(64, 72); g.lineTo(80, 90); g.lineTo(48, 90);
+    g.closePath();
+    g.fill();
+    g.fillStyle = '#fff';
+    g.fillRect(34, 28, 60, 8);
+    g.fillRect(34, 92, 60, 8);
+  },
+  widen(g) {
+    g.beginPath();
+    g.moveTo(22, 64); g.lineTo(46, 40); g.lineTo(46, 55); g.lineTo(82, 55); g.lineTo(82, 40);
+    g.lineTo(106, 64); g.lineTo(82, 88); g.lineTo(82, 73); g.lineTo(46, 73); g.lineTo(46, 88);
+    g.closePath();
+    g.fill();
+    g.stroke();
+  },
+};
+
+// Glossy colored bubble around a power-up symbol.
+export const pickupSprite = (type, color) => memo(`pickup:${type}`, () => {
   const c = makeCanvas(128, 128), g = c.getContext('2d');
   const body = g.createRadialGradient(46, 40, 6, 64, 64, 56);
   body.addColorStop(0, '#ffffff');
-  body.addColorStop(0.6, '#fff4cf');
-  body.addColorStop(1, '#ffd659');
+  body.addColorStop(0.35, color);
+  body.addColorStop(1, color);
   g.fillStyle = body;
   g.beginPath();
   g.arc(64, 64, 54, 0, TAU);
   g.fill();
-  g.lineWidth = 7;
-  g.strokeStyle = '#f2a713';
-  g.stroke();
-  g.lineWidth = 2;
-  g.strokeStyle = 'rgba(90,50,0,0.55)';
+  g.fillStyle = 'rgba(0,0,0,0.18)';
   g.beginPath();
-  g.arc(64, 64, 58, 0, TAU);
-  g.stroke();
-  g.font = '62px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillText(icon, 64, 68);
-  g.fillStyle = 'rgba(255,255,255,0.7)';
+  g.arc(64, 64, 54, 0.15 * Math.PI, 0.85 * Math.PI);
+  g.fill();
+  g.lineWidth = 6;
+  g.strokeStyle = '#fff';
   g.beginPath();
-  g.ellipse(46, 34, 20, 10, -0.6, 0, TAU);
+  g.arc(64, 64, 55, 0, TAU);
+  g.stroke();
+  g.fillStyle = '#fff';
+  g.strokeStyle = 'rgba(0,0,0,0.35)';
+  g.lineWidth = 3;
+  g.lineJoin = 'round';
+  GLYPHS[type](g, color);
+  g.fillStyle = 'rgba(255,255,255,0.55)';
+  g.beginPath();
+  g.ellipse(44, 32, 18, 8, -0.6, 0, TAU);
   g.fill();
   return c;
 });
