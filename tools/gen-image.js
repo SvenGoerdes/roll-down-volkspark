@@ -1,5 +1,5 @@
 // Generate one image.
-// bun tools/gen-image.js <out.png> "<prompt>" [--ref img.jpg]… [--model id]
+// bun tools/gen-image.js <out.png> "<prompt>" [--ref img.jpg]… [--model id] [--aspect 1:1] [--size 2K]
 // Default: Nano Banana 2.1 straight from Google (GEMINI_API_KEY). Any other model id goes
 // through OpenRouter (OPENROUTER_API_KEY), e.g. openai/gpt-image-2.5-sunburst (ADR 0013).
 const DEFAULT_MODEL = 'gemini/gemini-nano-banana-2.1';
@@ -7,15 +7,19 @@ const DEFAULT_MODEL = 'gemini/gemini-nano-banana-2.1';
 const args = process.argv.slice(2);
 const refs = [];
 let model = DEFAULT_MODEL;
+let aspect;
+let size;
 const rest = [];
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--ref') refs.push(args[++i]);
   else if (args[i] === '--model') model = args[++i];
+  else if (args[i] === '--aspect') aspect = args[++i];
+  else if (args[i] === '--size') size = args[++i];
   else rest.push(args[i]);
 }
 const [out, prompt] = rest;
 if (!out || !prompt) {
-  console.error('usage: bun tools/gen-image.js <out.png> "<prompt>" [--ref img]… [--model id]');
+  console.error('usage: bun tools/gen-image.js <out.png> "<prompt>" [--ref img]… [--model id] [--aspect 1:1] [--size 2K]');
   process.exit(1);
 }
 
@@ -30,7 +34,8 @@ async function viaGoogle(id, images) {
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${id}:generateContent`, {
     method: 'POST',
     headers: { 'x-goog-api-key': process.env.GEMINI_API_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts }] }),
+    // aspect ratio and size (1K/2K/4K) only exist on the Google route
+    body: JSON.stringify({ contents: [{ parts }], generationConfig: { imageConfig: { aspectRatio: aspect, imageSize: size } } }),
   });
   const body = await res.json();
   if (body.error) return { error: body.error };

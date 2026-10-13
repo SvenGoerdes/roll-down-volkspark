@@ -10,6 +10,7 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Three concepts for a new rolling figure (raincoat, hoodie, tracksuit) were made with Nano Banana 2.
 - The user asked for "Berliner Atzen". Techno-Tine and Kalle vom Kiez were drafted, then made again with Nano Banana 2.1 directly from Google with the user's new key. → [ADR 0015](decisions/0015-nano-banana-direct-from-google.md)
 - The user decided: both figures playable, picked at the start; animated with frame sheets. First sheet test for Kalle with Nano Banana 2.1.
+- Animation pipeline: the AI draws 8 key poses in one sheet, then in-betweens frame by frame (two neighbours as references): 8 → 16 → 32 roll frames per figure. Plus a 16-frame stumble from standing into the roll (the user's idea for the start) and 12-frame crash sheets. `tools/gen-image.js` got `--aspect` and `--size` (Google only).
 - Requested by: the user. Built by: main session (Opus 5.5).
 
 ## 2026-10-13: Docs and principles
