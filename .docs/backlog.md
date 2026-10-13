@@ -9,7 +9,7 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - The user finds the current look "trashy" and wants real graphics.
 - Plan: Nano Banana (Gemini image API) for backgrounds, scenery, icons and the app icon; Blender run headless with scripts in the repo for the kid (rotation frames), walls and pickups. Assets as WebP; the paint-once architecture stays.
 - First step: 2–3 style samples of the same scene (low-poly Blender, painted after the photo, flat vector). The user picks one, then we write `.docs/art-bible.md` and an ADR.
-- Tools are ready: OpenRouter key and Blender 5.2 (ADR 0013). Style B chosen (ADR 0014). Figures drafted: Techno-Tine and Kalle vom Kiez (both liked). Next: decide one or both (character choice?), then final sprites cut out.
+- Tools are ready: OpenRouter key and Blender 5.2 (ADR 0013). Style B chosen (ADR 0014). Figures: Techno-Tine and Kalle vom Kiez. The user wants both, chosen on the start screen, and wants real animation (roll cycle, crash). An AI sprite-sheet test for Kalle (8-frame roll, 6-frame crash) looked promising. Next: new scene style samples (prompts first), then final sheets for both figures.
 - Also proposed: `.docs/pillars.md` (game pillars), a safe-area check for iOS, and a deny list in `.claude/settings.json`. Ideas taken from donchitos/claude-code-game-studios (MIT); the studio itself is not adopted (KISS).
 - Path to iOS: PWA first, then wrap with Capacitor. Write an ADR when it starts.
 
