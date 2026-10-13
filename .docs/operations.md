@@ -20,6 +20,15 @@ GEMINI_API_KEY=… OPENROUTER_API_KEY=… bun tools/gen-image.js out.png "prompt
 
 Default is Nano Banana 2.1 straight from Google (`GEMINI_API_KEY`, Google billing). Other model ids go through OpenRouter (`OPENROUTER_API_KEY`, limit $5). Both keys are in the user's `~/.zshrc`. See ADR 0013 and 0015. Blender 5.2 is at `/Applications/Blender.app/Contents/MacOS/Blender` (run with `-b -P script.py`). See ADR 0013.
 
+## Generate 3D models
+
+```sh
+python3 tools/gen-3d.py assets/src/characters/kalle-front.jpg out.glb [seed]   # TRELLIS.2, free HF Space
+/Applications/Blender.app/Contents/MacOS/Blender -b -P tools/blender/view-glb.py -- out.glb preview
+```
+
+Needs `pip install gradio_client`. See ADR 0017.
+
 ## Deploy
 
 **Game:** push to `main`. GitHub Pages builds from `main` at the root and is live after about a minute.

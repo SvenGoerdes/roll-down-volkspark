@@ -13,7 +13,8 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Animation pipeline: the AI draws 8 key poses in one sheet, then in-betweens frame by frame (two neighbours as references): 8 → 16 → 32 roll frames per figure. Plus a 16-frame stumble from standing into the roll (the user's idea for the start) and 12-frame crash sheets. `tools/gen-image.js` got `--aspect` and `--size` (Google only).
 - The user found the AI frame animations too choppy and switched to Blender. Proof of concept `tools/blender/kalle-poc.py`: Kalle built from primitives with pivot joints, toon shader and outline, poses stand → trip → flail → tuck → ball, rendered as a 24-frame fall and a 32-frame roll (rolling is a pure rotation, so any frame count is smooth).
 - Character pipeline agreed (ADR 0016). Model sheets for Tine and Kalle (4 views each) made and stored in `assets/src/characters/`.
-- Tripo turned out to be blocked: the API wallet is empty, and the free web plan has no Multi-View and no export. The user is choosing between Pro, API credits, or Blender only (see backlog).
+- Tripo turned out to be blocked: the API wallet is empty, and the free web plan has no Multi-View and no export. The user generated Kalle on the free plan but could not export.
+- Switched to TRELLIS.2 on Microsoft's free Hugging Face Space (ADR 0017): Kalle as a textured GLB in 49 s, stored as `assets/src/characters/kalle.glb`. Tools: `tools/gen-3d.py`, `tools/blender/view-glb.py`.
 - Requested by: the user. Built by: main session (Opus 5.5).
 
 ## 2026-10-13: Docs and principles
