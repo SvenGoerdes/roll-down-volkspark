@@ -16,3 +16,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0010](0010-parallel-agents-with-review.md) | Parallel agents in worktrees with review | User |
 | [0011](0011-powerup-colors-and-helmet-stacking.md) | Color-coded power-ups, stackable helmets | User |
 | [0012](0012-docs-and-engineering-principles.md) | Docs in `.docs`, ADRs, KISS | User |
+| [0013](0013-ai-image-generation-via-openrouter.md) | AI image generation via OpenRouter, Nano Banana first | User (models), Opus 5.5 (script) |

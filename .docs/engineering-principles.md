@@ -21,8 +21,13 @@ Agreed on 2026-10-13 (see [ADR 0012](decisions/0012-docs-and-engineering-princip
 
 ## Performance on phones
 
+The game must run smoothly on most phones, including mid-range Android and older iPhones, not just new ones. Later it ships as an iOS and Android app (user, 2026-10-14). Every change is checked against that.
+
 - Paint expensive things once, then blit. No gradients, big canvases or per-pixel work inside the frame loop.
-- Measure with CPU throttling before claiming it's fast.
+- Measure with CPU throttling (4x) before claiming it's fast. Target 60 fps, never below 30.
+- **Art budget:** images ship as WebP, scaled to the largest size they appear on screen at DPR 2 (no 4K sources in the repo). Keep all game images together under ~2 MB, and load only the current season's large images up front.
+- Draw images at their own size or from pre-scaled copies; avoid scaling big images every frame.
+- **App-ready:** stay a plain web app (HTML, JS, assets, no server rendering) so Capacitor or a similar wrapper can ship it to iOS and Android unchanged. Respect safe areas (notch, home bar), touch only, no hover-dependent UI, work offline once loaded.
 
 ## Safety
 
