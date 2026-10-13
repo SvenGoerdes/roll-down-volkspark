@@ -1,30 +1,17 @@
-import { CORRIDOR, WALL_H, PLAYER_R, PLAYER_Z, SPAWN_Z, PLAYER_SCREEN_Y, HORIZON } from './config.js';
+import { CORRIDOR, WALL_H, PLAYER_R, PLAYER_Z, SPAWN_Z } from './config.js';
 import { solidSegments, stripSource } from './logic.js';
 import { TILE_W, TILE_H, TILE_UNITS, TILE_LEVELS } from './surfaces.js';
-import { SCENERY_FAR, hash } from './scenery.js';
-import { paintPlayer, headOffset } from './player.js';
-import {
-  softDot, slab, gabionFaces, bushSprite, treeSprite, BUSH_ASPECT, TREE_ASPECT,
-  pickupSprite, paintGrade, hedgeSprite,
-} from './sprites.js';
+import { kidSprite, kidShade, headOffset } from './player.js';
+import { softDot, slab, gabionFaces, pickupSprite, hedgeSprite } from './sprites.js';
+import { project } from './view.js';
+import { star } from './render-fx.js';
+
+export { computeView, project } from './view.js';
 
 const BG_RATIO = 685 / 900;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const rgb = ([r, g, b], k = 1) => `rgb(${(r * k) | 0},${(g * k) | 0},${(b * k) | 0})`;
 const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-
-export function computeView(W, H) {
-  const horizonY = Math.round(H * HORIZON);
-  // corridor fills ~96% of the width at the player's depth
-  const F = (0.96 * W * PLAYER_Z) / CORRIDOR;
-  const CH = ((H * PLAYER_SCREEN_Y - horizonY) * PLAYER_Z) / F;
-  return { W, H, cx: W / 2, horizonY, F, CH };
-}
-
-export function project(view, x, z, y = 0) {
-  const s = view.F / z;
-  return { sx: view.cx + x * s, sy: view.horizonY + (view.CH - y) * s, s };
-}
 
 export function drawBackground(ctx, view, bg, prevBg, fade, playerX) {
   const bgH = Math.max(view.horizonY * 1.04, view.W * 1.15 * BG_RATIO);
@@ -39,19 +26,34 @@ export function drawBackground(ctx, view, bg, prevBg, fade, playerX) {
   ctx.globalAlpha = 1;
 }
 
+// Roadside grass a bit darker and greyer than the path, plus an earthy curb,
+// so the path still reads when it is grass itself.
+const roadside = new Map();
+function sideColors(season) {
+  if (!roadside.has(season)) {
+    const [r, g, b] = season.grass, l = 0.3 * r + 0.59 * g + 0.11 * b;
+    roadside.set(season, {
+      grass: mix(season.grass, [l, l, l], 0.35).map((v) => v * 0.86),
+      curb: mix(season.path, [40, 34, 28], 0.55),
+    });
+  }
+  return roadside.get(season);
+}
+
 export function drawGround(ctx, view, season, travelled, surfaceAt, tiles) {
   const { W, H, horizonY, F, CH, cx } = view;
   const half = CORRIDOR / 2;
   const fogCss = rgb(season.fog);
+  const side = sideColors(season);
   for (let y = horizonY; y < H; y += 2) {
     const z = (CH * F) / (y - horizonY + 1);
     const fog = clamp((z - 12) / 70, 0, 1) ** 0.7;
     const stripe = Math.floor((z + travelled) / 2.5) % 2 ? 0.93 : 1;
     const pw = (half * F) / z;
     const edge = (0.35 * F) / z;
-    ctx.fillStyle = rgb(mix(season.grass, season.fog, fog), stripe);
+    ctx.fillStyle = rgb(mix(side.grass, season.fog, fog), stripe);
     ctx.fillRect(0, y, W, 2);
-    ctx.fillStyle = rgb(mix(season.grass, season.fog, fog), stripe * 0.78);
+    ctx.fillStyle = rgb(mix(side.curb, season.fog, fog), stripe);
     ctx.fillRect(cx - pw - edge, y, pw * 2 + edge * 2, 2);
     const mips = tiles && tiles[season.id]?.[surfaceAt(z + travelled).id];
     if (mips) {
@@ -124,11 +126,18 @@ function quad(ctx, x0, y0, x1, y1, x2, y2, x3, y3) {
   ctx.closePath();
 }
 
+// One pattern per face texture and one matrix for all of them, reused every frame.
 const patterns = new Map();
-function facePattern(ctx, img, m) {
+let matrix;
+function facePattern(ctx, img, sx, sy, x, y) {
   if (!patterns.has(img)) patterns.set(img, ctx.createPattern(img, 'repeat'));
+  matrix ??= new DOMMatrix();
+  matrix.a = sx;
+  matrix.d = sy;
+  matrix.e = x;
+  matrix.f = y;
   const p = patterns.get(img);
-  p.setTransform(new DOMMatrix(m));
+  p.setTransform(matrix);
   return p;
 }
 
@@ -158,16 +167,16 @@ export function drawWall(ctx, view, z, gaps, tex, snowy, fog = [128, 128, 128]) 
     ctx.globalAlpha = alpha;
     quad(ctx, x0, yT, x1, yT, bx1, yT2, bx0, yT2);
     ctx.fillStyle = snowy ? snowTop(ctx, yT2, yT)
-      : facePattern(ctx, top, [(tileW * f.s) / tex.width, 0, 0, (yT - yT2) / top.height, view.cx + origin * f.s, yT2]);
+      : facePattern(ctx, top, (tileW * f.s) / tex.width, (yT - yT2) / top.height, view.cx + origin * f.s, yT2);
     ctx.fill();
     if (c < 0) {
       quad(ctx, x1, yT, bx1, yT2, bx1, yB2, x1, yB);
-      ctx.fillStyle = facePattern(ctx, side, [(bx1 - x1) / sideW, 0, 0, h / fh, x1, yT]);
+      ctx.fillStyle = facePattern(ctx, side, (bx1 - x1) / sideW, h / fh, x1, yT);
       ctx.fill();
     }
     if (a > 0) {
       quad(ctx, x0, yT, bx0, yT2, bx0, yB2, x0, yB);
-      ctx.fillStyle = facePattern(ctx, side, [(bx0 - x0) / sideW, 0, 0, h / fh, x0, yT]);
+      ctx.fillStyle = facePattern(ctx, side, (bx0 - x0) / sideW, h / fh, x0, yT);
       ctx.fill();
     }
     for (let k = Math.floor((a - origin) / tileW); origin + k * tileW < c; k++) {
@@ -223,15 +232,6 @@ export function drawPuddle(ctx, view, p) {
   ctx.globalAlpha = 1;
 }
 
-function star(ctx, x, y, r) {
-  ctx.beginPath();
-  ctx.moveTo(x, y - r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.quadraticCurveTo(x, y, x, y + r);
-  ctx.quadraticCurveTo(x, y, x - r, y);
-  ctx.quadraticCurveTo(x, y, x, y - r);
-}
-
 export function drawPickup(ctx, view, item, icon, time) {
   const bob = 0.7 + Math.sin(time * 4 + item.z) * 0.15;
   const { sx, sy, s } = project(view, item.x, item.z, bob);
@@ -256,13 +256,12 @@ export function drawPickup(ctx, view, item, icon, time) {
   ctx.globalAlpha = 1;
 }
 
-function dazedStars(ctx, x, y, r) {
-  const t = performance.now() / 1000;
+function dazedStars(ctx, x, y, r, time) {
   ctx.lineWidth = Math.max(1, r * 0.06);
   ctx.strokeStyle = '#2b1d14';
   ctx.fillStyle = '#ffd23f';
   for (let i = 0; i < 3; i++) {
-    const a = t * 3.5 + (i * Math.PI * 2) / 3;
+    const a = time * 3.5 + (i * Math.PI * 2) / 3;
     star(ctx, x + Math.cos(a) * r * 0.75, y - r * 0.45 + Math.sin(a) * r * 0.22, r * 0.2);
     ctx.fill();
     ctx.stroke();
@@ -271,7 +270,8 @@ function dazedStars(ctx, x, y, r) {
 
 // A person curled into a ball, tumbling down the hill.
 export function drawPlayer(ctx, view, player, time, speed = 0) {
-  const hop = Math.abs(Math.sin(player.spin * 0.5)) * (0.18 + (player.bump || 0));
+  const hopMax = 0.18 + (player.bump || 0);
+  const hop = Math.abs(Math.sin(player.spin * 0.5)) * hopMax;
   const ground = project(view, player.x, PLAYER_Z);
   const { sx, sy, s } = project(view, player.x, PLAYER_Z, PLAYER_R + hop);
   const r = PLAYER_R * s;
@@ -282,23 +282,24 @@ export function drawPlayer(ctx, view, player, time, speed = 0) {
 
   const dpr = ctx.getTransform().a;
   const spin = player.dazed ? -0.4 : player.spin;
-  const { canvas, size } = paintPlayer(r, spin, player.helmet, player.dazed, dpr);
+  const body = kidSprite(r, dpr, player.helmet, player.dazed), d = body.width / dpr;
   // squash on every touchdown, stretch when swerving
-  const squash = player.dazed ? 0 : (1 - hop / 0.18) ** 6 * 0.11;
+  const squash = player.dazed ? 0 : (1 - hop / hopMax) ** 6 * 0.11;
   const swerve = clamp(Math.abs(player.vx) * 0.008, 0, 0.08);
-  const w = (size / dpr) * (1 + squash + swerve), h = (size / dpr) * (1 - squash - swerve * 0.5);
   const blur = player.dazed ? 0 : clamp((speed - 18) / 20, 0, 1);
   ctx.save();
   ctx.translate(sx, sy + r * 0.8 * squash);
   ctx.transform(1, 0, -clamp(player.vx * 0.05, -0.4, 0.4) * (player.slip || 0), 1, 0, 0); // lean into the slide
-  for (let i = 2; i >= 1 && blur > 0; i--) {
-    ctx.globalAlpha = blur * (0.32 - i * 0.1);
-    ctx.rotate(-0.16 * blur * i);
-    ctx.drawImage(canvas, 0, 0, size, size, -w / 2, -h / 2, w, h);
-    ctx.rotate(0.16 * blur * i);
+  ctx.scale(1 + squash + swerve, 1 - squash - swerve * 0.5);
+  for (let i = 2; i >= 0; i--) {
+    if (i && !blur) continue;
+    const turn = spin - 0.16 * blur * i;
+    ctx.globalAlpha = i ? blur * (0.32 - i * 0.1) : 1;
+    ctx.rotate(turn);
+    ctx.drawImage(body, -d / 2, -d / 2, d, d);
+    ctx.rotate(-turn);
   }
-  ctx.globalAlpha = 1;
-  ctx.drawImage(canvas, 0, 0, size, size, -w / 2, -h / 2, w, h);
+  ctx.drawImage(kidShade(r, dpr), -d / 2, -d / 2, d, d);
   if (blur > 0) {
     ctx.strokeStyle = `rgba(255,255,255,${0.55 * blur})`;
     ctx.lineWidth = Math.max(1.5, r * 0.07);
@@ -312,251 +313,6 @@ export function drawPlayer(ctx, view, player, time, speed = 0) {
   ctx.restore();
   if (player.dazed) {
     const [hx, hy] = headOffset(spin, r);
-    dazedStars(ctx, sx + hx, sy + hy, r);
+    dazedStars(ctx, sx + hx, sy + hy, r, time);
   }
-
-  if (player.slippery > 0) {
-    ctx.fillStyle = 'rgba(160,210,255,0.5)';
-    for (let i = 0; i < 3; i++) {
-      ctx.beginPath();
-      ctx.arc(ground.sx + Math.sin(time * 9 + i * 2) * r, ground.sy - r * 0.1, r * 0.12, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-}
-
-// Glossy ice: a light sheen over the path plus streaks that scroll with the ground.
-let sheenGrad = null, sheenKey = '';
-
-export function drawIceSheen(ctx, view, travelled, alpha = 1) {
-  const { H, horizonY, CH, cx } = view;
-  const pw = (CORRIDOR / 2) * (H - horizonY) / CH;
-  const key = `${H}|${horizonY}`;
-  if (key !== sheenKey) {
-    sheenKey = key;
-    sheenGrad = ctx.createLinearGradient(0, horizonY, 0, H);
-    sheenGrad.addColorStop(0, 'rgba(255,255,255,0)');
-    sheenGrad.addColorStop(0.5, 'rgba(235,248,255,0.22)');
-    sheenGrad.addColorStop(1, 'rgba(255,255,255,0.4)');
-  }
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.beginPath();
-  ctx.moveTo(cx, horizonY);
-  ctx.lineTo(cx + pw, H);
-  ctx.lineTo(cx - pw, H);
-  ctx.closePath();
-  ctx.clip();
-  ctx.fillStyle = sheenGrad;
-  ctx.fillRect(cx - pw, horizonY, pw * 2, H - horizonY);
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = '#fff';
-  const buckets = [[], [], [], []];
-  for (let i = 0; i < 26; i++) {
-    const z = 5 + ((i * 6.1 - travelled) % 60 + 60) % 60;
-    const x = (((i * 7.7) % 9) - 4.5) * 0.85;
-    buckets[Math.min(3, ((z - 5) / 15) | 0)].push([project(view, x, z), project(view, x + 0.3, z + 2.8)]);
-  }
-  buckets.forEach((list, k) => {
-    ctx.globalAlpha = alpha * (0.55 - k * 0.13);
-    for (const [a, b] of list) {
-      ctx.lineWidth = Math.max(1.5, 0.16 * a.s);
-      ctx.beginPath();
-      ctx.moveTo(a.sx, a.sy);
-      ctx.lineTo(b.sx, b.sy);
-      ctx.stroke();
-    }
-  });
-  ctx.restore();
-}
-
-// Two parallel tracks where the player slid sideways; `brk` marks the start of a new slide.
-export function drawSkidMarks(ctx, view, skids, snowy) {
-  if (skids.length < 2) return;
-  ctx.save();
-  ctx.lineCap = 'butt';
-  ctx.strokeStyle = snowy ? 'rgb(60,85,120)' : 'rgb(40,70,110)';
-  for (const side of [-0.35, 0.35]) {
-    for (let i = 1; i < skids.length; i++) {
-      const m = skids[i], q = skids[i - 1];
-      if (m.brk) continue;
-      const a = project(view, q.x + side, q.z), b = project(view, m.x + side, m.z);
-      ctx.globalAlpha = Math.min(1, 0.75 * m.a);
-      ctx.lineWidth = Math.max(1, 0.12 * b.s);
-      ctx.beginPath();
-      ctx.moveTo(a.sx, a.sy);
-      ctx.lineTo(b.sx, b.sy);
-      ctx.stroke();
-    }
-  }
-  ctx.restore();
-}
-
-export function drawSpray(ctx, spray) {
-  for (const s of spray) {
-    ctx.globalAlpha = Math.min(1, (s.life / s.max) * 1.5);
-    ctx.fillStyle = s.color;
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
-
-const dots = new Map();
-const dotFor = (hex) => {
-  if (!dots.has(hex)) {
-    const rgb = /^#[0-9a-f]{6}$/i.test(hex) ? [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(',') : '255,255,255';
-    dots.set(hex, softDot(rgb, 1, 16));
-  }
-  return dots.get(hex);
-};
-
-export function drawParticles(ctx, particles) {
-  const m = ctx.getTransform();
-  for (const p of particles) {
-    if (!p.leaf && !p.petal) {
-      const d = p.size * 2.6;
-      ctx.drawImage(dotFor(p.color), p.x - d / 2, p.y - d / 2, d, d);
-      continue;
-    }
-    // leaves and petals tumble: spin plus a fake 3D flip
-    const cos = Math.cos(p.rot), sin = Math.sin(p.rot);
-    const flip = 0.25 + 0.75 * Math.abs(Math.cos(p.rot * 1.7));
-    ctx.setTransform(
-      (m.a * cos + m.c * sin) * flip, (m.b * cos + m.d * sin) * flip,
-      m.c * cos - m.a * sin, m.d * cos - m.b * sin,
-      m.a * p.x + m.c * p.y + m.e, m.b * p.x + m.d * p.y + m.f,
-    );
-    const r = p.size * 1.2;
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    if (p.leaf) {
-      ctx.moveTo(-r, 0);
-      ctx.quadraticCurveTo(0, -r * 0.75, r, 0);
-      ctx.quadraticCurveTo(0, r * 0.75, -r, 0);
-    } else ctx.ellipse(0, 0, r, r * 0.6, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.setTransform(m);
-}
-
-// Paint every season's plants up front, so no frame stalls when a new season comes into view.
-export function warmUp(seasons) {
-  for (const s of seasons) {
-    for (const v of [0, 1, 2]) {
-      bushSprite(s.id, v);
-      treeSprite(s.id, v);
-    }
-    hedgeSprite(s);
-  }
-}
-
-const PLANT = { bush: [2.3, BUSH_ASPECT, 0.875], tree: [5.6, TREE_ASPECT, 0.978] };
-
-export function drawScenery(ctx, view, item, seasonId) {
-  const p = project(view, item.x, item.z);
-  const [width, aspect, foot] = PLANT[item.kind];
-  const w = width * item.size * p.s, h = w * aspect;
-  if (p.sx + w / 2 < 0 || p.sx - w / 2 > view.W) return;
-  const img = (item.kind === 'tree' ? treeSprite : bushSprite)(seasonId, item.variant);
-  ctx.globalAlpha = clamp((SCENERY_FAR - item.z) / 16, 0, 1);
-  // mirror every other plant so the few sprites don't repeat visibly
-  if (item.id % 2) ctx.drawImage(img, p.sx - w / 2, p.sy - h * foot, w, h);
-  else {
-    ctx.save();
-    ctx.translate(p.sx, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(img, -w / 2, p.sy - h * foot, w, h);
-    ctx.restore();
-  }
-  ctx.globalAlpha = 1;
-}
-
-// Thin wedges racing out of the vanishing point over the ground once the hill gets fast.
-export function drawSpeedLines(ctx, view, speed, time) {
-  const k = clamp((speed - 23) / 15, 0, 1);
-  if (k <= 0) return;
-  const R = Math.hypot(view.W, view.H);
-  ctx.fillStyle = '#fff';
-  ctx.globalAlpha = 0.16 + k * 0.34;
-  ctx.beginPath();
-  for (let i = 0; i < 36; i++) {
-    const t = time * (1.4 + (i % 5) * 0.3) + i * 0.618;
-    const cycle = Math.floor(t), ph = t - cycle;
-    const a = (0.04 + hash(i * 31 + cycle) * 0.92) * Math.PI; // ground only, not across the photo
-    const r0 = R * (0.12 + ph * 0.6), r1 = r0 + R * (0.1 + ph * 0.3) * (0.5 + k);
-    const wide = (0.6 + ph * 3.2) / r1;
-    const cos = Math.cos(a), sin = Math.sin(a);
-    ctx.moveTo(view.cx + cos * r0, view.horizonY + sin * r0);
-    ctx.lineTo(view.cx + Math.cos(a + wide) * r1, view.horizonY + Math.sin(a + wide) * r1);
-    ctx.lineTo(view.cx + Math.cos(a - wide) * r1, view.horizonY + Math.sin(a - wide) * r1);
-    ctx.closePath();
-  }
-  ctx.fill();
-  ctx.globalAlpha = 1;
-}
-
-// Full-resolution canvases are big, so keep only two: this season and the one fading out.
-const grades = new Map();
-const grade = (id, w, h) => {
-  const key = `${id}:${w}x${h}`;
-  if (!grades.has(key)) {
-    if (grades.size >= 2) grades.delete(grades.keys().next().value);
-    grades.set(key, paintGrade(id, w, h));
-  }
-  return grades.get(key);
-};
-
-// Season light and vignette over the whole scene, blitted 1:1 in device pixels (and unshaken).
-export function drawGrade(ctx, view, season, prev, fade) {
-  const m = ctx.getTransform();
-  const w = Math.round(view.W * m.a), h = Math.round(view.H * m.d);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  if (prev && fade < 1) {
-    ctx.globalAlpha = 1 - fade;
-    ctx.drawImage(grade(prev.id, w, h), 0, 0);
-    ctx.globalAlpha = fade;
-  }
-  ctx.drawImage(grade(season.id, w, h), 0, 0);
-  ctx.globalAlpha = 1;
-  ctx.setTransform(m);
-}
-
-const STONE = [[1, 0], [0.5, 0.85], [-0.45, 0.8], [-1, 0.1], [-0.6, -0.75], [0.4, -0.9]];
-
-export function drawFx(ctx, fx) {
-  for (const f of fx) {
-    const t = f.life / f.max, size = f.size * (1 + f.grow * t);
-    if (f.kind === 'dust') {
-      ctx.globalAlpha = 0.4 * (1 - t);
-      ctx.drawImage(softDot(f.color), f.x - size, f.y - size, size * 2, size * 2);
-      continue;
-    }
-    if (f.kind === 'ring') {
-      ctx.globalAlpha = 1 - t;
-      ctx.strokeStyle = f.color;
-      ctx.lineWidth = 1 + 4 * (1 - t);
-      ctx.beginPath();
-      ctx.arc(f.x, f.y, size, 0, Math.PI * 2);
-      ctx.stroke();
-      continue;
-    }
-    ctx.globalAlpha = f.kind === 'spark' ? 1 - t : Math.min(1, (1 - t) * 4);
-    ctx.fillStyle = f.color;
-    if (f.kind === 'spark') {
-      star(ctx, f.x, f.y, size);
-      ctx.fill();
-      continue;
-    }
-    const cos = Math.cos(f.rot) * size, sin = Math.sin(f.rot) * size;
-    ctx.beginPath();
-    for (const [u, v] of STONE) ctx.lineTo(f.x + u * cos - v * sin, f.y + u * sin + v * cos);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.22)';
-    ctx.beginPath();
-    ctx.arc(f.x - size * 0.25, f.y - size * 0.3, size * 0.35, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
 }

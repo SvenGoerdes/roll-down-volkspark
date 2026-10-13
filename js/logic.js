@@ -11,6 +11,13 @@ export const spacingAt = (n) => Math.max(10, 18 - n * 0.08);
 
 export const seasonIndexAt = (n, perSeason, count) => Math.floor(n / perSeason) % count;
 
+// Plants past the last wall of the current season already show the next one.
+// Returns the z beyond which that applies (Infinity if no such wall is out yet) and the season index there.
+export function seasonAhead(walls, seasonIdx, perSeason, count) {
+  const edge = walls.find((w) => seasonIndexAt(w.index + 1, perSeason, count) !== seasonIdx);
+  return edge ? { z: edge.z, idx: seasonIndexAt(edge.index + 1, perSeason, count) } : { z: Infinity, idx: seasonIdx };
+}
+
 export function makeGaps(n, prevX, season, rng) {
   const w = gapWidthAt(n) * season.gapMul;
   const limit = CORRIDOR / 2 - w / 2;

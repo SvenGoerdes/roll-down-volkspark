@@ -6,7 +6,8 @@ import { stepFx, burstStones, burstSparkles } from '../js/fx.js';
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
 
 test('roadside plants keep their world spot while the camera moves', () => {
-  const a = sceneryAt(100), b = sceneryAt(101.5);
+  // sceneryAt reuses its result array and plant objects, so snapshot each call
+  const a = sceneryAt(100).map((p) => ({ ...p })), b = sceneryAt(101.5).map((p) => ({ ...p }));
   const shared = a.filter((p) => b.some((q) => q.id === p.id));
   expect(shared.length).toBeGreaterThan(10);
   for (const p of shared) {

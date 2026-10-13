@@ -277,7 +277,6 @@ const GRADE = {
   winter: { sun: [0.5, 0.0, '235,242,255', 0.25], tint: '200,215,255', tintA: 0.08, edge: '30,40,70' },
 };
 
-// Painted at device resolution so the game loop can blit it 1:1 without any scaling.
 export function paintGrade(season, w, h) {
   const c = makeCanvas(w, h), g = c.getContext('2d');
   const { sun: [sx, sy, sunRgb, sunA], tint, tintA, edge } = GRADE[season];

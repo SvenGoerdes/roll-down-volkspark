@@ -4,7 +4,6 @@ const TAU = Math.PI * 2;
 const INK = '#2b1d14', SKIN = '#f6c48f', HAIR = '#4a2c1e';
 const HOODIE = '#e4572e', HOODIE_DARK = '#b33c1d', SLEEVE = '#ef6b3f', STRIPE = '#ffc93d', JEANS = '#34457e';
 const HEAD = [0.34, -0.6];
-let canvas;
 
 const circle = (g, x, y, r) => { g.beginPath(); g.arc(x, y, r, 0, TAU); };
 const line = (g, pts) => {
@@ -87,9 +86,8 @@ function hair(g, helmet) {
 }
 
 // A kid curled into a ball, seen from the side. One unit = the ball radius r.
-function paint(g, spin, helmet, dazed) {
+function paint(g, helmet, dazed) {
   const [hx, hy] = HEAD;
-  g.rotate(spin);
   g.lineJoin = g.lineCap = 'round';
   // ink silhouette first, so every part gets one shared outline
   g.strokeStyle = INK;
@@ -133,28 +131,44 @@ function paint(g, spin, helmet, dazed) {
   face(g, dazed);
 }
 
-// Paints the kid into a private canvas (so shading can't spill onto the scene) and returns it.
-export function paintPlayer(r, spin, helmet, dazed, dpr) {
+// Sprites depend only on the ball size, so they are painted once and the game loop just rotates them.
+const sprites = new Map();
+let spriteSize = 0;
+const sprite = (r, dpr, key, draw) => {
   const size = Math.ceil(r * 3.4 * dpr);
-  if (!canvas || canvas.width < size) canvas = makeCanvas(size, size);
-  const g = canvas.getContext('2d');
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  g.clearRect(0, 0, size, size);
-  const k = r * dpr;
-  g.setTransform(k, 0, 0, k, size / 2, size / 2);
-  paint(g, spin, helmet, dazed);
-  // light from the upper left of the screen, whatever way the ball has turned
-  g.setTransform(k, 0, 0, k, size / 2, size / 2);
-  g.globalCompositeOperation = 'source-atop';
+  if (size !== spriteSize) {
+    sprites.clear();
+    spriteSize = size;
+  }
+  if (!sprites.has(key)) {
+    const c = makeCanvas(size, size), g = c.getContext('2d'), k = r * dpr;
+    g.setTransform(k, 0, 0, k, size / 2, size / 2);
+    draw(g);
+    sprites.set(key, c);
+  }
+  return sprites.get(key);
+};
+
+// The kid, upright and unshaded.
+export const kidSprite = (r, dpr, helmet, dazed) => sprite(r, dpr, `${helmet}:${dazed}`, (g) => paint(g, helmet, dazed));
+
+// Light from the upper left of the screen, drawn unrotated over the ball. The rim is soft
+// so the head and shoe, which stick out of the ball, don't get a hard edge.
+export const kidShade = (r, dpr) => sprite(r, dpr, 'shade', (g) => {
   const shade = g.createRadialGradient(-0.45, -0.55, 0.05, -0.15, -0.2, 1.45);
   shade.addColorStop(0, 'rgba(255,248,230,0.4)');
   shade.addColorStop(0.4, 'rgba(255,255,255,0)');
   shade.addColorStop(1, 'rgba(40,10,50,0.5)');
   g.fillStyle = shade;
-  g.fillRect(-1.7, -1.7, 3.4, 3.4);
-  g.globalCompositeOperation = 'source-over';
-  return { canvas, size };
-}
+  circle(g, 0, 0.02, 0.9);
+  g.fill();
+  g.globalCompositeOperation = 'destination-in';
+  const rim = g.createRadialGradient(0, 0.02, 0.62, 0, 0.02, 0.9);
+  rim.addColorStop(0, 'rgba(0,0,0,1)');
+  rim.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = rim;
+  g.fillRect(-1, -1, 2, 2);
+});
 
 // Where the head ends up on screen, relative to the ball centre.
 export const headOffset = (spin, r) => [

@@ -105,9 +105,12 @@ canvas { display: block; }
 }
 .overlay.show { opacity: 1; pointer-events: auto; }
 
-h1 { font-size: 44px; line-height: 1; font-weight: 900; letter-spacing: -0.02em; text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); transform: rotate(-3deg); }
-h1 span { color: #ffd23f; text-shadow: 0 4px 0 #b07800, 0 8px 18px rgba(0, 0, 0, 0.55); }
-h2 { font-size: 40px; font-weight: 900; text-shadow: 0 3px 12px rgba(0, 0, 0, 0.5); }
+h1 { font-size: 44px; line-height: 1; font-weight: 900; letter-spacing: -0.02em; text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); }
+h1 span { color: #ffd23f; }
+#start h1 { transform: rotate(-3deg); }
+#start h1 span { text-shadow: 0 4px 0 #b07800, 0 8px 18px rgba(0, 0, 0, 0.55); }
+h2 { font-size: 40px; font-weight: 900; }
+#over h2 { text-shadow: 0 3px 12px rgba(0, 0, 0, 0.5); }
 #over.show h2 { animation: thud 0.5s cubic-bezier(0.2, 1.6, 0.4, 1); }
 @keyframes thud {
   from { transform: scale(1.8); opacity: 0; }

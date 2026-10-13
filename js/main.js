@@ -2,16 +2,19 @@ import {
   CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON, SURFACES,
 } from './config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, slipAmount, skidStrength, createSurfaceTrack,
+  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, seasonAhead, slipAmount, skidStrength, createSurfaceTrack,
 } from './logic.js';
 import { buildSeasonBackgrounds } from './seasons.js';
 import { buildGroundTiles } from './surfaces.js';
 import { setupIdeas } from './ideas.js';
 import { setupLeaderboard } from './leaderboard.js';
 import {
-  computeView, project, drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup, drawPlayer, drawParticles,
-  drawIceSheen, drawSkidMarks, drawSpray, drawScenery, drawSpeedLines, drawGrade, drawFx, warmUp,
+  computeView, project, drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup, drawPlayer,
 } from './render.js';
+import {
+  drawScenery, drawParticles, drawSpeedLines, drawGrade, primeGrade, drawFx, warmUp,
+} from './render-fx.js';
+import { drawIceSheen, drawSkidMarks, drawSpray } from './render-slip.js';
 import { sceneryAt } from './scenery.js';
 import { burstStones, burstSparkles, stepFx } from './fx.js';
 
@@ -35,7 +38,7 @@ const BEST_KEY = 'rollDownBest';
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
 const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch { /* private mode */ } };
 
-let view, backgrounds, gabion, board, groundTiles;
+let view, dpr = 1, backgrounds, gabion, board, groundTiles;
 let state = 'loading';
 const setState = (s) => { state = s; document.body.dataset.state = s; };
 let game;
@@ -61,7 +64,7 @@ function newGame() {
 }
 
 function resize() {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
   const W = Math.min(window.innerWidth, Math.round(window.innerHeight * 0.66));
   const H = window.innerHeight;
   canvas.style.width = `${W}px`;
@@ -70,7 +73,15 @@ function resize() {
   canvas.height = Math.round(H * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   view = computeView(W, H);
+  if (game) primeGrades();
 }
+
+// Paint this season's and the next season's light ahead of the frames that need them.
+function primeGrades() {
+  primeGrade(view, dpr, season().id);
+  primeGrade(view, dpr, SEASONS[(game.seasonIdx + 1) % SEASONS.length].id);
+}
+const idle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 500 }) : setTimeout(fn, 100));
 
 const season = () => SEASONS[game.seasonIdx];
 
@@ -113,6 +124,7 @@ function setSeason(idx) {
   game.seasonFade = 0;
   const s = season();
   showBanner(`${s.icon} ${s.name}`, s.hint);
+  idle(primeGrades);
 }
 
 // Screen position and scale of the player, for effects that start there.
@@ -330,6 +342,31 @@ function updateHud(speed) {
   hud.wind.textContent = Math.abs(wf) > 40 ? (wf > 0 ? '💨 →' : '← 💨') : '';
 }
 
+// Everything on the ground, drawn far to near. Reused every frame.
+const drawList = [];
+const byDepth = (a, b) => b.depth - a.depth;
+function queue(list, layer, lift = 0) {
+  for (const o of list) {
+    o.layer = layer;
+    o.depth = o.z + lift;
+    drawList.push(o);
+  }
+}
+
+function drawThing(o, look) {
+  switch (o.layer) {
+    case 'plant': drawScenery(ctx, view, o, o.z > look.aheadZ ? look.aheadId : look.s.id); break;
+    case 'puddle': drawPuddle(ctx, view, o); break;
+    case 'wall': {
+      const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
+      drawWall(ctx, view, o.z, gaps, gabion, o.snowy, look.s.fog);
+      break;
+    }
+    case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type].icon, game.time); break;
+    default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0);
+  }
+}
+
 function render() {
   const s = season();
   const prev = game.prevSeasonIdx !== null ? SEASONS[game.prevSeasonIdx] : null;
@@ -344,24 +381,25 @@ function render() {
   if (s.id === 'winter') drawIceSheen(ctx, view, game.travelled, game.seasonFade);
   drawSkidMarks(ctx, view, game.skids, s.id === 'winter');
 
-  const speed = speedAt(game.time) * s.speedMul * game.slowFactor;
-  // plants beyond the last wall of this season already show the next one
-  const edge = game.walls.find((w) => seasonIndexAt(w.index + 1, WALLS_PER_SEASON, SEASONS.length) !== game.seasonIdx);
-  const ahead = edge ? SEASONS[seasonIndexAt(edge.index + 1, WALLS_PER_SEASON, SEASONS.length)].id : s.id;
-  const widenFactor = game.effects.widen > 0 ? 1.6 : 1;
-  const things = [
-    ...sceneryAt(game.travelled).map((o) => ({ z: o.z, draw: () => drawScenery(ctx, view, o, edge && o.z > edge.z ? ahead : s.id) })),
-    ...game.puddles.map((o) => ({ z: o.z + 0.01, draw: () => drawPuddle(ctx, view, o) })),
-    // the wall you crashed into stays behind you, so you can see yourself dazed in front of it
-    ...game.walls.map((o) => ({ z: o.broken ? PLAYER_Z + 0.5 : o.z, draw: () => drawWall(ctx, view, o.z, o.gaps.map((g) => widened(g, widenFactor)), gabion, o.snowy, s.fog) })),
-    ...game.pickups.map((o) => ({ z: o.z, draw: () => drawPickup(ctx, view, o, POWERUPS[o.type].icon, game.time) })),
-    { z: PLAYER_Z - 0.001, draw: () => drawPlayer(ctx, view, game.player, game.time, state === 'playing' ? speed : 0) },
-  ].sort((a, b) => b.z - a.z);
-  for (const t of things) t.draw();
+  const speed = speedAt(game.time) * s.speedMul * game.surface.speedMul * game.slowFactor;
+  const ahead = seasonAhead(game.walls, game.seasonIdx, WALLS_PER_SEASON, SEASONS.length);
+  const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1 };
+  drawList.length = 0;
+  queue(sceneryAt(game.travelled), 'plant');
+  queue(game.puddles, 'puddle', 0.01);
+  queue(game.walls, 'wall');
+  queue(game.pickups, 'pickup');
+  // the wall you crashed into stays behind you, so you can see yourself dazed in front of it
+  for (const w of game.walls) if (w.broken) w.depth = PLAYER_Z + 0.5;
+  game.player.layer = 'player';
+  game.player.depth = PLAYER_Z - 0.001;
+  drawList.push(game.player);
+  drawList.sort(byDepth);
+  for (const o of drawList) drawThing(o, look);
 
   drawSpray(ctx, game.spray);
   drawParticles(ctx, game.particles);
-  if (state === 'playing') drawSpeedLines(ctx, view, speed, game.time);
+  if (state === 'playing') drawSpeedLines(ctx, view, look.speed, game.time);
   drawGrade(ctx, view, s, prev, game.seasonFade);
   drawFx(ctx, game.fx);
   if (game.effects.slowmo > 0) {
@@ -380,6 +418,7 @@ function frame(now) {
   last = now;
   if (state === 'playing') update(dt);
   else if (state === 'start') { game.time += dt; game.travelled += dt * 6; game.player.spin += dt * 2; updateParticles(dt); }
+  else if (state === 'over') game.time += dt; // keeps the dazed stars turning
   game.fx = stepFx(game.fx, dt);
   game.shake = Math.max(0, game.shake - dt);
   game.flash = Math.max(0, game.flash - dt);
@@ -447,6 +486,7 @@ async function init() {
     return;
   }
   game = newGame();
+  primeGrades();
   board = setupLeaderboard();
   setupIdeas(() => ({ score: game.passed, season: season().name }));
   hud.bestStart.textContent = readBest();

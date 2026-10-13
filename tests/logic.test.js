@@ -2,7 +2,7 @@ import { test, expect } from 'bun:test';
 import { CORRIDOR, WALL_EXT, SEASONS } from '../js/config.js';
 import {
   speedAt, gapWidthAt, spacingAt, seasonIndexAt, makeGaps, widened, passesWall, solidSegments, slipAmount, skidStrength,
-  createSurfaceTrack, stripSource,
+  createSurfaceTrack, stripSource, seasonAhead,
 } from '../js/logic.js';
 
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
@@ -55,6 +55,14 @@ test('widened gap is bigger but capped', () => {
 test('solid segments cover everything but the gaps', () => {
   const segs = solidSegments([{ x: 2, w: 2 }, { x: -2, w: 1 }]);
   expect(segs).toEqual([[-WALL_EXT, -2.5], [-1.5, 1], [3, WALL_EXT]]);
+});
+
+test('plants switch season past the last wall of the current one', () => {
+  const walls = [{ index: 18, z: 10 }, { index: 19, z: 25 }, { index: 20, z: 40 }];
+  expect(seasonAhead(walls, 0, 20, 4)).toEqual({ z: 25, idx: 1 });
+  expect(seasonAhead(walls.slice(0, 1), 0, 20, 4)).toEqual({ z: Infinity, idx: 0 });
+  // last season wraps around to the first
+  expect(seasonAhead([{ index: 79, z: 30 }], 3, 20, 4)).toEqual({ z: 30, idx: 0 });
 });
 
 test('slipAmount: ice is full, puddle fades out', () => {
