@@ -8,6 +8,7 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - New rule from the user: the game must stay fast on most phones and ready for iOS/Android apps. Written into engineering-principles.md.
 - The user picked the painted style B, with cherry blossoms in spring from A. → [ADR 0014](decisions/0014-painted-art-style.md), [art-bible.md](art-bible.md)
 - Three concepts for a new rolling figure (raincoat, hoodie, tracksuit) were made with Nano Banana 2.
+- The user asked for "Berliner Atzen". Techno-Tine and Kalle vom Kiez were drafted, then made again with Nano Banana 2.1 directly from Google with the user's new key. → [ADR 0015](decisions/0015-nano-banana-direct-from-google.md)
 - Requested by: the user. Built by: main session (Opus 5.5).
 
 ## 2026-10-13: Docs and principles

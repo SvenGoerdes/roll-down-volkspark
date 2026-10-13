@@ -9,8 +9,7 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - The user finds the current look "trashy" and wants real graphics.
 - Plan: Nano Banana (Gemini image API) for backgrounds, scenery, icons and the app icon; Blender run headless with scripts in the repo for the kid (rotation frames), walls and pickups. Assets as WebP; the paint-once architecture stays.
 - First step: 2–3 style samples of the same scene (low-poly Blender, painted after the photo, flat vector). The user picks one, then we write `.docs/art-bible.md` and an ADR.
-- Tools are ready: OpenRouter key and Blender 5.2 (ADR 0013). Style B chosen (ADR 0014). Next: the user picks a figure, then we produce the final assets.
-- Nano Banana 2.1 is blocked on OpenRouter (shared Google pool, 429). Fix: enable billing on the user's Gemini key and add it to OpenRouter as BYOK. Until then, drafts use Nano Banana 2.
+- Tools are ready: OpenRouter key and Blender 5.2 (ADR 0013). Style B chosen (ADR 0014). Figures drafted: Techno-Tine and Kalle vom Kiez (both liked). Next: decide one or both (character choice?), then final sprites cut out.
 - Also proposed: `.docs/pillars.md` (game pillars), a safe-area check for iOS, and a deny list in `.claude/settings.json`. Ideas taken from donchitos/claude-code-game-studios (MIT); the studio itself is not adopted (KISS).
 - Path to iOS: PWA first, then wrap with Capacitor. Write an ADR when it starts.
 
