@@ -19,3 +19,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0013](0013-ai-image-generation-via-openrouter.md) | AI image generation via OpenRouter, Nano Banana first | User (models), Opus 5.5 (script) |
 | [0014](0014-painted-art-style.md) | Hand-painted art style, cherry blossoms in spring | User |
 | [0015](0015-nano-banana-direct-from-google.md) | Nano Banana 2.1 directly from Google, others via OpenRouter | User (model), Opus 5.5 (route) |
+| [0016](0016-character-pipeline-3d-prerendered.md) | Characters: model sheet → Tripo → Blender → sprite sheets | User (Blender, short pipeline), Opus 5.5 (steps) |

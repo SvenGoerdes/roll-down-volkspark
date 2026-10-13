@@ -47,6 +47,7 @@ npx wrangler tail --format pretty   # live logs, e.g. GitHub API errors
 
 | Secret | Where | Scope |
 |---|---|---|
+| `TRIPO_API_KEY` | User's `~/.zshrc` only | Tripo 3D API (separate wallet from the Tripo web studio). Never in the repo. |
 | `GEMINI_API_KEY` | User's `~/.zshrc` only | Nano Banana via Google, billing on. Never in the repo. |
 | `OPENROUTER_API_KEY` | User's `~/.zshrc` only | Image generation, credit limit $5. Never in the repo. |
 | `GITHUB_TOKEN` | Cloudflare worker secret | Fine-grained PAT, only this repo, **Issues: read and write** (+ Metadata read). Nothing else. |
