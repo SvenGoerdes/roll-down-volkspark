@@ -27,7 +27,19 @@ python3 tools/gen-3d.py assets/src/characters/kalle-front.jpg out.glb [seed]   #
 /Applications/Blender.app/Contents/MacOS/Blender -b -P tools/blender/view-glb.py -- out.glb preview
 ```
 
-Needs `pip install gradio_client`. See ADR 0017.
+Needs `pip install gradio_client`. See ADR 0017 (superseded for the figures by ADR 0018).
+
+## Figure sprites (ADR 0018)
+
+```sh
+B=/Applications/Blender.app/Contents/MacOS/Blender
+$B -b -P tools/blender/prep-glb.py -- <model.glb> assets/src/characters/kalle-3d.glb   # once per new model
+$B -b -P tools/blender/render.py -- kalle /tmp/frames/kalle poses     # quick rig check
+$B -b -P tools/blender/render.py -- kalle /tmp/frames/kalle clips     # all clips + meta.json (LOOK=toon|pbr)
+python3 tools/build-sprites.py /tmp/frames                            # WebP sheets + js/figure-sheets.js
+```
+
+Needs Pillow with WebP. Joint points live in `tools/blender/kalle.py` / `tine.py`.
 
 ## Deploy
 

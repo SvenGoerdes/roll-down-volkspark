@@ -1,6 +1,6 @@
 # 0017: TRELLIS.2 on Hugging Face instead of Tripo
 
-- **Status:** Accepted (replaces step 2 of ADR 0016)
+- **Status:** Superseded for the figures by 0018 (was: replaces step 2 of ADR 0016)
 - **Date:** 2026-10-14
 - **Decided by:** user (asked for open source and a free API); Opus 5.5 (picked TRELLIS.2)
 - **Built by:** main session (Opus 5.5)
