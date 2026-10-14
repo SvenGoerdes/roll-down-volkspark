@@ -7,7 +7,7 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - The wall that would beat your record carries a "Rekord" sign; passing it shows "Neuer Rekord!". The season chip fills up over its 20 walls. Game over says "Neuer Rekord!" or "Noch N Mauern bis zum Rekord".
 - Score and leaderboard stay "walls passed".
 - The balance sim now plays the streak too (`--no-streak` to compare): median 105 → 128 for the bot, which is more precise than people.
-- Requested by: the user. Built by: Opus 5.5 (plan, integration); Haiku 5.5 subagent (`js/scoring.js`); Sonnet 5.5 subagent (UI); Sonnet 5.5 reviewed (nothing serious).
+- Requested by: the user. Built by: Opus 5.5 (plan, integration); Haiku 5.5 subagent (`js/scoring.js`); Sonnet 5.5 subagent (UI); Sonnet 5.5 reviewed (nothing serious). Commit: `18dd72a`.
 
 ## 2026-10-14 (evening): Fairer difficulty curve
 - Testers said the game gets far too fast and nobody gets past about 50 walls. A new balance sim (`tools/balance-sim.js`) lets a human-like bot play the real rules; tuned to the testers, it got stuck at a median of 48 with 70 % of crashes in autumn. Cause: the autumn wind pushed the ball further than the gap allowed, while the time between walls had fallen to 0.6 s. → [ADR 0024](decisions/0024-difficulty-curve-by-walls.md)
