@@ -2,14 +2,18 @@
   "$schema": "https://opencode.ai/config.json",
   // Project rules for OpenCode panes (ADR 0026). Last matching rule wins.
   "permission": {
-    // Sub-agents sometimes guess the main checkout's path instead of their worktree. Deny it so they correct themselves.
+    // Sub-agents guess or mistype paths outside their worktree. Deny them so they correct themselves
+    // instead of waiting for the user. Only temp files and OpenCode's own data stay reachable.
     "external_directory": {
-      "*": "ask",
-      "/Users/svengoerdes/Projects/RollDownVolksparkFriedrichshain/*": "deny"
+      "*": "deny",
+      "/tmp/*": "allow",
+      "/private/tmp/*": "allow",
+      "/Users/svengoerdes/.local/share/opencode/*": "allow"
     },
     "bash": {
       "*": "ask",
       "git *": "allow",
+      "GIT_EDITOR=true git *": "allow",
       "gh *": "allow",
       "bun *": "allow",
       "bunx *": "allow",
