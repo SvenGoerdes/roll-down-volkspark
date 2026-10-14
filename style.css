@@ -138,6 +138,51 @@ h2 { font-size: 40px; font-weight: 900; }
 }
 @keyframes pulse { 50% { transform: scale(1.05); } }
 
+.figures { display: flex; justify-content: center; gap: 12px; }
+.fig {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 10px 6px;
+  border: 3px solid transparent;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.fig b { font-size: 16px; font-weight: 800; }
+.fig small { font-size: 12px; opacity: 0.8; }
+.fig.on { border-color: #ffd23f; background: rgba(255, 210, 63, 0.15); }
+.fig:active { transform: scale(0.97); }
+.fig-sprite {
+  display: block;
+  background-repeat: no-repeat;
+  animation: fig-breathe 1s infinite;
+}
+@keyframes fig-breathe {
+  to { background-position-x: var(--end); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fig-sprite { animation: none; }
+}
+body:not([data-state="start"]) .fig-sprite { animation-play-state: paused; }
+#change-figure {
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font: 700 15px system-ui, sans-serif;
+  background: transparent;
+  color: #fff;
+}
+@media (max-height: 700px) {
+  .overlay { gap: 10px; }
+  .legend { font-size: 14px; gap: 3px; }
+}
+@media (max-height: 620px) {
+  #start .legend { display: none; }
+}
+
 #ideas, #board { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
 #idea-btn, #board-btn {
   position: absolute;
@@ -157,8 +202,8 @@ h2 { font-size: 40px; font-weight: 900; }
 body:has(#ideas.open) #board-btn, body:has(#board.open) #idea-btn { display: none; }
 #board-btn { right: auto; left: 14px; padding: 10px 14px 10px 12px; }
 #idea-btn span, #board-btn span { font-size: 15px; }
-body[data-state="playing"] #idea-btn, #ideas.open #idea-btn,
-body[data-state="playing"] #board-btn, #board.open #board-btn { display: none; }
+body[data-state="playing"] #idea-btn, body[data-state="intro"] #idea-btn, #ideas.open #idea-btn,
+body[data-state="playing"] #board-btn, body[data-state="intro"] #board-btn, #board.open #board-btn { display: none; }
 
 #ideas .backdrop, #board .backdrop {
   position: absolute; inset: 0;

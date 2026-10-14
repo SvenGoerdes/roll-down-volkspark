@@ -9,8 +9,11 @@ import { buildGroundTiles } from './surfaces.js';
 import { setupIdeas } from './ideas.js';
 import { setupLeaderboard } from './leaderboard.js';
 import {
-  computeView, project, drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup, drawPlayer,
+  computeView, project, drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup,
 } from './render.js';
+import { drawPlayer } from './render-player.js';
+import { loadFigure, introAt, poseFor } from './figure.js';
+import { readFigure, saveFigure, setupFigureSelect } from './figure-select.js';
 import {
   drawScenery, drawParticles, drawSpeedLines, drawGrade, primeGrade, drawFx, warmUp,
 } from './render-fx.js';
@@ -25,6 +28,7 @@ const hud = {
   score: $('score'), speed: $('speed'), season: $('season'), powers: $('powers'),
   wind: $('wind'), banner: $('banner'), start: $('start'), over: $('over'),
   final: $('final'), best: $('best'), bestStart: $('best-start'),
+  figures: $('figures'), changeFigure: $('change-figure'),
 };
 
 const loadImage = (src) => new Promise((ok, fail) => {
@@ -44,11 +48,25 @@ const setState = (s) => { state = s; document.body.dataset.state = s; };
 let game;
 let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
+let figureId = readFigure(), figure = null, picker, loadingFigure = false;
+const figureSheets = new Map();
+const TAP_TEXT = 'Figur antippen – oder irgendwo tippen';
 
 const surfaceTrack = () => {
   const track = createSurfaceTrack(Math.random);
   return (dist) => SURFACES[track(dist)];
 };
+
+// One load per figure. A failed load leaves no entry behind, so the next tap retries it.
+function sheetsFor(id) {
+  if (!figureSheets.has(id)) {
+    figureSheets.set(id, loadFigure(id, loadImage).catch((err) => {
+      figureSheets.delete(id);
+      throw err;
+    }));
+  }
+  return figureSheets.get(id);
+}
 
 function newGame() {
   return {
@@ -59,7 +77,7 @@ function newGame() {
     player: { x: 0, vx: 0, target: 0, spin: 0, helmets: 0, slippery: 0, slip: 0, bump: 0 },
     effects: { slowmo: 0, widen: 0 },
     wind: { force: 0, target: 0, nextGust: 4 },
-    shake: 0, flash: 0, slowFactor: 1,
+    shake: 0, flash: 0, slowFactor: 1, introT: 0, crashAt: 0,
   };
 }
 
@@ -160,6 +178,7 @@ function crash() {
   game.shake = 0.5;
   game.flash = 0.6;
   game.player.dazed = true;
+  game.crashAt = game.time;
   navigator.vibrate?.([120, 60, 200]);
   setState('over');
   const best = Math.max(readBest(), game.passed);
@@ -369,7 +388,7 @@ function drawThing(o, look) {
       break;
     }
     case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time); break;
-    default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0);
+    default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0, figure, look.pose);
   }
 }
 
@@ -389,7 +408,11 @@ function render() {
 
   const speed = speedAt(game.time) * s.speedMul * game.surface.speedMul * game.slowFactor;
   const ahead = seasonAhead(game.walls, game.seasonIdx, WALLS_PER_SEASON, SEASONS.length);
-  const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1 };
+  const showPlayer = figure && state !== 'start';
+  const mode = { intro: 'intro', over: 'dazed' }[state] ?? 'roll';
+  const t = mode === 'intro' ? game.introT : game.time - game.crashAt;
+  const pose = showPlayer ? poseFor({ mode, t, spin: game.player.spin, helmet: game.player.helmets > 0 }, figure) : null;
+  const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1, pose };
   drawList.length = 0;
   queue(sceneryAt(game.travelled), 'plant');
   queue(game.puddles, 'puddle', 0.01);
@@ -397,9 +420,11 @@ function render() {
   queue(game.pickups, 'pickup');
   // the wall you crashed into stays behind you, so you can see yourself dazed in front of it
   for (const w of game.walls) if (w.broken) w.depth = PLAYER_Z + 0.5;
-  game.player.layer = 'player';
-  game.player.depth = PLAYER_Z - 0.001;
-  drawList.push(game.player);
+  if (showPlayer) {
+    game.player.layer = 'player';
+    game.player.depth = PLAYER_Z - 0.001;
+    drawList.push(game.player);
+  }
   drawList.sort(byDepth);
   for (const o of drawList) drawThing(o, look);
 
@@ -419,35 +444,83 @@ function render() {
   ctx.restore();
 }
 
-function frame(now) {
-  const dt = Math.min((now - last) / 1000, 1 / 30);
-  last = now;
+function step(dt) {
   if (state === 'playing') update(dt);
-  else if (state === 'start') { game.time += dt; game.travelled += dt * 6; game.player.spin += dt * 2; updateParticles(dt); }
+  else if (state === 'start') { game.time += dt; game.travelled += dt * 6; updateParticles(dt); }
+  else if (state === 'intro') {
+    game.introT += dt; // game.time stays 0, so the round starts at the start speed
+    const at = introAt(game.introT);
+    game.travelled += dt * speedAt(0) * at.trip * at.trip; // the world speeds up as you trip
+    updateParticles(dt);
+    if (at.done) beginPlay();
+  }
   else if (state === 'over') game.time += dt; // keeps the dazed stars turning
   game.fx = stepFx(game.fx, dt);
   game.shake = Math.max(0, game.shake - dt);
   game.flash = Math.max(0, game.flash - dt);
   render();
+}
+
+function frame(now) {
+  step(Math.min((now - last) / 1000, 1 / 30));
+  last = now;
   requestAnimationFrame(frame);
 }
 
-function start() {
+async function choose(id) {
+  if (state !== 'start' || loadingFigure) return;
+  document.activeElement?.blur();
+  figureId = id;
+  saveFigure(id);
+  picker.select(id);
+  const tap = hud.start.querySelector('.tap');
+  loadingFigure = true;
+  tap.textContent = 'Lädt …';
+  try {
+    figure = await sheetsFor(id);
+  } catch (err) {
+    tap.textContent = 'Figur konnte nicht laden – nochmal tippen.';
+    console.error(err);
+    return;
+  } finally {
+    loadingFigure = false;
+  }
+  tap.textContent = TAP_TEXT;
+  for (const k of figureSheets.keys()) if (k !== id) figureSheets.delete(k);
+  beginIntro();
+}
+
+function beginIntro() {
   game = newGame();
   board.offer(null);
-  setState('playing');
   hud.start.classList.remove('show');
   hud.over.classList.remove('show');
+  setState('intro');
+  updateHud(speedAt(0));
+}
+
+function beginPlay() {
+  setState('playing');
   showBanner(`${season().icon} ${season().name}`, season().hint);
 }
 
+// Fast retry after a crash: straight into the round, no intro.
+function start() {
+  game = newGame();
+  board.offer(null);
+  hud.start.classList.remove('show');
+  hud.over.classList.remove('show');
+  beginPlay();
+}
+
 function onPointerDown(e) {
-  if (e.target?.closest?.('#ideas, #board, #over button')) return;
-  if (state === 'start') start();
-  else if (state === 'over') {
+  if (e.target?.closest?.('#ideas, #board, #over button, #figures')) return;
+  if (state === 'start') { choose(figureId); return; }
+  if (state === 'over') {
     if (hud.over.dataset.ready === '1') start();
     return;
   }
+  if (state === 'intro') beginPlay();
   input.dragging = true;
   input.lastX = e.clientX;
 }
@@ -468,11 +541,24 @@ function bindInput() {
   window.addEventListener('pointerup', () => { input.dragging = false; });
   window.addEventListener('pointercancel', () => { input.dragging = false; });
   window.addEventListener('keydown', (e) => {
-    if (e.target.closest?.('#ideas, #board, #over button')) return;
+    if (e.target.closest?.('#ideas, #board, #over button, #figures')) return;
     input.keys.add(e.key);
-    if ((e.key === ' ' || e.key === 'Enter') && state !== 'playing') onPointerDown({ clientX: 0 });
+    if ((e.key === ' ' || e.key === 'Enter') && state !== 'playing') {
+      onPointerDown({ clientX: 0 });
+      input.dragging = false; // keys steer on their own; no finger to follow
+    }
   });
   window.addEventListener('keyup', (e) => input.keys.delete(e.key));
+  hud.changeFigure.addEventListener('click', () => {
+    document.activeElement?.blur();
+    if (state !== 'over') return;
+    game = newGame();
+    board.offer(null);
+    hud.over.classList.remove('show');
+    hud.start.classList.add('show');
+    hud.bestStart.textContent = readBest();
+    setState('start');
+  });
   window.addEventListener('resize', resize);
   document.addEventListener('visibilitychange', () => { last = performance.now(); });
 }
@@ -495,6 +581,8 @@ async function init() {
   primeGrades();
   board = setupLeaderboard();
   setupIdeas(() => ({ score: game.passed, season: season().name }));
+  picker = setupFigureSelect(hud.figures, figureId, choose);
+  sheetsFor(figureId).catch(() => {});
   hud.bestStart.textContent = readBest();
   hud.start.classList.add('show');
   setState('start');
@@ -507,7 +595,7 @@ init();
 // Hook for local testing: open index.html#debug
 if (location.hash === '#debug') {
   window.rollDown = {
-    game: () => game, start, setSeason: (i) => setSeason(i),
+    game: () => game, start, intro: beginIntro, step, setSeason: (i) => setSeason(i),
     spawn: spawnWall, update: (dt) => update(dt),
   };
 }

@@ -1,7 +1,6 @@
-import { CORRIDOR, WALL_H, PLAYER_R, PLAYER_Z, SPAWN_Z } from './config.js';
+import { CORRIDOR, WALL_H, PLAYER_Z, SPAWN_Z } from './config.js';
 import { solidSegments, stripSource } from './logic.js';
 import { TILE_W, TILE_H, TILE_UNITS, TILE_LEVELS } from './surfaces.js';
-import { kidSprite, kidShade, headOffset } from './player.js';
 import { softDot, slab, gabionFaces, pickupSprite, hedgeSprite } from './sprites.js';
 import { project } from './view.js';
 import { star } from './render-fx.js';
@@ -254,65 +253,4 @@ export function drawPickup(ctx, view, item, look, time) {
     }
   }
   ctx.globalAlpha = 1;
-}
-
-function dazedStars(ctx, x, y, r, time) {
-  ctx.lineWidth = Math.max(1, r * 0.06);
-  ctx.strokeStyle = '#2b1d14';
-  ctx.fillStyle = '#ffd23f';
-  for (let i = 0; i < 3; i++) {
-    const a = time * 3.5 + (i * Math.PI * 2) / 3;
-    star(ctx, x + Math.cos(a) * r * 0.75, y - r * 0.45 + Math.sin(a) * r * 0.22, r * 0.2);
-    ctx.fill();
-    ctx.stroke();
-  }
-}
-
-// A person curled into a ball, tumbling down the hill.
-export function drawPlayer(ctx, view, player, time, speed = 0) {
-  const hopMax = 0.18 + (player.bump || 0);
-  const hop = Math.abs(Math.sin(player.spin * 0.5)) * hopMax;
-  const ground = project(view, player.x, PLAYER_Z);
-  const { sx, sy, s } = project(view, player.x, PLAYER_Z, PLAYER_R + hop);
-  const r = PLAYER_R * s;
-
-  ctx.globalAlpha = 0.6 - hop * 1.5;
-  ctx.drawImage(softDot('0,0,0'), ground.sx - r * 1.15, ground.sy - r * 0.32, r * 2.3, r * 0.64);
-  ctx.globalAlpha = 1;
-
-  const dpr = ctx.getTransform().a;
-  const spin = player.dazed ? -0.4 : player.spin;
-  const body = kidSprite(r, dpr, player.helmets > 0, player.dazed), d = body.width / dpr;
-  // squash on every touchdown, stretch when swerving
-  const squash = player.dazed ? 0 : (1 - hop / hopMax) ** 6 * 0.11;
-  const swerve = clamp(Math.abs(player.vx) * 0.008, 0, 0.08);
-  const blur = player.dazed ? 0 : clamp((speed - 18) / 20, 0, 1);
-  ctx.save();
-  ctx.translate(sx, sy + r * 0.8 * squash);
-  ctx.transform(1, 0, -clamp(player.vx * 0.05, -0.4, 0.4) * (player.slip || 0), 1, 0, 0); // lean into the slide
-  ctx.scale(1 + squash + swerve, 1 - squash - swerve * 0.5);
-  for (let i = 2; i >= 0; i--) {
-    if (i && !blur) continue;
-    const turn = spin - 0.16 * blur * i;
-    ctx.globalAlpha = i ? blur * (0.32 - i * 0.1) : 1;
-    ctx.rotate(turn);
-    ctx.drawImage(body, -d / 2, -d / 2, d, d);
-    ctx.rotate(-turn);
-  }
-  ctx.drawImage(kidShade(r, dpr), -d / 2, -d / 2, d, d);
-  if (blur > 0) {
-    ctx.strokeStyle = `rgba(255,255,255,${0.55 * blur})`;
-    ctx.lineWidth = Math.max(1.5, r * 0.07);
-    ctx.lineCap = 'round';
-    for (const a of [-2.75, 0.4]) {
-      ctx.beginPath();
-      ctx.arc(0, 0, r * 1.18, a, a + 0.9);
-      ctx.stroke();
-    }
-  }
-  ctx.restore();
-  if (player.dazed) {
-    const [hx, hy] = headOffset(spin, r);
-    dazedStars(ctx, sx + hx, sy + hy, r, time);
-  }
 }

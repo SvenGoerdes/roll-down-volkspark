@@ -106,11 +106,11 @@ def show_helmet(on):
 # ---------- clips ----------
 def clip_frames(name):
     """Yields (pose, bottle_frame) per frame; bottle_frame None hides the bottle."""
-    if name in ('idle', 'select'):   # faces the camera, breathes, shifts weight
+    if name in ('idle', 'select'):   # faces the camera, breathes, shifts weight; in game the bottle already lies there
         for i in range(12):
             a = 2 * math.pi * i / 12
             yield dict(STAND, yaw=180, bend=1.5 * math.sin(a), nod=-2 * math.sin(a), lean=1.5 * math.sin(a / 2) ** 2 - 0.75,
-                       sh_l=3 + 3 * math.sin(a), sh_r=3 - 3 * math.sin(a), lift=0.006 * math.cos(a)), None
+                       sh_l=3 + 3 * math.sin(a), sh_r=3 - 3 * math.sin(a), lift=0.006 * math.cos(a)), (0 if name == 'idle' else None)
     elif name == 'turn':   # turns his back to us, two little steps; the bottle already lies there
         keys = [dict(STAND, yaw=180), dict(STAND, yaw=125, hp_l=22, kn_l=-40, lift=0.015), dict(STAND, yaw=60, hp_r=22, kn_r=-40, lift=0.015), dict(STAND)]
         for i in range(12):

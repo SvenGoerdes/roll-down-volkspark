@@ -22,3 +22,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0016](0016-character-pipeline-3d-prerendered.md) | Characters: model sheet → Tripo → Blender → sprite sheets | User (Blender, short pipeline), Opus 5.5 (steps) |
 | [0017](0017-trellis-instead-of-tripo.md) | TRELLIS.2 via free Hugging Face Space instead of Tripo | User (open source, free), Opus 5.5 (model) |
 | [0018](0018-rigged-figures-to-sprites.md) | User's 3D models, rigged by script, rendered to sprite sheets | User (own models), Opus 5.5 (rig, pipeline) |
+| [0019](0019-figure-select-and-intro.md) | Figure select, intro (turn, trip, roll), retry without intro | User (flow), Opus 5.5 (details) |

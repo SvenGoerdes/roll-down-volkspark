@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14 (late morning): Kalle and Tine in the game
+- Start screen with figure cards (breathing sprites), choice remembered. Intro: stand, turn, trip over the Sterni, roll; a tap skips. Roll frames follow the spin, helmet clip, dazed clip with stars at game over. Retry skips the intro; "Figur wechseln" returns to the start. → [ADR 0019](decisions/0019-figure-select-and-intro.md)
+- The painted kid (`js/player.js`) is gone. New: `js/figure-select.js`, `js/render-player.js`, `tests/figure.test.js`.
+- The idle clip now shows the bottle lying there, so it doesn't pop in at the turn.
+- Way of working, as the user asked: Opus 5.5 planned and split the work; four Haiku 5.5 subagents wrote the modules in parallel (no shared files); a Sonnet 5.5 code review found a keyboard focus bug, a stale world after changing the figure, missing load feedback, decode hitches and a short-screen overflow; two Haiku agents fixed them. Opus checked the flow in headless Chrome at 390×844 and 375×667 and placed the standing clips on the ball's ground spot. Frame times in headless Chrome at 4x CPU throttling: steady 16.7 ms (60 fps); at 6x single spikes.
+- Requested by: the user. Built by: Opus 5.5 with Haiku 5.5 and Sonnet 5.5 subagents.
+
 ## 2026-10-14 (morning): Figure sprites rendered in the original look
 - The user picked look B: the models' own materials (PBR), no toon outline. Opus rendered all clips for both figures (`LOOK=pbr`) and packed them: 14 WebP sheets, ~1.1 MB in total, ~0.55 MB per figure.
 - Fix: the roll clips moved the root after the pose without re-skinning, so the body orbited the ball centre and the helmet floated off the head. `render.py` now re-skins after moving the root.
