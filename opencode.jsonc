@@ -1,0 +1,47 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // Project rules for OpenCode panes (ADR 0026). Last matching rule wins.
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "git *": "allow",
+      "gh *": "allow",
+      "bun *": "allow",
+      "bunx *": "allow",
+      "python3 *": "allow",
+      "blender *": "allow",
+      "cwebp *": "allow",
+      "magick *": "allow",
+      "ls *": "allow",
+      "cat *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "wc *": "allow",
+      "grep *": "allow",
+      "rg *": "allow",
+      "find *": "allow",
+      "mkdir *": "allow",
+      "open *": "allow",
+      "git push --force*": "ask",
+      "git push -f*": "ask",
+      "git reset --hard*": "ask",
+      "gh pr merge*": "deny",
+      "gh repo *": "ask",
+      "gh api *": "ask"
+    }
+  },
+  "agent": {
+    "coder": {
+      "mode": "subagent",
+      "model": "openai/gpt-6-luna",
+      "description": "Writes code for a small, clearly specified task. Give it the files, the goal and the tests to run."
+    },
+    "reviewer": {
+      "mode": "subagent",
+      "model": "openai/gpt-6.1-sol",
+      "reasoningEffort": "medium",
+      "description": "Reviews a diff for bugs, KISS, performance on phones and missing tests. Reports findings only, never edits.",
+      "permission": { "edit": "deny" }
+    }
+  }
+}

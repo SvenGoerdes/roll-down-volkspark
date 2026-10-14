@@ -70,7 +70,7 @@ python3 tools/cut-icons.py assets/src/powerups.png assets/powerups helmet slowmo
 
 ## Deploy
 
-**Game:** push to `main`. GitHub Pages builds from `main` at the root and is live after about a minute.
+**Game:** open a PR. CI (`.github/workflows/ci.yml`) runs `bun test tests`; `main` takes only green PRs, and merges need the user's OK (ADR 0026). GitHub Pages builds from `main` at the root and is live after about a minute.
 
 **Worker:** deploy the worker **before** pushing a frontend that needs new worker routes.
 
