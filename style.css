@@ -74,6 +74,9 @@ body[data-state="loading"] #hud, body[data-state="start"] #hud { visibility: hid
 .pw.widen { border-color: #1f9d55; background: #ddf6e7; }
 .pw.widen i { background: #1f9d55; }
 #wind { font-size: 22px; font-weight: 700; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+#wind.warn { animation: wind-warn 0.35s steps(2, jump-none) infinite; }
+@keyframes wind-warn { from { opacity: 1; } to { opacity: 0.25; } }
+body:not([data-state="playing"]) #wind { visibility: hidden; }
 
 #banner {
   position: absolute;

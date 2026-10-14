@@ -1,8 +1,8 @@
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, MAX_HELMETS, WALLS_PER_SEASON, SURFACES,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, MAX_HELMETS, WALLS_PER_SEASON, SURFACES, SPRING, ICE,
 } from './config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, seasonAhead, slipAmount, skidStrength, createSurfaceTrack, addHelmet,
+  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, seasonAhead, slipAmount, skidStrength, createSurfaceTrack, addHelmet, windAt, stepWind, windArrow,
 } from './logic.js';
 import { loadSeasonBackgrounds } from './seasons.js';
 import { environmentPreview, preparePreview } from './environment-preview.js';
@@ -78,8 +78,8 @@ function newGame() {
     surfaceAt: surfaceTrack(), surface: SURFACES.dirt, nextKick: 0, bannerAt: 0,
     player: { x: 0, vx: 0, target: 0, spin: 0, helmets: 0, slippery: 0, slip: 0, bump: 0 },
     effects: { slowmo: 0, widen: 0 },
-    wind: { force: 0, target: 0, nextGust: 4 },
-    shake: 0, flash: 0, slowFactor: 1, introT: 0, crashAt: 0,
+    wind: { force: 0, target: 0, next: 0, warn: 0, nextGust: 4, drift: 0 },
+    shake: 0, flash: 0, slowFactor: 1, introT: 0, crashAt: 0, pace: speedAt(0), speed: speedAt(0),
   };
 }
 
@@ -117,7 +117,7 @@ function spawnWall() {
   const gaps = makeGaps(game.spawned, game.lastGapX, s, Math.random);
   game.lastGapX = gaps[0].x;
   game.walls.push({ z: SPAWN_Z, gaps, index: game.spawned, snowy: s.id === 'winter' });
-  const spacing = spacingAt(game.spawned);
+  const spacing = spacingAt(game.spawned + 1); // distance to the next wall
   if (Math.random() < POWERUP_CHANCE && game.spawned > 1) {
     const types = Object.keys(POWERUPS);
     game.pickups.push({
@@ -206,17 +206,6 @@ function crash() {
   setTimeout(() => { hud.over.dataset.ready = '1'; }, 1100);
 }
 
-function updateWind(dt) {
-  const w = game.wind;
-  if (season().id !== 'autumn') { w.target = 0; }
-  else if ((w.nextGust -= dt) <= 0) {
-    const strength = 180 + Math.min(game.passed, 60) * 2;
-    w.target = w.target ? 0 : (Math.random() < 0.5 ? -1 : 1) * strength;
-    w.nextGust = w.target ? 1.6 + Math.random() : 2 + Math.random() * 2.5;
-  }
-  w.force += (w.target - w.force) * Math.min(1, dt * 3);
-}
-
 function updatePlayer(dt, speed) {
   const p = game.player;
   const keyDir = (input.keys.has('ArrowRight') || input.keys.has('d') ? 1 : 0)
@@ -225,14 +214,14 @@ function updatePlayer(dt, speed) {
   p.target = Math.max(-limit, Math.min(limit, p.target + keyDir * 10 * dt));
   // spring toward the finger; ice and puddles make it loose and overshooting
   const icy = season().id === 'winter' || p.slippery > 0;
-  const k = icy ? 45 : 320, c = icy ? 4.5 : 36;
+  const { k, c } = icy ? ICE : SPRING;
   // gravel: a constant hop and now and then a stone knocks you sideways
   const { bump, kick } = game.surface;
   p.bump += (bump - p.bump) * Math.min(1, dt * 8);
   if (kick && (game.nextKick -= dt) <= 0) {
     const [e0, e1] = kick.every, [i0, i1] = kick.impulse;
     game.nextKick = e0 + Math.random() * (e1 - e0);
-    p.vx += (Math.random() < 0.5 ? -1 : 1) * (i0 + Math.random() * (i1 - i0));
+    p.vx += (Math.random() < 0.5 ? -1 : 1) * (i0 + Math.random() * (i1 - i0)) * (icy ? ICE.kick : 1);
   }
   const a = k * (p.target - p.x) - c * p.vx + game.wind.force;
   p.vx += a * dt;
@@ -283,7 +272,7 @@ function updateParticles(dt) {
       color: cfg.colors[(Math.random() * cfg.colors.length) | 0], leaf: s.id === 'autumn', petal: s.id === 'spring',
     });
   }
-  const windPx = game.wind.force * 0.6;
+  const windPx = game.wind.drift * 0.6;
   for (const p of list) {
     p.x += (p.vx + windPx) * dt + Math.sin(game.time * 2 + p.rot) * 0.3;
     p.y += p.vy * dt;
@@ -306,14 +295,17 @@ function update(dt) {
     // no banner for plain dirt or while another one is still showing
     if (under.id !== 'dirt' && performance.now() - game.bannerAt > 2400) showBanner(under.name, under.hint);
   }
-  const speed = speedAt(game.time) * season().speedMul * game.surface.speedMul * game.slowFactor;
+  // the base speed follows the walls passed; it eases up instead of stepping at each wall
+  game.pace += (speedAt(game.passed) - game.pace) * Math.min(1, dt * 1.5);
+  const speed = game.pace * season().speedMul * game.surface.speedMul * game.slowFactor;
+  game.speed = speed;
   const dz = speed * dt;
   game.travelled += dz;
 
   game.nextSpawnIn -= dz;
   if (game.nextSpawnIn <= 0) spawnWall();
 
-  updateWind(dt);
+  stepWind(game.wind, dt, season().id === 'autumn', windAt(game.passed), Math.random);
   updatePlayer(dt, speed);
   const p = game.player;
   updateSkids(dt, dz);
@@ -378,8 +370,10 @@ function updateHud(speed) {
     }
   }
   hud.powers.innerHTML = parts.join(''); // only our own icons, never player text
-  const wf = game.wind.force;
-  hud.wind.textContent = Math.abs(wf) > 40 ? (wf > 0 ? 'Wind →' : '← Wind') : '';
+  const w = game.wind;
+  const dir = windArrow(w);
+  hud.wind.textContent = dir > 0 ? 'Wind →' : dir < 0 ? '← Wind' : '';
+  hud.wind.classList.toggle('warn', w.warn > 0);
 }
 
 // Everything on the ground, drawn far to near. Reused every frame.
@@ -421,7 +415,7 @@ function render() {
   if (s.id === 'winter') drawIceSheen(ctx, view, game.travelled, game.seasonFade);
   drawSkidMarks(ctx, view, game.skids, s.id === 'winter');
 
-  const speed = speedAt(game.time) * s.speedMul * game.surface.speedMul * game.slowFactor;
+  const speed = game.speed;
   const ahead = seasonAhead(game.walls, game.seasonIdx, WALLS_PER_SEASON, SEASONS.length);
   const showPlayer = figure && state !== 'start';
   const mode = { intro: 'intro', over: 'dazed' }[state] ?? 'roll';
@@ -464,7 +458,7 @@ function step(dt) {
   if (state === 'playing') update(dt);
   else if (state === 'start') { game.time += dt; game.travelled += dt * 6; updateParticles(dt); }
   else if (state === 'intro') {
-    game.introT += dt; // game.time stays 0, so the round starts at the start speed
+    game.introT += dt; // game.time stays 0: the intro is not play time
     const at = introAt(game.introT);
     game.travelled += dt * speedAt(0) * at.trip * at.trip; // the world speeds up as you trip
     updateParticles(dt);

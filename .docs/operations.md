@@ -4,7 +4,10 @@
 
 ```sh
 bun test tests                    # all unit tests (logic, worker, scores, scenery)
+bun tools/balance-sim.js          # a bot plays 600 runs: median, crash share per season, crash rate per wall
 ```
+
+Run the balance sim after changing the difficulty curve in `js/logic.js` or the steering physics in `js/main.js` (ADR 0024). It copies the physics, so change both together.
 
 Serve the folder with `bun tools/serve.js` (http://127.0.0.1:8765). **Don't use `python3 -m http.server`.** It drops module requests (backlog of 5), and the game then fails to start without a clear error.
 
