@@ -21,6 +21,8 @@ import {
 import { drawIceSheen, drawSkidMarks, drawSpray } from './render-slip.js';
 import { sceneryAt } from './scenery.js';
 import { burstStones, burstSparkles, stepFx } from './fx.js';
+import { STREAK_NEED, judgePass, nextStreak, wallsToRecord, recordWall } from './scoring.js';
+import { drawRecordMark } from './render-record.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -30,6 +32,7 @@ const hud = {
   wind: $('wind'), banner: $('banner'), start: $('start'), over: $('over'),
   final: $('final'), best: $('best'), bestStart: $('best-start'),
   figures: $('figures'), changeFigure: $('change-figure'),
+  streak: $('streak'), pop: $('pop'), overNote: $('over-note'),
 };
 
 const loadImage = (src) => new Promise((ok, fail) => {
@@ -46,7 +49,7 @@ const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } ca
 let view, dpr = 1, backgrounds, board, groundTiles, powerIcons;
 let state = 'loading';
 const setState = (s) => { state = s; document.body.dataset.state = s; };
-let game;
+let game, shownStreak = 0;
 const preview = environmentPreview();
 let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
@@ -80,6 +83,7 @@ function newGame() {
     effects: { slowmo: 0, widen: 0 },
     wind: { force: 0, target: 0, next: 0, warn: 0, nextGust: 4, drift: 0 },
     shake: 0, flash: 0, slowFactor: 1, introT: 0, crashAt: 0, pace: speedAt(0), speed: speedAt(0),
+    streak: 0, best: readBest(), recordShown: false,
   };
 }
 
@@ -179,11 +183,53 @@ function collect(type) {
   navigator.vibrate?.(30);
 }
 
+// "Perfekt" / "Knapp!" above the ball.
+function popText(text, kind) {
+  const at = playerSpot();
+  const el = hud.pop;
+  el.textContent = text;
+  el.className = kind;
+  el.style.left = `${at.sx}px`;
+  el.style.top = `${at.sy - at.s * 1.4}px`;
+  void el.offsetWidth; // restart the CSS animation
+  el.classList.add('show');
+}
+
+// How the wall was passed: a pop, the perfect streak, a new record.
+function onPass(kind) {
+  const at = playerSpot();
+  if (kind === 'perfect') {
+    popText('Perfekt', 'perfect');
+  } else if (kind === 'close') {
+    popText('Knapp!', 'close');
+    game.shake = Math.max(game.shake, 0.12);
+    navigator.vibrate?.(15);
+  }
+  const { streak, reward } = nextStreak(game.streak, kind);
+  game.streak = streak;
+  if (reward) {
+    const before = game.player.helmets;
+    burstSparkles(game.fx, at.sx, at.sy, at.s / 45);
+    game.player.helmets = addHelmet(before, MAX_HELMETS);
+    const sub = `${STREAK_NEED}× Perfekt`;
+    showBanner('Serie!', game.player.helmets > before ? `${sub} – Helm geschenkt` : sub, POWERUPS.helmet.img);
+    navigator.vibrate?.(30);
+  }
+  // last, so the record wins the banner over a season or streak on the same wall
+  if (!game.recordShown && game.best > 0 && game.passed > game.best) {
+    game.recordShown = true;
+    burstSparkles(game.fx, at.sx, at.sy, at.s / 45);
+    showBanner('Neuer Rekord!', `Mehr als ${game.best} Mauern`);
+    navigator.vibrate?.([40, 40, 40]);
+  }
+}
+
 function crash() {
   const at = playerSpot();
   burstStones(game.fx, at.sx, at.sy, at.s / 45);
   if (game.player.helmets > 0) {
     game.player.helmets--;
+    game.streak = 0;
     game.shake = 0.3;
     game.flash = 0.25;
     navigator.vibrate?.(80);
@@ -201,6 +247,10 @@ function crash() {
   board.offer(game.passed, season().name);
   hud.final.textContent = game.passed;
   hud.best.textContent = best;
+  const need = wallsToRecord(game.passed, game.best);
+  const record = game.best > 0 && game.passed > game.best;
+  hud.overNote.textContent = record ? 'Neuer Rekord!' : need > 0 ? `Noch ${need} ${need === 1 ? 'Mauer' : 'Mauern'} bis zum Rekord` : '';
+  hud.overNote.className = record ? 'record' : '';
   setTimeout(() => hud.over.classList.add('show'), 500);
   hud.over.dataset.ready = '0';
   setTimeout(() => { hud.over.dataset.ready = '1'; }, 1100);
@@ -319,6 +369,7 @@ function update(dt) {
       if (passesWall(p.x, PLAYER_R * 0.75, gaps)) {
         game.passed++;
         setSeason(seasonIndexAt(game.passed, WALLS_PER_SEASON, SEASONS.length));
+        onPass(judgePass(p.x, PLAYER_R * 0.75, gaps));
       } else {
         crash();
         w.broken = true;
@@ -356,6 +407,12 @@ function updateHud(speed) {
     chip.classList.remove('pop');
     void chip.offsetWidth; // restart the CSS animation
     chip.classList.add('pop');
+    hud.season.style.setProperty('--p', (game.passed % WALLS_PER_SEASON) / WALLS_PER_SEASON);
+  }
+  if (game.streak !== shownStreak) {
+    shownStreak = game.streak;
+    for (let i = 0; i < STREAK_NEED; i++) hud.streak.children[i].classList.toggle('on', i < shownStreak);
+    hud.streak.classList.toggle('active', shownStreak > 0);
   }
   hud.speed.textContent = `${Math.round(speed * 1.6)} km/h`;
   const s = season();
@@ -394,6 +451,7 @@ function drawThing(o, look) {
     case 'wall': {
       const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
       drawWall(ctx, view, o.z, gaps, SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)]);
+      if (o === look.record) drawRecordMark(ctx, view, o);
       break;
     }
     case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time, powerIcons[o.type]); break;
@@ -422,6 +480,7 @@ function render() {
   const t = mode === 'intro' ? game.introT : game.time - game.crashAt;
   const pose = showPlayer ? poseFor({ mode, t, spin: game.player.spin, helmet: game.player.helmets > 0 }, figure) : null;
   const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1, pose };
+  look.record = state === 'playing' ? recordWall(game.walls, game.passed, game.best, PLAYER_Z) : null;
   drawList.length = 0;
   queue(sceneryAt(game.travelled), 'plant');
   queue(game.puddles, 'puddle', 0.01);
@@ -596,6 +655,7 @@ async function init() {
   }
   game = newGame();
   primeGrades();
+  hud.streak.innerHTML = '<i></i>'.repeat(STREAK_NEED) + `<img src="${POWERUPS.helmet.img}" alt="">`; // only our own markup
   board = setupLeaderboard();
   setupIdeas(() => ({ score: game.passed, season: season().name }));
   // a card only picks the figure; the button (or a tap anywhere else) starts

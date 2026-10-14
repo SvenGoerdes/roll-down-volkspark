@@ -27,3 +27,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0022](0022-painted-seasonal-environment.md) | Layered painted seasons, forest clusters, cached atmosphere | User (references), Codex (implementation) |
 | [0023](0023-painted-materials-and-hill-profile.md) | Painted earth/gabions and shared descending hill projection | User (look, downhill), Codex (projection) |
 | [0024](0024-difficulty-curve-by-walls.md) | Difficulty by walls, eased curves, wind warning, tuned with a balance sim | User (too hard at 50), Opus 5.5 (curve) |
+| [0025](0025-perfect-streak-and-record-chase.md) | Perfekt/Knapp feedback, streak helmet, record sign, season progress | User (must grip), Opus 5.5 (rules) |

@@ -1,5 +1,6 @@
 // Balance check: a human-like bot plays many runs against the real difficulty curve (js/logic.js).
-// bun tools/balance-sim.js [runs]   → survival stats, crash share per season, crash rate per wall.
+// bun tools/balance-sim.js [runs] [--no-streak]   → survival stats, crash share per season, crash rate per wall.
+// --no-streak: the 6-perfect streak gives no helmet, to see what the streak adds.
 // The bot was tuned so that on the old curve (ADR 0024) it got stuck around wall 50 like our testers.
 // Spring, ice and wind come from js/config.js and js/logic.js; the rest of the steering copies js/main.js, keep both in step.
 import {
@@ -8,8 +9,10 @@ import {
 import {
   speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, windAt, addHelmet, stepWind, createSurfaceTrack,
 } from '../js/logic.js';
+import { judgePass, nextStreak } from '../js/scoring.js';
 
 // Drag precision by Fitts' law (a, b), feedback delay, pull against drift, rare sloppy swipes, more noise at speed.
+const NO_STREAK = process.argv.includes('--no-streak');
 const BOT = { a: 0.05, b: 0.13, sigma0: 0.1, delay: 0.22, gain: 3.5, lapse: 0.01, speedNoise: 0.12 };
 const DT = 1 / 60, MAX_WALLS = 400;
 
@@ -34,7 +37,7 @@ function aimSigma(d, T, speed) {
 }
 
 function run(rng) {
-  const g = { time: 0, dist: 0, passed: 0, spawned: 0, nextSpawnIn: 0, nextKick: 0, lastGapX: 0, pace: speedAt(0) };
+  const g = { time: 0, dist: 0, passed: 0, streak: 0, perfects: 0, spawned: 0, nextSpawnIn: 0, nextKick: 0, lastGapX: 0, pace: speedAt(0) };
   const track = createSurfaceTrack(rng);
   const walls = [], pickups = [], puddles = [];
   const p = { x: 0, vx: 0, target: 0, slippery: 0, helmets: 0 };
@@ -112,9 +115,16 @@ function run(rng) {
       const before = w.z;
       w.z -= dz;
       if (before <= PLAYER_Z || w.z > PLAYER_Z) continue;
-      if (passesWall(p.x, PLAYER_R * 0.75, w.gaps.map((gp) => widened(gp, widen)))) g.passed++;
-      else if (p.helmets > 0) { p.helmets--; w.broken = true; }
-      else return { score: g.passed, season: seasonIndexAt(g.passed, WALLS_PER_SEASON, SEASONS.length), time: g.time };
+      const gaps = w.gaps.map((gp) => widened(gp, widen));
+      if (passesWall(p.x, PLAYER_R * 0.75, gaps)) {
+        g.passed++;
+        const kind = judgePass(p.x, PLAYER_R * 0.75, gaps);
+        if (kind === 'perfect') g.perfects++;
+        const st = nextStreak(g.streak, kind);
+        g.streak = st.streak;
+        if (st.reward && !NO_STREAK) p.helmets = addHelmet(p.helmets, MAX_HELMETS);
+      } else if (p.helmets > 0) { p.helmets--; g.streak = 0; w.broken = true; }
+      else return { score: g.passed, season: seasonIndexAt(g.passed, WALLS_PER_SEASON, SEASONS.length), time: g.time, perfects: g.perfects };
     }
     for (const it of pickups) {
       const before = it.z;
@@ -133,10 +143,10 @@ function run(rng) {
       for (let i = list.length - 1; i >= 0; i--) if (list[i].z < 0.6 || list[i].broken || list[i].taken) list.splice(i, 1);
     }
   }
-  return { score: g.passed, season: -1, time: g.time };
+  return { score: g.passed, season: -1, time: g.time, perfects: g.perfects };
 }
 
-const runs = Number(process.argv[2]) || 600;
+const runs = Number(process.argv.find((a) => /^\d+$/.test(a))) || 600;
 const rng = mulberry(1);
 const res = Array.from({ length: runs }, () => run(rng));
 const sc = res.map((r) => r.score).sort((a, b) => a - b);
@@ -152,3 +162,4 @@ console.log(`${runs} Runden · Median ${q(0.5)} · 25 % ${q(0.25)} · 75 % ${q(0
 console.log(`Runde dauert im Schnitt ${Math.round(res.reduce((a, r) => a + r.time, 0) / runs)} s`);
 console.log(`Crashes nach Jahreszeit: ${share.join(' · ')}`);
 console.log(`Crash-Chance pro Mauer in % (ab Mauer): ${rates.join(' · ')}`);
+console.log(`Perfekt: ${Math.round((res.reduce((a, r) => a + r.perfects, 0) / res.reduce((a, r) => a + r.score, 0)) * 100)} % der Mauern`);

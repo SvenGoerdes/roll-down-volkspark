@@ -23,7 +23,10 @@
 
     <div id="hud">
       <div class="row">
-        <div class="chip big"><span id="score">0</span><small>Mauern</small></div>
+        <div class="score-col">
+          <div class="chip big"><span id="score">0</span><small>Mauern</small></div>
+          <div id="streak" aria-hidden="true"></div>
+        </div>
         <div class="stack">
           <div class="chip" id="season"></div>
           <div class="chip" id="speed"></div>
@@ -36,6 +39,7 @@
     </div>
 
     <div id="banner"></div>
+    <div id="pop" aria-hidden="true"></div>
     <p id="hint" aria-hidden="true">Wischen zum Lenken</p>
 
     <section id="start" class="overlay">
@@ -54,6 +58,7 @@
     <section id="over" class="overlay">
       <h2>Autsch!</h2>
       <p class="result"><span id="final">0</span> Mauern</p>
+      <p id="over-note"></p>
       <p class="small">Rekord: <span id="best">0</span></p>
       <button id="submit-score" type="button" hidden>In Bestenliste eintragen</button>
       <button id="change-figure" type="button">Figur wechseln</button>
