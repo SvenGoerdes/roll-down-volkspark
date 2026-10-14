@@ -3,10 +3,10 @@ import { project } from './view.js';
 
 // Glossy ice: a light sheen over the path plus streaks that scroll with the ground.
 let sheenGrad = null, sheenKey = '';
+let sheenView, sheenPath;
 
 export function drawIceSheen(ctx, view, travelled, alpha = 1) {
-  const { H, horizonY, CH, cx } = view;
-  const pw = (CORRIDOR / 2) * (H - horizonY) / CH;
+  const { H, horizonY } = view;
   const key = `${H}|${horizonY}`;
   if (key !== sheenKey) {
     sheenKey = key;
@@ -17,14 +17,21 @@ export function drawIceSheen(ctx, view, travelled, alpha = 1) {
   }
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.beginPath();
-  ctx.moveTo(cx, horizonY);
-  ctx.lineTo(cx + pw, H);
-  ctx.lineTo(cx - pw, H);
-  ctx.closePath();
-  ctx.clip();
+  if (sheenView !== view) {
+    sheenView = view; sheenPath = new Path2D();
+    const edge = (y, side) => {
+      const p = project(view, side * (CORRIDOR / 2 - 0.2), view.groundRows[y]);
+      sheenPath.lineTo(p.sx, y);
+    };
+    sheenPath.moveTo(view.cx, horizonY);
+    for (let y = horizonY + 1; y < H; y += 12) edge(y, 1);
+    edge(H, 1); edge(H, -1);
+    for (let y = H - 1; y > horizonY; y -= 12) edge(y, -1);
+    sheenPath.closePath();
+  }
+  ctx.clip(sheenPath);
   ctx.fillStyle = sheenGrad;
-  ctx.fillRect(cx - pw, horizonY, pw * 2, H - horizonY);
+  ctx.fillRect(0, horizonY, view.W, H - horizonY);
   ctx.lineCap = 'round';
   ctx.strokeStyle = '#fff';
   const buckets = [[], [], [], []];

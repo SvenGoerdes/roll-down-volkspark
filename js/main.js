@@ -4,7 +4,8 @@ import {
 import {
   speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, seasonAhead, slipAmount, skidStrength, createSurfaceTrack, addHelmet,
 } from './logic.js';
-import { buildSeasonBackgrounds } from './seasons.js';
+import { loadSeasonBackgrounds } from './seasons.js';
+import { environmentPreview, preparePreview } from './environment-preview.js';
 import { buildGroundTiles } from './surfaces.js';
 import { setupIdeas } from './ideas.js';
 import { setupLeaderboard } from './leaderboard.js';
@@ -42,10 +43,11 @@ const BEST_KEY = 'rollDownBest';
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
 const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch { /* private mode */ } };
 
-let view, dpr = 1, backgrounds, gabion, board, groundTiles;
+let view, dpr = 1, backgrounds, board, groundTiles;
 let state = 'loading';
 const setState = (s) => { state = s; document.body.dataset.state = s; };
 let game;
+const preview = environmentPreview();
 let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
 let figureId = readFigure(), figure = null, picker, loadingFigure = false;
@@ -83,8 +85,15 @@ function newGame() {
 
 function resize() {
   dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const W = Math.min(window.innerWidth, Math.round(window.innerHeight * 0.66));
-  const H = window.innerHeight;
+  const H = preview?.height ?? window.innerHeight;
+  const W = Math.min(preview?.width ?? window.innerWidth, Math.round(H * 0.66));
+  if (preview?.width) {
+    // A fixed game frame for accurate mobile checks even when the browser pane
+    // enforces a wider minimum layout viewport than its screenshot size.
+    $('stage').style.width = `${W}px`;
+    $('stage').style.marginLeft = '0';
+  }
+  if (preview?.height) $('stage').style.height = `${H}px`;
   canvas.style.width = `${W}px`;
   canvas.style.height = `${H}px`;
   canvas.width = Math.round(W * dpr);
@@ -384,7 +393,7 @@ function drawThing(o, look) {
     case 'puddle': drawPuddle(ctx, view, o); break;
     case 'wall': {
       const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
-      drawWall(ctx, view, o.z, gaps, gabion, o.snowy, look.s.fog);
+      drawWall(ctx, view, o.z, gaps, SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)]);
       break;
     }
     case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time); break;
@@ -445,6 +454,7 @@ function render() {
 }
 
 function step(dt) {
+  if (preview && game && state !== 'loading') { render(); return; }
   if (state === 'playing') update(dt);
   else if (state === 'start') { game.time += dt; game.travelled += dt * 6; updateParticles(dt); }
   else if (state === 'intro') {
@@ -567,10 +577,8 @@ async function init() {
   resize();
   bindInput();
   try {
-    const [park, tex] = await Promise.all([loadImage('assets/park.jpg'), loadImage('assets/gabion.jpg')]);
-    gabion = tex;
-    backgrounds = buildSeasonBackgrounds(park, SEASONS);
-    groundTiles = buildGroundTiles(SEASONS);
+    backgrounds = await loadSeasonBackgrounds(SEASONS, loadImage, preview?.idx ?? 0);
+    groundTiles = buildGroundTiles(SEASONS, preview?.idx ?? 0);
     warmUp(SEASONS);
   } catch (err) {
     hud.start.querySelector('.tap').textContent = 'Laden fehlgeschlagen – bitte neu laden.';
@@ -586,6 +594,14 @@ async function init() {
   hud.bestStart.textContent = readBest();
   hud.start.classList.add('show');
   setState('start');
+  if (preview) {
+    preparePreview(game, preview);
+    figure = await sheetsFor(figureId);
+    hud.start.classList.remove('show');
+    setState('playing');
+    primeGrades();
+    updateHud(speedAt(0));
+  }
   last = performance.now();
   requestAnimationFrame(frame);
 }

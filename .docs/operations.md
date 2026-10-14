@@ -20,6 +20,21 @@ GEMINI_API_KEY=… OPENROUTER_API_KEY=… bun tools/gen-image.js out.png "prompt
 
 Default is Nano Banana 2.1 straight from Google (`GEMINI_API_KEY`, Google billing). Other model ids go through OpenRouter (`OPENROUTER_API_KEY`, limit $5). Both keys are in the user's `~/.zshrc`. See ADR 0013 and 0015. Blender 5.2 is at `/Applications/Blender.app/Contents/MacOS/Blender` (run with `-b -P script.py`). See ADR 0013.
 
+## Environment assets (ADR 0022)
+
+`python3 tools/build-environment.py` rebuilds the four runtime horizons from
+`assets/seasons/` (Pillow required). Add `--forest-source <directory>` to repack the
+original transparent forest PNGs; source mapping and the complete prompt set are
+in `assets/environment/README.md`. No paid API is used by this packing script.
+
+`python3 tools/build-surface-art.py --source <original Imagegen directory>` repacks
+the earth and gabion material PNGs. Exact prompts and source mapping are recorded
+in `assets/environment/material-prompts.json` and that folder's README.md.
+
+Visual fixture: `http://127.0.0.1:8765/?preview=spring#debug`. Other seasons:
+`summer`, `autumn`, `winter`; optional `&surface=gravel` or `&surface=grass`.
+The view is frozen with consistent walls for comparisons. Add `&width=390&height=844` or `&width=375&height=667` for exact game-frame dimensions (the in-app browser sometimes reports a different layout viewport from its capture size). Use `/#debug` for real play.
+
 ## Generate 3D models
 
 ```sh

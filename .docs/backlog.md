@@ -13,7 +13,7 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - **Status 2026-10-14, branch `grafik`:** Kalle and Tine are in the game (ADR 0018, 0019): figure select, intro, roll, helmet, dazed. Not merged yet; needs the user's look in a real phone browser, then merge to main (= live).
 - Check on a real phone: 60 fps with the sprite sheets, memory (~25 MB decoded per figure), the intro timing.
 - `assets/src/characters/kalle.glb` (TRELLIS) and `tools/gen-3d.py` are superseded; delete when the new figures ship.
-- Environment images (backgrounds per season, tree lines, grass, gabion wall, pickups, start and game-over art) with Nano Banana 2.1: the user allowed up to $2. Not started.
+- Environment upgrade implemented on `grafik` (ADR 0022): painted seasonal horizons, transparent forest clusters, shaded ground and seasonal gabion faces. Ground/gabion materials and a shared downhill profile refined in ADR 0023. Mobile screenshots checked; needs real-phone and 4x CPU-throttled performance before merging. Pickup/start/game-over art remains outside this change. Built-in Imagegen was used; no Gemini/OpenRouter charges for the environment assets.
 - Then: scene style samples. Prompts were drafted with the user: spring with Tine and cherry blossoms, summer with Kalle and picnics, autumn wind, winter with snow and sledges, start screen with figure select, game over.
 - Also proposed: `.docs/pillars.md` (game pillars), a safe-area check for iOS, and a deny list in `.claude/settings.json`. Ideas taken from donchitos/claude-code-game-studios (MIT); the studio itself is not adopted (KISS).
 - Path to iOS: PWA first, then wrap with Capacitor. Write an ADR when it starts.
