@@ -86,3 +86,5 @@ Level lids, stone depth, softened verges and distant woodland make the path read
 as a descending park slope. Ice and projected obstacles use that same curve.
 
 For exact game-frame checks add `&width=390&height=844` or `&width=375&height=667` to the preview URL. These apply only to the frozen debug fixture; normal play uses the actual viewport.
+
+Basket height is 1.65 world units; face crops preserve stone/wire proportions. Add `&near=4.8` to a debug fixture to inspect a wall just before the collision plane and check the following gap.

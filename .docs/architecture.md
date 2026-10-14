@@ -48,7 +48,7 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 
 **Game rules in short.** Speed rises slowly to a cap; gaps get narrower and walls closer. Seasons change every 20 walls (spring: puddles, summer: faster and two gaps, autumn: wind gusts, winter: ice). Path surfaces change every 120–220 units (dirt normal, gravel bumpy, grass slower). Power-ups: helmet (extra life, stacks to 3), slow-mo (5 s), wider gaps (7 s).
 
-**Testing hook.** `index.html#debug` exposes `window.rollDown` (`game()`, `start`, `intro`, `step`, `setSeason`, `spawn`, `update`); `step(dt)` advances one frame by hand, for panes where `requestAnimationFrame` is paused during scripted browser tests. `?preview=autumn#debug` provides a frozen seasonal view; add `&surface=gravel` or `&surface=grass` to check surfaces. `&width=390&height=844` fixes the debug game frame for repeatable captures.
+**Testing hook.** `index.html#debug` exposes `window.rollDown` (`game()`, `start`, `intro`, `step`, `setSeason`, `spawn`, `update`); `step(dt)` advances one frame by hand, for panes where `requestAnimationFrame` is paused during scripted browser tests. `?preview=autumn#debug` provides a frozen seasonal view; add `&surface=gravel` or `&surface=grass` to check surfaces. `&width=390&height=844` fixes the debug game frame for repeatable captures; `&near=4.8` shows a close approaching basket. Basket height is 1.65, with texture cropping to preserve wire proportions.
 
 **Security on the page.** A CSP meta tag allows only own files and the worker URL. User text (names, ideas, leaderboard entries) is only ever set with `textContent`.
 

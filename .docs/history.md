@@ -5,7 +5,7 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 ## 2026-10-14: Lower walls and environment release review
 - The user requested lower gabions so the following gap remains easier to see. Basket height is now 1.65 instead of 2.6; the material faces crop to the new dimensions, preserving wire and stone proportions. Added a visibility regression at tight late-game spacing for three phone formats.
 - The environment work is prepared on `feat/painted-park-environment` for a reviewed PR to main, including the current icon/start-screen changes already merged on main.
-- Requested by: the user. Built by: Codex (GPT-6). Review and release results follow in this entry.
+- Requested by: the user. Built by: Codex (GPT-6). Independent review by GPT-6.1 Sol (medium) of `f592a12` found no actionable correctness issues. All 72 tests pass; the browser bundle parses successfully, near-wall screenshots and the current figure-select/Losrollen flow are checked. Hardware FPS/4x CPU throttling remain unverified. Environment implementation: `5403005`; upstream integration: `f592a12`. Release is tracked by the environment PR.
 
 ## 2026-10-14: Ground and wall material refinement, visible downhill
 - User feedback: ground and walls should resemble the detailed generated references; explicitly chose stronger visible downhill. → [ADR 0023](decisions/0023-painted-materials-and-hill-profile.md)
