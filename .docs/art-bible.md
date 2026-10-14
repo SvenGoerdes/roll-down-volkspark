@@ -20,6 +20,6 @@ Volkspark Friedrichshain as a warm, hand-painted picture book: gouache textures,
 
 ## Making assets
 - Generate with `tools/gen-image.js` (ADR 0013) or the built-in Imagegen tool (ADR 0022). Always supply the style reference. Preserve real alpha in transparent cutouts.
-- Sprites are generated on a flat single-color background and cut out afterwards.
+- Sprites are generated on a flat single-color background (magenta) and cut out with `tools/cut-icons.py`. Several icons of a set go into one image, so they share one style.
 - Store the prompt for each asset in `assets/src/prompts.md` so we can make it again.
 - Before shipping: WebP, scaled to the largest on-screen size at DPR 2, and within the mobile budget in [engineering-principles.md](engineering-principles.md).

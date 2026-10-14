@@ -23,3 +23,6 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0017](0017-trellis-instead-of-tripo.md) | TRELLIS.2 via free Hugging Face Space instead of Tripo | User (open source, free), Opus 5.5 (model) |
 | [0018](0018-rigged-figures-to-sprites.md) | User's 3D models, rigged by script, rendered to sprite sheets | User (own models), Opus 5.5 (rig, pipeline) |
 | [0019](0019-figure-select-and-intro.md) | Figure select, intro (turn, trip, roll), retry without intro | User (flow), Opus 5.5 (details) |
+| [0020](0020-painted-powerup-icons-and-storni.md) | Painted power-up icons; the bottle becomes "Storni" | User (style, name), Opus 5.5 (placement) |
+| [0022](0022-painted-seasonal-environment.md) | Layered painted seasons, forest clusters, cached atmosphere | User (references), Codex (implementation) |
+| [0023](0023-painted-materials-and-hill-profile.md) | Painted earth/gabions and shared descending hill projection | User (look, downhill), Codex (projection) |

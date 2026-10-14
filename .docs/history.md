@@ -8,19 +8,33 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Requested by: the user. Built by: Codex (GPT-6). Review and release results follow in this entry.
 
 ## 2026-10-14: Ground and wall material refinement, visible downhill
-+- User feedback: ground and walls should resemble the detailed generated references; explicitly chose stronger visible downhill. → [ADR 0023](decisions/0023-painted-materials-and-hill-profile.md)
-+- Two shared painted material WebPs replace sparse earth dots and flat procedural stones. Earth has embedded gravel, roots, worn patches and leaves; gabions have tightly packed faceted rocks behind fine wire. Larger cached faces, level lids, shaded ends and seasonal snow/vines preserve gap readability. Added material packing script and exact prompts.
-+- A shared logarithmic hill profile moves all ground objects consistently, while keeping the player position, horizontal scale and collision rules. Ground inverse rows are built only on resize. The ice mask follows the curve; a distant painted forest layer fills the valley transition.
-+- Validation: 71 tests passing, including projection/inverse and collision-plane anchors. Browser checks in explicit 390×844 and 375×667 game frames, seasonal materials and normal play. Debug fixtures can set width/height independently of the browser pane size. Added art: 93,390 bytes. Real devices and 4x CPU throttling remain unverified.
-+- Requested by: the user. Built by: Codex (GPT-6), with the built-in Imagegen tool. Uncommitted on `grafik`; not published.
+- User feedback: ground and walls should resemble the detailed generated references; explicitly chose stronger visible downhill. → [ADR 0023](decisions/0023-painted-materials-and-hill-profile.md)
+- Two shared painted material WebPs replace sparse earth dots and flat procedural stones. Earth has embedded gravel, roots, worn patches and leaves; gabions have tightly packed faceted rocks behind fine wire. Larger cached faces, level lids, shaded ends and seasonal snow/vines preserve gap readability. Added material packing script and exact prompts.
+- A shared logarithmic hill profile moves all ground objects consistently, while keeping the player position, horizontal scale and collision rules. Ground inverse rows are built only on resize. The ice mask follows the curve; a distant painted forest layer fills the valley transition.
+- Validation: 71 tests passing, including projection/inverse and collision-plane anchors. Browser checks in explicit 390×844 and 375×667 game frames, seasonal materials and normal play. Debug fixtures can set width/height independently of the browser pane size. Added art: 93,390 bytes. Real devices and 4x CPU throttling remain unverified.
+- Requested by: the user. Built by: Codex (GPT-6), with the built-in Imagegen tool. Uncommitted on `grafik`; not published.
 
 ## 2026-10-14: Painted seasonal environment
-+- Replaced the recoloured park photo with four cropped WebP horizons from the user's new references, without their foreground walls. Shared seasonal palettes connect sky, ground, baskets and foliage. → [ADR 0022](decisions/0022-painted-seasonal-environment.md)
-+- Built four transparent painted woodland clusters with the built-in Imagegen tool. Cached tree/shrub variants form a denser roadside, with silhouette-shaped depth mist. New basket faces use larger stone shapes, clear dark wire, sunlit rims, spring vines, autumn leaves and winter snow; gap posts stay inside collision bounds.
-+- Ground tiles now have baked edge shadows, sunlit middles, uneven verges and a continuous winter track. The image preparation script and complete prompt set live in `tools/build-environment.py` and `assets/environment/README.md`.
-+- Eight new WebPs total 898,616 bytes. Old full-resolution references are not loaded by the game. Changes remain uncommitted on `grafik`; nothing published.
-+- Validation: 69 tests passing; browser checks at 390×844 across all four seasons and at 375×667. Real-device/4x CPU-throttled performance pending.
-+- Requested by: the user. Built by: Codex (GPT-6), using the supplied Gemini idea as reference material.
+- Replaced the recoloured park photo with four cropped WebP horizons from the user's new references, without their foreground walls. Shared seasonal palettes connect sky, ground, baskets and foliage. → [ADR 0022](decisions/0022-painted-seasonal-environment.md)
+- Built four transparent painted woodland clusters with the built-in Imagegen tool. Cached tree/shrub variants form a denser roadside, with silhouette-shaped depth mist. New basket faces use larger stone shapes, clear dark wire, sunlit rims, spring vines, autumn leaves and winter snow; gap posts stay inside collision bounds.
+- Ground tiles now have baked edge shadows, sunlit middles, uneven verges and a continuous winter track. The image preparation script and complete prompt set live in `tools/build-environment.py` and `assets/environment/README.md`.
+- Eight new WebPs total 898,616 bytes. Old full-resolution references are not loaded by the game. Changes remain uncommitted on `grafik`; nothing published.
+- Validation: 69 tests passing; browser checks at 390×844 across all four seasons and at 375×667. Real-device/4x CPU-throttled performance pending.
+- Requested by: the user. Built by: Codex (GPT-6), using the supplied Gemini idea as reference material.
+
+## 2026-10-14 (afternoon): Calmer start screen, no emojis
+- The user found the start screen cluttered and the emojis too many. Now: title, one line, the figure cards, one big "Losrollen" button, the three painted power-ups in a compact row, the record. A card only picks the figure; the button (or a tap anywhere else) starts.
+- "Wischen zum Lenken" moved out of the start screen into the intro, shown while the figure turns and trips. The seasons line is gone; the season banners explain each season when it comes.
+- Emojis removed from the UI: start legend, bottom buttons, game over, leaderboard (ranks are numbers), idea sheet, season and surface banners, HUD season chip, wind hint. The score HUD is hidden on the start screen.
+- Found on the way: after a deploy the browser may mix the new `index.html` with cached old CSS/JS for up to 10 minutes (GitHub Pages `max-age=600`). That made the new icons huge for the user. Logged in the backlog.
+- Requested by: the user. Built by: Opus 5.5.
+
+## 2026-10-14 (midday): Painted power-up icons, the Storni bottle
+- Power-up icons painted with Nano Banana in the gouache style (the user picked them over a glossy 3D set). They float with a glow on the path and replace the emojis in the HUD, the start legend and the banners. The helmet is now the same red bike helmet the figures wear. → [ADR 0020](decisions/0020-painted-powerup-icons-and-storni.md)
+- The bottle is now "Storni" (the user's name for it): 1.7 × bigger, glossy brown glass, crown cap, painted label. It lies beside the foot where you can see it. Intro clips re-rendered for both figures.
+- New tool `tools/cut-icons.py`; prompts in `assets/src/prompts.md`.
+- Codex worked on the environment in the main checkout at the same time, so this was built in a separate worktree on branch `icons`.
+- Requested by: the user. Built by: Opus 5.5.
 
 ## 2026-10-14 (late morning): Kalle and Tine in the game
 - Start screen with figure cards (breathing sprites), choice remembered. Intro: stand, turn, trip over the Sterni, roll; a tap skips. Roll frames follow the spin, helmet clip, dazed clip with stars at game over. Retry skips the intro; "Figur wechseln" returns to the start. → [ADR 0019](decisions/0019-figure-select-and-intro.md)

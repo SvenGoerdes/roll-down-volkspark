@@ -19,6 +19,8 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - Path to iOS: PWA first, then wrap with Capacitor. Write an ADR when it starts.
 
 ## Tech debt
+- **Mixed versions after a deploy:** GitHub Pages lets browsers cache every file for 10 minutes, so right after a deploy a new `index.html` can meet old CSS or JS (seen 2026-10-14: huge icons, old pickups). A crash is possible when new code imports something an old cached module lacks. Fix idea: a small build step that stamps a version into all file URLs, or a service worker that updates all files together.
+- The `icon` emoji fields in `SEASONS` and `SURFACES` (`js/config.js`) are no longer shown. Remove them once Codex's environment work (which edits the same lines) has landed.
 - `js/main.js` is ~600 lines, well over the ~400 guideline. Split it next: input, HUD, states (start/intro/over flow).
 - Agent worktrees remain in `.claude/worktrees/` (ignored by git). They can be deleted.
 - No browser test scripts in the repo; screenshots now use the desktop app's browser pane with `tools/serve.js`.

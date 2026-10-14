@@ -20,7 +20,7 @@ export const saveFigure = (id) => {
   }
 };
 
-// Builds the cards in root. onPick(id) runs on a click; select(id) moves the mark to another card.
+// Builds the cards in root. onPick(id) runs when a card is tapped; select(id) moves the mark to another card.
 export function setupFigureSelect(root, current, onPick) {
   const cards = FIGURES.map(({ id, name, tag }) => {
     const { n, w, h, cols } = SHEETS[id].select;

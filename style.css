@@ -30,6 +30,7 @@ canvas { display: block; }
   pointer-events: none;
 }
 #hud .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+body[data-state="loading"] #hud, body[data-state="start"] #hud { visibility: hidden; } /* no score before the first roll */
 .stack { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 
 .chip {
@@ -65,6 +66,7 @@ canvas { display: block; }
   border-radius: 50%;
   overflow: hidden;
 }
+.pw img { width: 30px; height: 30px; object-fit: contain; }
 .pw i { position: absolute; left: 0; bottom: 0; height: 4px; background: #ffd23f; }
 .pw.helmet { border-color: #e23b3b; background: #ffe3e0; }
 .pw.slowmo { border-color: #2f7de1; background: #e0edff; }
@@ -84,6 +86,7 @@ canvas { display: block; }
   width: 90%;
 }
 #banner strong { display: block; font-size: 34px; font-weight: 900; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 3px 14px rgba(0, 0, 0, 0.6); }
+#banner strong img { height: 1.1em; vertical-align: -0.18em; margin-right: 8px; }
 #banner span { display: block; font-size: 16px; margin-top: 4px; font-weight: 600; }
 #banner.show { animation: banner 2.2s ease-out forwards; }
 @keyframes banner {
@@ -121,8 +124,12 @@ h2 { font-size: 40px; font-weight: 900; }
   from { transform: scale(1.8); opacity: 0; }
 }
 .overlay p { font-size: 16px; max-width: 320px; }
-.legend { list-style: none; text-align: left; font-size: 15px; display: grid; gap: 6px; }
-.legend b { display: inline-block; min-width: 2.2em; margin-right: 6px; }
+/* power-ups at a glance: three columns, icon over a word and a short fact */
+.legend { list-style: none; display: grid; grid-template-columns: repeat(3, 96px); gap: 4px; margin-top: 6px; }
+.legend li { display: grid; justify-items: center; gap: 2px; }
+.legend img { width: 40px; height: 40px; object-fit: contain; }
+.legend b { font-size: 13px; font-weight: 800; }
+.legend small { font-size: 12px; opacity: 0.75; }
 .result { font-size: 26px !important; font-weight: 700; }
 .result span { font-size: 56px; font-weight: 900; color: #ffd23f; display: block; line-height: 1; }
 .small { opacity: 0.8; font-size: 14px !important; }
@@ -137,6 +144,16 @@ h2 { font-size: 40px; font-weight: 900; }
   animation: pulse 1.4s ease-in-out infinite;
 }
 @keyframes pulse { 50% { transform: scale(1.05); } }
+button.tap { border: 0; font-family: inherit; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+#start .tap { font-size: 20px !important; padding: 14px 44px; }
+/* shown only while the figure turns and trips: the one control there is */
+#hint {
+  position: absolute; left: 0; right: 0; bottom: 14%;
+  text-align: center; font-weight: 800; font-size: 18px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+  opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+body[data-state="intro"] #hint { opacity: 1; }
 
 .figures { display: flex; justify-content: center; gap: 12px; }
 .fig {
@@ -177,10 +194,11 @@ body:not([data-state="start"]) .fig-sprite { animation-play-state: paused; }
 }
 @media (max-height: 700px) {
   .overlay { gap: 10px; }
-  .legend { font-size: 14px; gap: 3px; }
+  .legend img { width: 32px; height: 32px; }
 }
 @media (max-height: 620px) {
   #start .legend { display: none; }
+  .figures { zoom: 0.8; } /* keep the start button clear of the corner buttons */
 }
 
 #ideas, #board { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
@@ -192,16 +210,14 @@ body:not([data-state="start"]) .fig-sprite { animation-play-state: paused; }
   display: flex; align-items: center; gap: 6px;
   border: 0;
   border-radius: 999px;
-  padding: 10px 16px 10px 12px;
+  padding: 11px 18px;
   font: 700 15px/1 system-ui, sans-serif;
   color: #1c2a1a;
   background: #fff;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  font-size: 20px;
 }
 body:has(#ideas.open) #board-btn, body:has(#board.open) #idea-btn { display: none; }
-#board-btn { right: auto; left: 14px; padding: 10px 14px 10px 12px; }
-#idea-btn span, #board-btn span { font-size: 15px; }
+#board-btn { right: auto; left: 14px; }
 body[data-state="playing"] #idea-btn, body[data-state="intro"] #idea-btn, #ideas.open #idea-btn,
 body[data-state="playing"] #board-btn, body[data-state="intro"] #board-btn, #board.open #board-btn { display: none; }
 

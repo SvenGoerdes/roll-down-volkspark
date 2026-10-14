@@ -56,6 +56,14 @@ python3 tools/build-sprites.py /tmp/frames                            # WebP she
 
 Needs Pillow with WebP. Joint points live in `tools/blender/kalle.py` / `tine.py`.
 
+## Icons from Nano Banana (ADR 0020)
+
+Paint a row of icons on flat magenta with `tools/gen-image.js` (prompts in `assets/src/prompts.md`), then:
+
+```sh
+python3 tools/cut-icons.py assets/src/powerups.png assets/powerups helmet slowmo widen   # one name per icon, left to right
+```
+
 ## Deploy
 
 **Game:** push to `main`. GitHub Pages builds from `main` at the root and is live after about a minute.

@@ -43,7 +43,7 @@ const BEST_KEY = 'rollDownBest';
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
 const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch { /* private mode */ } };
 
-let view, dpr = 1, backgrounds, board, groundTiles;
+let view, dpr = 1, backgrounds, board, groundTiles, powerIcons;
 let state = 'loading';
 const setState = (s) => { state = s; document.body.dataset.state = s; };
 let game;
@@ -52,7 +52,7 @@ let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
 let figureId = readFigure(), figure = null, picker, loadingFigure = false;
 const figureSheets = new Map();
-const TAP_TEXT = 'Figur antippen – oder irgendwo tippen';
+const TAP_TEXT = 'Losrollen';
 
 const surfaceTrack = () => {
   const track = createSurfaceTrack(Math.random);
@@ -132,13 +132,19 @@ function spawnWall() {
   game.nextSpawnIn = spacing;
 }
 
-function showBanner(text, sub) {
+function showBanner(text, sub, img) {
   game.bannerAt = performance.now();
   const strong = document.createElement('strong');
   const span = document.createElement('span');
   strong.textContent = text;
   span.textContent = sub;
   hud.banner.replaceChildren(strong, span);
+  if (img) {
+    const icon = new Image();
+    icon.src = img;
+    icon.alt = '';
+    strong.prepend(icon);
+  }
   hud.banner.classList.remove('show');
   void hud.banner.offsetWidth; // restart the CSS animation
   hud.banner.classList.add('show');
@@ -150,7 +156,7 @@ function setSeason(idx) {
   game.seasonIdx = idx;
   game.seasonFade = 0;
   const s = season();
-  showBanner(`${s.icon} ${s.name}`, s.hint);
+  showBanner(s.name, s.hint);
   idle(primeGrades);
 }
 
@@ -165,10 +171,10 @@ function collect(type) {
     const before = game.player.helmets;
     game.player.helmets = addHelmet(before, MAX_HELMETS);
     const hint = game.player.helmets === before ? `Maximal ${MAX_HELMETS} Helme` : `${game.player.helmets} von ${MAX_HELMETS} – je ein Crash frei`;
-    showBanner(`${p.icon} ${p.name}`, hint);
+    showBanner(p.name, hint, p.img);
   } else {
     game.effects[type] = p.duration;
-    showBanner(`${p.icon} ${p.name}`, p.hint);
+    showBanner(p.name, p.hint, p.img);
   }
   navigator.vibrate?.(30);
 }
@@ -181,7 +187,7 @@ function crash() {
     game.shake = 0.3;
     game.flash = 0.25;
     navigator.vibrate?.(80);
-    showBanner('⛑️ Helm kaputt', game.player.helmets ? `Noch ${game.player.helmets} übrig` : 'Glück gehabt!');
+    showBanner('Helm kaputt', game.player.helmets ? `Noch ${game.player.helmets} übrig` : 'Glück gehabt!', POWERUPS.helmet.img);
     return;
   }
   game.shake = 0.5;
@@ -298,7 +304,7 @@ function update(dt) {
   if (under.id !== game.surface.id) {
     game.surface = under;
     // no banner for plain dirt or while another one is still showing
-    if (under.id !== 'dirt' && performance.now() - game.bannerAt > 2400) showBanner(`${under.icon} ${under.name}`, under.hint);
+    if (under.id !== 'dirt' && performance.now() - game.bannerAt > 2400) showBanner(under.name, under.hint);
   }
   const speed = speedAt(game.time) * season().speedMul * game.surface.speedMul * game.slowFactor;
   const dz = speed * dt;
@@ -340,7 +346,7 @@ function update(dt) {
     const before = pd.z;
     pd.z -= dz;
     if (before > PLAYER_Z && pd.z <= PLAYER_Z && Math.abs(pd.x - p.x) < pd.r) {
-      if (p.slippery <= 0) showBanner('💧 Rutschig!', 'Gegenlenken dauert länger');
+      if (p.slippery <= 0) showBanner('Rutschig!', 'Gegenlenken dauert länger');
       p.slippery = 1.4;
     }
   }
@@ -361,19 +367,19 @@ function updateHud(speed) {
   }
   hud.speed.textContent = `${Math.round(speed * 1.6)} km/h`;
   const s = season();
-  hud.season.textContent = `${s.icon} ${s.name}`;
+  hud.season.textContent = s.name;
   const parts = [];
-  for (let i = 0; i < game.player.helmets; i++) parts.push(`<span class="pw helmet">${POWERUPS.helmet.icon}</span>`);
+  for (let i = 0; i < game.player.helmets; i++) parts.push(`<span class="pw helmet"><img src="${POWERUPS.helmet.img}" alt=""></span>`);
   for (const key of ['slowmo', 'widen']) {
     const left = game.effects[key];
     if (left > 0) {
       const pct = (left / POWERUPS[key].duration) * 100;
-      parts.push(`<span class="pw ${key}">${POWERUPS[key].icon}<i style="width:${pct}%"></i></span>`);
+      parts.push(`<span class="pw ${key}"><img src="${POWERUPS[key].img}" alt=""><i style="width:${pct}%"></i></span>`);
     }
   }
   hud.powers.innerHTML = parts.join(''); // only our own icons, never player text
   const wf = game.wind.force;
-  hud.wind.textContent = Math.abs(wf) > 40 ? (wf > 0 ? '💨 →' : '← 💨') : '';
+  hud.wind.textContent = Math.abs(wf) > 40 ? (wf > 0 ? 'Wind →' : '← Wind') : '';
 }
 
 // Everything on the ground, drawn far to near. Reused every frame.
@@ -396,7 +402,7 @@ function drawThing(o, look) {
       drawWall(ctx, view, o.z, gaps, SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)]);
       break;
     }
-    case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time); break;
+    case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time, powerIcons[o.type]); break;
     default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0, figure, look.pose);
   }
 }
@@ -477,19 +483,23 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-async function choose(id) {
-  if (state !== 'start' || loadingFigure) return;
-  document.activeElement?.blur();
+function pick(id) {
   figureId = id;
   saveFigure(id);
   picker.select(id);
+}
+
+async function choose(id) {
+  if (state !== 'start' || loadingFigure) return;
+  document.activeElement?.blur();
+  pick(id);
   const tap = hud.start.querySelector('.tap');
   loadingFigure = true;
   tap.textContent = 'Lädt …';
   try {
     figure = await sheetsFor(id);
   } catch (err) {
-    tap.textContent = 'Figur konnte nicht laden – nochmal tippen.';
+    tap.textContent = 'Nochmal versuchen';
     console.error(err);
     return;
   } finally {
@@ -511,7 +521,7 @@ function beginIntro() {
 
 function beginPlay() {
   setState('playing');
-  showBanner(`${season().icon} ${season().name}`, season().hint);
+  showBanner(season().name, season().hint);
 }
 
 // Fast retry after a crash: straight into the round, no intro.
@@ -577,7 +587,12 @@ async function init() {
   resize();
   bindInput();
   try {
-    backgrounds = await loadSeasonBackgrounds(SEASONS, loadImage, preview?.idx ?? 0);
+    const [seasonBackgrounds, ...icons] = await Promise.all([
+      loadSeasonBackgrounds(SEASONS, loadImage, preview?.idx ?? 0),
+      ...Object.values(POWERUPS).map((p) => loadImage(p.img)),
+    ]);
+    backgrounds = seasonBackgrounds;
+    powerIcons = Object.fromEntries(Object.keys(POWERUPS).map((k, i) => [k, icons[i]]));
     groundTiles = buildGroundTiles(SEASONS, preview?.idx ?? 0);
     warmUp(SEASONS);
   } catch (err) {
@@ -589,7 +604,13 @@ async function init() {
   primeGrades();
   board = setupLeaderboard();
   setupIdeas(() => ({ score: game.passed, season: season().name }));
-  picker = setupFigureSelect(hud.figures, figureId, choose);
+  // a card only picks the figure; the button (or a tap anywhere else) starts
+  picker = setupFigureSelect(hud.figures, figureId, (id) => {
+    if (loadingFigure) return; // a round is already starting with the other figure
+    pick(id);
+    sheetsFor(id).catch(() => {});
+    hud.start.querySelector('.tap').focus(); // so Space/Enter starts next, not the card again
+  });
   sheetsFor(figureId).catch(() => {});
   hud.bestStart.textContent = readBest();
   hud.start.classList.add('show');
