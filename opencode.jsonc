@@ -8,6 +8,8 @@
       "*": "deny",
       "/tmp/*": "allow",
       "/private/tmp/*": "allow",
+      "/var/folders/*": "allow",
+      "/private/var/folders/*": "allow",
       "/Users/svengoerdes/.local/share/opencode/*": "allow"
     },
     "bash": {
