@@ -37,6 +37,7 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
     for (const key of figureSheets.keys()) if (key !== id) figureSheets.delete(key);
     beginIntro();
   }
+  // Fast retry after a crash: straight into the round, no intro.
   function start() {
     setGame(newGame());
     getBoard().offer(null);
@@ -79,6 +80,7 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
       showBanner('Serie!', game.player.helmets > before ? `${sub} – Helm geschenkt` : sub, POWERUPS.helmet.img);
       navigator.vibrate?.(30);
     }
+    // last, so the record wins the banner over a season or streak on the same wall
     if (!game.recordShown && game.best > 0 && game.passed > game.best) {
       game.recordShown = true;
       burstSparkles(game.fx, at.sx, at.sy, at.s / 45);

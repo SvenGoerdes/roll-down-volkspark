@@ -2,6 +2,10 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14: Review-Fixes zur Modul-Aufteilung
+- Der Game-Flow-Test ersetzt beim Start den Spielzustand jetzt wirklich und prüft, dass Pass und Pickup nur den neuen Zustand ändern. Wiederhergestellte WHY-Kommentare erklären Sicherheitsgrenze, Animations-Neustarts, Rekord-Banner, Tastatursteuerung und schnellen Neustart. `main.js` reicht die vorhandene `pick`-Funktion direkt weiter.
+- Angefragt vom Claude-Orchestrator nach Review durch Sonnet 5.5. Implementiert von GPT-6 Luna; Integration und Review durch GPT-6.1 Sol. Verifiziert: 105 Tests, Browser-Bundle und `git diff --check`. Commit: dieser Commit (`test(game): cover replacement state and restore intent comments`, PR #63).
+
 ## 2026-10-14: Issue #16 – `main.js` nach Verantwortung aufgeteilt
 - `js/main.js` hält Update-Schleife, Simulation und Verdrahtung. Eingaben, HUD, Start-/Crash-Ablauf, Szenenzeichnung und der Initialzustand liegen in `input.js`, `hud.js`, `game-flow.js`, `render-scene.js` und `game-state.js`.
 - Die Module bekommen den aktuellen Spielzustand über Getter und Callback-Abhängigkeiten; so behalten sie keinen veralteten Zustand.

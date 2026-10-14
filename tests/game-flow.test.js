@@ -3,11 +3,12 @@ import { createGameFlow } from '../js/game-flow.js';
 import { MAX_HELMETS } from '../js/config.js';
 
 function fixture(overrides = {}) {
-  const game = {
+  const originalGame = {
     passed: 7, best: 6, streak: 5, recordShown: false, time: 3, fx: [],
     player: { x: 0, helmets: 0, dazed: false }, effects: { slowmo: 0, widen: 0 },
   };
   const calls = [];
+  let game = originalGame;
   let state = 'playing';
   let board = { offer: (...args) => calls.push(['offer', ...args]) };
   const tap = { textContent: '', focus() {} };
@@ -17,7 +18,7 @@ function fixture(overrides = {}) {
   };
   const flow = createGameFlow({
     hud, getState: () => state, getGame: () => game, getLoadingFigure: () => false,
-    setLoadingFigure() {}, setGame() {}, newGame: () => ({ ...game }),
+    setLoadingFigure() {}, setGame: (next) => { game = next; }, newGame: () => ({ ...originalGame, player: { ...originalGame.player }, effects: { ...originalGame.effects }, fx: [] }),
     getBoard: () => board, setState: (next) => { state = next; },
     updateHud: (...args) => calls.push(['hud', ...args]), speedAt: () => 16,
     showBanner: (...args) => calls.push(['banner', ...args]), popText: (...args) => calls.push(['pop', ...args]),
@@ -26,8 +27,26 @@ function fixture(overrides = {}) {
     playerSpot: () => ({ sx: 100, sy: 200, s: 45 }), readBest: () => 6, writeBest: (n) => calls.push(['best', n]),
     ...overrides,
   });
-  return { game, calls, flow, setState: (next) => { state = next; }, getState: () => state, setBoard: (next) => { board = next; }, hud, tap };
+  return { game: originalGame, getGame: () => game, calls, flow, setState: (next) => { state = next; }, getState: () => state, setBoard: (next) => { board = next; }, hud, tap };
 }
+
+test('flow reads the replacement game after start', () => {
+  const { game: originalGame, getGame, calls, flow } = fixture();
+  flow.start();
+  const currentGame = getGame();
+
+  flow.onPass('perfect');
+  flow.collect('helmet');
+
+  expect(currentGame).not.toBe(originalGame);
+  expect(currentGame.streak).toBe(0);
+  expect(currentGame.player.helmets).toBe(2);
+  expect(currentGame.fx.length).toBeGreaterThan(0);
+  expect(originalGame.streak).toBe(5);
+  expect(originalGame.player.helmets).toBe(0);
+  expect(originalGame.fx).toHaveLength(0);
+  expect(calls.some(([kind, text]) => kind === 'pop' && text === 'Perfekt')).toBe(true);
+});
 
 test('flow pass uses current game for streak reward and record', () => {
   const { game, calls, flow } = fixture();

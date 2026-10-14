@@ -101,7 +101,7 @@ const { showBanner, popText: showPopText, update: updateHud, showOver } = gameHu
 const flow = createGameFlow({ hud, getState: () => state, getGame: () => game, getLoadingFigure: () => loadingFigure,
   setLoadingFigure: (value) => { loadingFigure = value; }, setGame: (value) => { game = value; },
   newGame, getBoard: () => board, setState, updateHud, speedAt, showBanner, season, sheetsFor,
-  figureSheets, pick: (id) => { figureId = id; saveFigure(id); picker.select(id); },
+  figureSheets, pick,
   setFigure: (value) => { figure = value; }, playerSpot,
   popText: showPopText, showOver, readBest, writeBest });
 const { beginIntro, beginPlay, choose, start, collect, onPass, crash } = flow;

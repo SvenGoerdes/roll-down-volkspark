@@ -17,7 +17,7 @@ export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
       strong.prepend(icon);
     }
     hud.banner.classList.remove('show');
-    void hud.banner.offsetWidth;
+    void hud.banner.offsetWidth; // restart the CSS animation
     hud.banner.classList.add('show');
   }
   function popText(text, kind) {
@@ -27,7 +27,7 @@ export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
     el.className = kind;
     el.style.left = `${at.sx}px`;
     el.style.top = `${at.sy - at.s * 1.4}px`;
-    void el.offsetWidth;
+    void el.offsetWidth; // restart the CSS animation
     el.classList.add('show');
   }
   function update(speed) {
@@ -36,7 +36,7 @@ export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
       hud.score.textContent = game.passed;
       const chip = hud.score.parentElement;
       chip.classList.remove('pop');
-      void chip.offsetWidth;
+      void chip.offsetWidth; // restart the CSS animation
       chip.classList.add('pop');
       hud.season.style.setProperty('--p', (game.passed % WALLS_PER_SEASON) / WALLS_PER_SEASON);
     }
@@ -56,7 +56,7 @@ export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
         parts.push(`<span class="pw ${key}"><img src="${POWERUPS[key].img}" alt=""><i style="width:${pct}%"></i></span>`);
       }
     }
-    hud.powers.innerHTML = parts.join('');
+    hud.powers.innerHTML = parts.join(''); // only our own icons, never player text
     const dir = windArrow(game.wind);
     hud.wind.textContent = dir > 0 ? 'Wind →' : dir < 0 ? '← Wind' : '';
     hud.wind.classList.toggle('warn', game.wind.warn > 0);

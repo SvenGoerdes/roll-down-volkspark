@@ -30,7 +30,7 @@ export function bindInput({ input, hud, getState, getGame, getView, choose, star
     input.keys.add(e.key);
     if ((e.key === ' ' || e.key === 'Enter') && getState() !== 'playing') {
       onPointerDown({ clientX: 0 });
-      input.dragging = false;
+      input.dragging = false; // keys steer on their own; no finger to follow
     }
   });
   window.addEventListener('keyup', (e) => input.keys.delete(e.key));
