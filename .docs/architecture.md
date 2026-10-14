@@ -27,7 +27,12 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 | `config.js` | All tuning constants: sizes, seasons, surfaces, power-ups, worker URL |
 | `logic.js` | Pure game rules (difficulty curve, gaps, seasons, surfaces, slip, helmets). Fully unit tested |
 | `scoring.js` | Pure pass judging: Perfekt / Knapp, the streak toward a free helmet, the record wall. Unit tested |
-| `main.js` | Game state, update loop, input, HUD, wiring |
+| `main.js` | Update loop, collisions, spawning and wiring |
+| `game-state.js` | Initial game state and surface track |
+| `input.js` | Pointer and keyboard controls, figure-change action |
+| `hud.js` | HUD updates, banners, pass text and game-over display |
+| `game-flow.js` | Start, intro, retry, pass rewards and crash flow |
+| `render-scene.js` | Depth-sorted scene drawing and visual effects |
 | `view.js` | Camera, terrain drop, projection and cached inverse ground rows |
 | `render.js` | Background, ground, walls, puddles, pickups |
 | `render-player.js` | The chosen figure: sprite frame, shadow, hop, dazed stars |

@@ -1,0 +1,78 @@
+import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS } from './config.js';
+import { seasonAhead, widened, seasonIndexAt } from './logic.js';
+import { drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup } from './render.js';
+import { drawPlayer } from './render-player.js';
+import { poseFor } from './figure.js';
+import { drawScenery, drawParticles, drawSpeedLines, drawGrade, drawFx } from './render-fx.js';
+import { drawIceSheen, drawSkidMarks, drawSpray } from './render-slip.js';
+import { sceneryAt } from './scenery.js';
+import { recordWall } from './scoring.js';
+import { drawRecordMark } from './render-record.js';
+
+const drawList = [];
+const byDepth = (a, b) => b.depth - a.depth;
+
+export function renderScene(ctx, view, game, state, figure, backgrounds, groundTiles, powerIcons) {
+  const s = SEASONS[game.seasonIdx];
+  const prev = game.prevSeasonIdx !== null ? SEASONS[game.prevSeasonIdx] : null;
+  ctx.save();
+  if (game.shake > 0) {
+    const m = game.shake * 14;
+    ctx.translate((Math.random() - 0.5) * m, (Math.random() - 0.5) * m);
+  }
+  drawBackground(ctx, view, backgrounds[s.id], prev && backgrounds[prev.id], game.seasonFade, game.player.x);
+  drawGround(ctx, view, s, game.travelled, game.surfaceAt, groundTiles);
+  drawHorizon(ctx, view, s, prev, game.seasonFade, game.player.x);
+  if (s.id === 'winter') drawIceSheen(ctx, view, game.travelled, game.seasonFade);
+  drawSkidMarks(ctx, view, game.skids, s.id === 'winter');
+
+  const speed = game.speed;
+  const ahead = seasonAhead(game.walls, game.seasonIdx, WALLS_PER_SEASON, SEASONS.length);
+  const showPlayer = figure && state !== 'start';
+  const mode = { intro: 'intro', over: 'dazed' }[state] ?? 'roll';
+  const t = mode === 'intro' ? game.introT : game.time - game.crashAt;
+  const pose = showPlayer ? poseFor({ mode, t, spin: game.player.spin, helmet: game.player.helmets > 0 }, figure) : null;
+  const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1, pose };
+  look.record = state === 'playing' ? recordWall(game.walls, game.passed, game.best, PLAYER_Z) : null;
+  drawList.length = 0;
+  for (const o of sceneryAt(game.travelled)) { o.layer = 'plant'; o.depth = o.z; drawList.push(o); }
+  for (const o of game.puddles) { o.layer = 'puddle'; o.depth = o.z + 0.01; drawList.push(o); }
+  for (const o of game.walls) { o.layer = 'wall'; o.depth = o.z; drawList.push(o); }
+  for (const o of game.pickups) { o.layer = 'pickup'; o.depth = o.z; drawList.push(o); }
+  // The crashed wall stays behind the player so the dazed pose remains visible.
+  for (const w of game.walls) if (w.broken) w.depth = PLAYER_Z + 0.5;
+  if (showPlayer) {
+    game.player.layer = 'player';
+    game.player.depth = PLAYER_Z - 0.001;
+    drawList.push(game.player);
+  }
+  drawList.sort(byDepth);
+  for (const o of drawList) {
+    switch (o.layer) {
+      case 'plant': drawScenery(ctx, view, o, o.z > look.aheadZ ? look.aheadId : look.s.id); break;
+      case 'puddle': drawPuddle(ctx, view, o); break;
+      case 'wall': {
+        const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
+        drawWall(ctx, view, o.z, gaps, SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)]);
+        if (o === look.record) drawRecordMark(ctx, view, o);
+        break;
+      }
+      case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time, powerIcons[o.type]); break;
+      default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0, figure, look.pose);
+    }
+  }
+  drawSpray(ctx, game.spray);
+  drawParticles(ctx, game.particles);
+  if (state === 'playing') drawSpeedLines(ctx, view, look.speed, game.time);
+  drawGrade(ctx, view, s, prev, game.seasonFade);
+  drawFx(ctx, game.fx);
+  if (game.effects.slowmo > 0) {
+    ctx.fillStyle = 'rgba(80,120,255,0.12)';
+    ctx.fillRect(0, 0, view.W, view.H);
+  }
+  if (game.flash > 0) {
+    ctx.fillStyle = `rgba(255,40,40,${game.flash * 0.6})`;
+    ctx.fillRect(0, 0, view.W, view.H);
+  }
+  ctx.restore();
+}
