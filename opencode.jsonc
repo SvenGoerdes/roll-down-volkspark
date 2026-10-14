@@ -2,6 +2,11 @@
   "$schema": "https://opencode.ai/config.json",
   // Project rules for OpenCode panes (ADR 0026). Last matching rule wins.
   "permission": {
+    // Sub-agents sometimes guess the main checkout's path instead of their worktree. Deny it so they correct themselves.
+    "external_directory": {
+      "*": "ask",
+      "/Users/svengoerdes/Projects/RollDownVolksparkFriedrichshain/*": "deny"
+    },
     "bash": {
       "*": "ask",
       "git *": "allow",
@@ -10,6 +15,7 @@
       "bunx *": "allow",
       "python3 *": "allow",
       "blender *": "allow",
+      "/Applications/Blender.app/Contents/MacOS/Blender *": "allow",
       "cwebp *": "allow",
       "magick *": "allow",
       "ls *": "allow",

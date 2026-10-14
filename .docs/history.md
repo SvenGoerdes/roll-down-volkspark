@@ -6,6 +6,7 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - GitHub Actions runs `bun test tests` on every PR; `main` takes only green PRs. `opencode.jsonc` sets the OpenCode permissions and two sub-agents (`coder` on GPT-6 Luna, `reviewer` on GPT-6.1 Sol medium).
 - The user's new idea list became epics with sub-issues on GitHub. Claude runs the OpenCode panes in herdr. → [ADR 0026](decisions/0026-opencode-panes-tickets-and-ci.md)
 - Requested by: the user. Built by: Opus 5.5 (main session).
+- Later the same night: OpenCode sub-agents twice tried to read or write the main checkout instead of their worktree. `opencode.jsonc` now denies that path, so they get an error and fix the path themselves instead of waiting for the user.
 
 ## 2026-10-14 (evening): Perfekt, streak helmet, record chase
 - To make you want one more run (the user: "geiles Gameplay, das einen hookt"): a pass through the middle pops "Perfekt", a pass by a hair "Knapp!". Six perfect passes in a row give a free helmet; pips under the score show the streak. → [ADR 0025](decisions/0025-perfect-streak-and-record-chase.md)
