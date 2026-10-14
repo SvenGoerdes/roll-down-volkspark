@@ -15,6 +15,7 @@
       "bunx *": "allow",
       "python3 *": "allow",
       "blender *": "allow",
+      "/Applications/Blender.app/Contents/MacOS/Blender *": "allow",
       "cwebp *": "allow",
       "magick *": "allow",
       "ls *": "allow",
