@@ -1,12 +1,16 @@
 // World units: the corridor between the bushes is CORRIDOR wide, x = 0 is the middle.
 export const CORRIDOR = 8;
 export const WALL_EXT = CORRIDOR / 2 + 7; // walls reach into the bushes
-export const WALL_H = 2.6;
+export const WALL_H = 1.65; // leaves the following obstacle visible when rolling close
+export const WALL_D = 1.1;
 export const PLAYER_R = 0.7;
 export const PLAYER_Z = 4; // distance from camera to the player
 export const SPAWN_Z = 90;
 export const PLAYER_SCREEN_Y = 0.78; // share of screen height
 export const HORIZON = 0.42;
+// Smooth descending hill, anchored at the player's collision plane.
+export const HILL_DROP = 12;
+export const HILL_RUN = 14;
 
 export const WALLS_PER_SEASON = 20;
 
@@ -14,25 +18,37 @@ export const SEASONS = [
   {
     id: 'spring', name: 'Frühling', icon: '🌸', hint: 'Pfützen machen rutschig',
     speedMul: 1, gapMul: 1,
-    path: [138, 108, 78], grass: [88, 148, 58], fog: [78, 112, 62],
+    path: [177, 151, 102], grass: [112, 151, 66], fog: [184, 195, 155],
+    sky: [154, 189, 189], rim: [255, 231, 174], shadow: [33, 56, 43],
+    foliage: ['#263f2b', '#465f30', '#748d3b', '#a8bc5b'],
+    stones: ['#66594b', '#877763', '#a9997e', '#c1b594'],
     particle: { colors: ['#ffc2d4', '#ff9fbf', '#ffe0ea'], rate: 8, size: [3, 6], fall: 40 },
   },
   {
     id: 'summer', name: 'Sommer', icon: '☀️', hint: 'Schneller – und doppelte Lücken',
     speedMul: 1.15, gapMul: 1.05,
-    path: [176, 142, 98], grass: [112, 162, 62], fog: [96, 136, 80],
+    path: [185, 139, 81], grass: [105, 130, 48], fog: [190, 185, 125],
+    sky: [105, 175, 218], rim: [255, 217, 142], shadow: [28, 47, 34],
+    foliage: ['#1f3425', '#364b25', '#586e2d', '#849b42'],
+    stones: ['#665346', '#87705a', '#a68e70', '#c4ac84'],
     particle: { colors: ['#fff6b0', '#ffffff'], rate: 4, size: [1.5, 3], fall: 12 },
   },
   {
     id: 'autumn', name: 'Herbst', icon: '🍂', hint: 'Windböen schieben dich zur Seite',
     speedMul: 1, gapMul: 1,
-    path: [118, 90, 64], grass: [118, 116, 52], fog: [92, 96, 58],
+    path: [163, 105, 57], grass: [110, 103, 42], fog: [199, 147, 91],
+    sky: [153, 112, 120], rim: [255, 195, 110], shadow: [55, 38, 30],
+    foliage: ['#382f1b', '#635024', '#a46626', '#d89538'],
+    stones: ['#5f473b', '#805e47', '#a47c58', '#bd966b'],
     particle: { colors: ['#d9822b', '#c4561d', '#e8b33a', '#8f3b1b'], rate: 14, size: [4, 8], fall: 70 },
   },
   {
     id: 'winter', name: 'Winter', icon: '❄️', hint: 'Glatteis – du rutschst nach',
     speedMul: 1.05, gapMul: 1.1,
-    path: [222, 228, 236], grass: [240, 244, 250], fog: [196, 204, 216],
+    path: [201, 215, 226], grass: [215, 229, 238], fog: [183, 201, 218],
+    sky: [127, 153, 187], rim: [255, 231, 194], shadow: [36, 57, 77],
+    foliage: ['#192f39', '#314a58', '#738da5', '#bdd1e2'],
+    stones: ['#394950', '#586a73', '#81939e', '#a7b8c1'],
     particle: { colors: ['#ffffff'], rate: 40, size: [1.5, 4], fall: 90 },
   },
 ];

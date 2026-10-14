@@ -1,8 +1,9 @@
 import { SURFACE_ORDER } from './config.js';
+import { surfaceArt } from './surface-art.js';
 
 // Path textures, one per season and surface. A tile covers TILE_UNITS of world z
 // and the whole corridor width, so drawGround can map it row by row in perspective.
-export const TILE_W = 256;
+export const TILE_W = 384;
 export const TILE_H = 512;
 export const TILE_UNITS = 8;
 export const TILE_LEVELS = 4; // mip levels besides the full size
@@ -48,16 +49,44 @@ function paint(ctx, id, season, rnd) {
   if (id === 'dirt') {
     const base = winter ? mix(SNOW, season.path, 0.35) : shade(season.path, 0.95);
     ctx.fillStyle = rgba(base); ctx.fillRect(0, 0, TILE_W, TILE_H);
-    if (winter) blob(120, 7, 3, () => rgba([128, 104, 82], 0.4));
-    else blob(40, 15, 6, () => rgba(shade(season.path, 0.8), 0.3));
-    speck(900, 2.2, () => rgba(shade(base, 0.72 + rnd() * 0.5), 0.55));
-    blob(60, 3, 1.8, () => rgba(shade(base, 0.6), 0.6));
+    if (surfaceArt.earth) {
+      ctx.drawImage(surfaceArt.earth, 0, 0, TILE_W, TILE_H);
+      ctx.fillStyle = winter ? rgba(SNOW, 0.9) : rgba(season.path, 0.13);
+      ctx.fillRect(0, 0, TILE_W, TILE_H);
+    }
+    if (winter) {
+      // An uneven travelled track, with deep snow left at the roadside.
+      ctx.fillStyle = rgba([118, 110, 103], 0.62);
+      ctx.beginPath();
+      const edge = (y, side) => {
+        const phase = y / TILE_H * Math.PI * 2;
+        return TILE_W * 0.5 + Math.sin(phase) * 13 + side * (64 + Math.sin(phase * 3 + side) * 7);
+      };
+      for (let y = 0; y <= TILE_H; y += 8) ctx.lineTo(edge(y, -1), y);
+      for (let y = TILE_H; y >= 0; y -= 8) ctx.lineTo(edge(y, 1), y);
+      ctx.closePath(); ctx.fill();
+      if (surfaceArt.earth) {
+        ctx.save(); ctx.clip(); ctx.globalAlpha = 0.52;
+        ctx.drawImage(surfaceArt.earth, 0, 0, TILE_W, TILE_H);
+        ctx.restore();
+      }
+    }
+    else if (!surfaceArt.earth) blob(40, 15, 6, () => rgba(shade(season.path, 0.8), 0.3));
+    if (!surfaceArt.earth) {
+      speck(260, 2.2, () => rgba(shade(base, 0.72 + rnd() * 0.5), 0.55));
+      blob(60, 3, 1.8, () => rgba(shade(base, 0.6), 0.6));
+    }
     if (autumn) leaves(60);
     if (winter) blob(70, 4, 2, () => rgba([255, 255, 255], 0.7));
   } else if (id === 'gravel') {
     const base = winter ? [150, 152, 158] : mix([146, 142, 136], season.path, 0.15);
     ctx.fillStyle = rgba(base); ctx.fillRect(0, 0, TILE_W, TILE_H);
-    for (let i = 0; i < 1500; i++) {
+    if (surfaceArt.earth) {
+      ctx.drawImage(surfaceArt.earth, 0, 0, TILE_W, TILE_H);
+      ctx.fillStyle = rgba(base, winter ? 0.65 : 0.38);
+      ctx.fillRect(0, 0, TILE_W, TILE_H);
+    }
+    for (let i = 0; i < (surfaceArt.earth ? 220 : 550); i++) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, r = 2 + rnd() * 4.2, g = 0.62 + rnd() * 0.7, rot = rnd() * 3;
       const col = shade(mix([150, 146, 140], [176, 160, 140], rnd()), g);
       put(y, r, (yy) => {
@@ -71,8 +100,12 @@ function paint(ctx, id, season, rnd) {
   } else {
     const base = winter ? mix(SNOW, [190, 210, 200], 0.3) : shade(season.grass, 1.05);
     ctx.fillStyle = rgba(base); ctx.fillRect(0, 0, TILE_W, TILE_H);
+    if (surfaceArt.earth) {
+      ctx.save(); ctx.globalAlpha = winter ? 0.12 : 0.3;
+      ctx.drawImage(surfaceArt.earth, 0, 0, TILE_W, TILE_H); ctx.restore();
+    }
     blob(50, 24, 10, () => rgba(shade(base, 0.8 + rnd() * 0.4), 0.4));
-    for (let i = 0; i < 2600; i++) {
+    for (let i = 0; i < 900; i++) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, h = 4 + rnd() * 7, lean = (rnd() - 0.5) * 3;
       const col = winter ? mix([150, 175, 170], [225, 235, 240], rnd()) : shade(season.grass, 0.6 + rnd() * 0.8);
       ctx.strokeStyle = rgba(col, 0.85); ctx.lineWidth = 1.3;
@@ -83,10 +116,23 @@ function paint(ctx, id, season, rnd) {
   }
 }
 
+// Sunlit middle and soft woodland shade at the edges, baked into every mip.
+function shadeEdges(ctx, season) {
+  const light = ctx.createLinearGradient(0, 0, TILE_W, 0);
+  light.addColorStop(0, rgba(season.shadow, 0.32));
+  light.addColorStop(0.3, rgba(season.rim, 0.02));
+  light.addColorStop(0.55, rgba(season.rim, 0.12));
+  light.addColorStop(0.8, rgba(season.shadow, 0.08));
+  light.addColorStop(1, rgba(season.shadow, 0.4));
+  ctx.fillStyle = light; ctx.fillRect(0, 0, TILE_W, TILE_H);
+
+}
+
 function buildTile(season, si, k, id) {
   const c = document.createElement('canvas');
   c.width = TILE_W; c.height = TILE_H;
   paint(c.getContext('2d'), id, season, rngFor(1000 * si + k + 7));
+  shadeEdges(c.getContext('2d'), season);
   // smaller copies keep far rows from aliasing into streaks
   const mips = [c];
   for (let l = 1; l <= TILE_LEVELS; l++) {

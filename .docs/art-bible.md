@@ -8,6 +8,7 @@ Volkspark Friedrichshain as a warm, hand-painted picture book: gouache textures,
 ## Reference images
 - Style: sample B, saved as `assets/src/style-b.png` once the art lands. It is a painted version of the hill path with gabion walls.
 - Place: `assets/park.jpg` (the user's photo).
+- Current environment: the four user-supplied `assets/seasons/` images. Runtime horizons and transparent woodland cutouts live in `assets/environment/`; their prompts are in that folder's README.md (ADR 0022).
 - Spring in the low-poly sample A had cherry blossoms; the user liked them. Spring uses pink cherry trees in this painted style.
 
 ## Rules
@@ -18,7 +19,7 @@ Volkspark Friedrichshain as a warm, hand-painted picture book: gouache textures,
 - **Light** comes from the upper left in all assets.
 
 ## Making assets
-- Generate with `tools/gen-image.js` (ADR 0013). Always pass the style reference with `--ref`.
+- Generate with `tools/gen-image.js` (ADR 0013) or the built-in Imagegen tool (ADR 0022). Always supply the style reference. Preserve real alpha in transparent cutouts.
 - Sprites are generated on a flat single-color background (magenta) and cut out with `tools/cut-icons.py`. Several icons of a set go into one image, so they share one style.
 - Store the prompt for each asset in `assets/src/prompts.md` so we can make it again.
 - Before shipping: WebP, scaled to the largest on-screen size at DPR 2, and within the mobile budget in [engineering-principles.md](engineering-principles.md).

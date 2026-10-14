@@ -1,8 +1,8 @@
 import { SCENERY_FAR, hash } from './scenery.js';
 import { project } from './view.js';
-import {
-  softDot, bushSprite, treeSprite, hedgeSprite, BUSH_ASPECT, TREE_ASPECT, paintGrade,
-} from './sprites.js';
+import { softDot, paintGrade } from './sprites.js';
+import { forestSprite, gabionFaces, horizonVeil, groundLight, valleySprite } from './environment-sprites.js';
+import { arrivalAlpha, depthMist } from './atmosphere.js';
 
 // Scene-wide extras: roadside plants, weather particles, speed lines, season light, debris.
 
@@ -55,36 +55,31 @@ export function drawParticles(ctx, particles) {
   ctx.setTransform(m);
 }
 
-// Paint every season's plants up front, so no frame stalls when a new season comes into view.
+// Build the small environment cache before the first moving frame.
 export function warmUp(seasons) {
   for (const s of seasons) {
     for (const v of [0, 1, 2]) {
-      bushSprite(s.id, v);
-      treeSprite(s.id, v);
+      forestSprite(s.id, 'bush', v);
+      forestSprite(s.id, 'tree', v);
     }
-    hedgeSprite(s);
+    gabionFaces(s); horizonVeil(s); groundLight(s); valleySprite(s);
   }
 }
 
-const PLANT = { bush: [2.3, BUSH_ASPECT, 0.875], tree: [5.6, TREE_ASPECT, 0.978] };
-
 export function drawScenery(ctx, view, item, seasonId) {
   const p = project(view, item.x, item.z);
-  const [width, aspect, foot] = PLANT[item.kind];
-  const w = width * item.size * p.s, h = w * aspect;
+  const sprite = forestSprite(seasonId, item.kind, item.variant);
+  const w = sprite.width * item.size * p.s, h = w * sprite.aspect;
   if (p.sx + w / 2 < 0 || p.sx - w / 2 > view.W) return;
-  const img = (item.kind === 'tree' ? treeSprite : bushSprite)(seasonId, item.variant);
-  ctx.globalAlpha = clamp((SCENERY_FAR - item.z) / 16, 0, 1);
-  // mirror every other plant so the few sprites don't repeat visibly
-  if (item.id % 2) ctx.drawImage(img, p.sx - w / 2, p.sy - h * foot, w, h);
-  else {
-    ctx.save();
-    ctx.translate(p.sx, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(img, -w / 2, p.sy - h * foot, w, h);
-    ctx.restore();
-  }
-  ctx.globalAlpha = 1;
+  const alpha = arrivalAlpha(item.z, SCENERY_FAR), fog = depthMist(item.z) * 0.83;
+  ctx.save();
+  ctx.translate(p.sx, 0);
+  if (item.side < 0) ctx.scale(-1, 1);
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(sprite.image, -w / 2, p.sy - h * sprite.foot, w, h);
+  ctx.globalAlpha = alpha * fog;
+  ctx.drawImage(sprite.mist, -w / 2, p.sy - h * sprite.foot, w, h);
+  ctx.restore();
 }
 
 // Thin wedges racing out of the vanishing point over the ground once the hill gets fast.

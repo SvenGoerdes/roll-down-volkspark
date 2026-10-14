@@ -2,6 +2,26 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14: Lower walls and environment release review
+- The user requested lower gabions so the following gap remains easier to see. Basket height is now 1.65 instead of 2.6; the material faces crop to the new dimensions, preserving wire and stone proportions. Added a visibility regression at tight late-game spacing for three phone formats.
+- The environment work is prepared on `feat/painted-park-environment` for a reviewed PR to main, including the current icon/start-screen changes already merged on main.
+- Requested by: the user. Built by: Codex (GPT-6). Independent review by GPT-6.1 Sol (medium) of `f592a12` found no actionable correctness issues. All 72 tests pass; the browser bundle parses successfully, near-wall screenshots and the current figure-select/Losrollen flow are checked. Hardware FPS/4x CPU throttling remain unverified. Environment implementation: `5403005`; upstream integration: `f592a12`. Release is tracked by the environment PR.
+
+## 2026-10-14: Ground and wall material refinement, visible downhill
+- User feedback: ground and walls should resemble the detailed generated references; explicitly chose stronger visible downhill. → [ADR 0023](decisions/0023-painted-materials-and-hill-profile.md)
+- Two shared painted material WebPs replace sparse earth dots and flat procedural stones. Earth has embedded gravel, roots, worn patches and leaves; gabions have tightly packed faceted rocks behind fine wire. Larger cached faces, level lids, shaded ends and seasonal snow/vines preserve gap readability. Added material packing script and exact prompts.
+- A shared logarithmic hill profile moves all ground objects consistently, while keeping the player position, horizontal scale and collision rules. Ground inverse rows are built only on resize. The ice mask follows the curve; a distant painted forest layer fills the valley transition.
+- Validation: 71 tests passing, including projection/inverse and collision-plane anchors. Browser checks in explicit 390×844 and 375×667 game frames, seasonal materials and normal play. Debug fixtures can set width/height independently of the browser pane size. Added art: 93,390 bytes. Real devices and 4x CPU throttling remain unverified.
+- Requested by: the user. Built by: Codex (GPT-6), with the built-in Imagegen tool. Uncommitted on `grafik`; not published.
+
+## 2026-10-14: Painted seasonal environment
+- Replaced the recoloured park photo with four cropped WebP horizons from the user's new references, without their foreground walls. Shared seasonal palettes connect sky, ground, baskets and foliage. → [ADR 0022](decisions/0022-painted-seasonal-environment.md)
+- Built four transparent painted woodland clusters with the built-in Imagegen tool. Cached tree/shrub variants form a denser roadside, with silhouette-shaped depth mist. New basket faces use larger stone shapes, clear dark wire, sunlit rims, spring vines, autumn leaves and winter snow; gap posts stay inside collision bounds.
+- Ground tiles now have baked edge shadows, sunlit middles, uneven verges and a continuous winter track. The image preparation script and complete prompt set live in `tools/build-environment.py` and `assets/environment/README.md`.
+- Eight new WebPs total 898,616 bytes. Old full-resolution references are not loaded by the game. Changes remain uncommitted on `grafik`; nothing published.
+- Validation: 69 tests passing; browser checks at 390×844 across all four seasons and at 375×667. Real-device/4x CPU-throttled performance pending.
+- Requested by: the user. Built by: Codex (GPT-6), using the supplied Gemini idea as reference material.
+
 ## 2026-10-14 (afternoon): Calmer start screen, no emojis
 - The user found the start screen cluttered and the emojis too many. Now: title, one line, the figure cards, one big "Losrollen" button, the three painted power-ups in a compact row, the record. A card only picks the figure; the button (or a tap anywhere else) starts.
 - "Wischen zum Lenken" moved out of the start screen into the intro, shown while the figure turns and trips. The seasons line is gone; the season banners explain each season when it comes.

@@ -1,7 +1,7 @@
 import { CORRIDOR } from './config.js';
 
-export const SCENERY_STEP = 2.6;
-export const SCENERY_FAR = 56;
+export const SCENERY_STEP = 4.4;
+export const SCENERY_FAR = 74;
 
 // Stable pseudo random number in [0, 1) for an integer seed.
 export const hash = (n) => {
@@ -12,12 +12,12 @@ export const hash = (n) => {
 function plant(i, side) {
   const id = i * 2 + (side > 0 ? 1 : 0);
   const r = (k) => hash(id * 7 + k);
-  const tree = r(1) < 0.32;
+  const tree = r(1) < 0.6;
   return {
     id, i, side, z: 0, wz: (i + r(0) * 0.8) * SCENERY_STEP,
     kind: tree ? 'tree' : 'bush', variant: Math.floor(r(2) * 3),
-    x: side * (CORRIDOR / 2 + (tree ? 3.2 + r(3) * 4.5 : 0.9 + r(3) * 2.4)),
-    size: 0.8 + r(4) * 0.45,
+    x: side * (CORRIDOR / 2 + (tree ? 3.9 + r(3) * 1.9 : 1.9 + r(3) * 1.2)),
+    size: 0.86 + r(4) * 0.25,
   };
 }
 
