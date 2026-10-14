@@ -42,7 +42,7 @@ const BEST_KEY = 'rollDownBest';
 const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
 const writeBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch { /* private mode */ } };
 
-let view, dpr = 1, backgrounds, gabion, board, groundTiles;
+let view, dpr = 1, backgrounds, gabion, board, groundTiles, powerIcons;
 let state = 'loading';
 const setState = (s) => { state = s; document.body.dataset.state = s; };
 let game;
@@ -123,13 +123,19 @@ function spawnWall() {
   game.nextSpawnIn = spacing;
 }
 
-function showBanner(text, sub) {
+function showBanner(text, sub, img) {
   game.bannerAt = performance.now();
   const strong = document.createElement('strong');
   const span = document.createElement('span');
   strong.textContent = text;
   span.textContent = sub;
   hud.banner.replaceChildren(strong, span);
+  if (img) {
+    const icon = new Image();
+    icon.src = img;
+    icon.alt = '';
+    strong.prepend(icon);
+  }
   hud.banner.classList.remove('show');
   void hud.banner.offsetWidth; // restart the CSS animation
   hud.banner.classList.add('show');
@@ -156,10 +162,10 @@ function collect(type) {
     const before = game.player.helmets;
     game.player.helmets = addHelmet(before, MAX_HELMETS);
     const hint = game.player.helmets === before ? `Maximal ${MAX_HELMETS} Helme` : `${game.player.helmets} von ${MAX_HELMETS} – je ein Crash frei`;
-    showBanner(`${p.icon} ${p.name}`, hint);
+    showBanner(p.name, hint, p.img);
   } else {
     game.effects[type] = p.duration;
-    showBanner(`${p.icon} ${p.name}`, p.hint);
+    showBanner(p.name, p.hint, p.img);
   }
   navigator.vibrate?.(30);
 }
@@ -172,7 +178,7 @@ function crash() {
     game.shake = 0.3;
     game.flash = 0.25;
     navigator.vibrate?.(80);
-    showBanner('⛑️ Helm kaputt', game.player.helmets ? `Noch ${game.player.helmets} übrig` : 'Glück gehabt!');
+    showBanner('Helm kaputt', game.player.helmets ? `Noch ${game.player.helmets} übrig` : 'Glück gehabt!', POWERUPS.helmet.img);
     return;
   }
   game.shake = 0.5;
@@ -354,12 +360,12 @@ function updateHud(speed) {
   const s = season();
   hud.season.textContent = `${s.icon} ${s.name}`;
   const parts = [];
-  for (let i = 0; i < game.player.helmets; i++) parts.push(`<span class="pw helmet">${POWERUPS.helmet.icon}</span>`);
+  for (let i = 0; i < game.player.helmets; i++) parts.push(`<span class="pw helmet"><img src="${POWERUPS.helmet.img}" alt=""></span>`);
   for (const key of ['slowmo', 'widen']) {
     const left = game.effects[key];
     if (left > 0) {
       const pct = (left / POWERUPS[key].duration) * 100;
-      parts.push(`<span class="pw ${key}">${POWERUPS[key].icon}<i style="width:${pct}%"></i></span>`);
+      parts.push(`<span class="pw ${key}"><img src="${POWERUPS[key].img}" alt=""><i style="width:${pct}%"></i></span>`);
     }
   }
   hud.powers.innerHTML = parts.join(''); // only our own icons, never player text
@@ -387,7 +393,7 @@ function drawThing(o, look) {
       drawWall(ctx, view, o.z, gaps, gabion, o.snowy, look.s.fog);
       break;
     }
-    case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time); break;
+    case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time, powerIcons[o.type]); break;
     default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0, figure, look.pose);
   }
 }
@@ -567,8 +573,11 @@ async function init() {
   resize();
   bindInput();
   try {
-    const [park, tex] = await Promise.all([loadImage('assets/park.jpg'), loadImage('assets/gabion.jpg')]);
+    const [park, tex, ...icons] = await Promise.all([
+      loadImage('assets/park.jpg'), loadImage('assets/gabion.jpg'), ...Object.values(POWERUPS).map((p) => loadImage(p.img)),
+    ]);
     gabion = tex;
+    powerIcons = Object.fromEntries(Object.keys(POWERUPS).map((k, i) => [k, icons[i]]));
     backgrounds = buildSeasonBackgrounds(park, SEASONS);
     groundTiles = buildGroundTiles(SEASONS);
     warmUp(SEASONS);
