@@ -45,6 +45,7 @@
       "file *": "allow",
       "du *": "allow",
       "sips *": "allow",
+      "sqlite3 *": "allow",
       "cp *": "allow",
       "mv *": "allow",
       "touch *": "allow",
