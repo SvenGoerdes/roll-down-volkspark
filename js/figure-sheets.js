@@ -5,8 +5,8 @@ export const PPU = 160; // sprite pixels per figure unit (a figure is ~1.8 units
 export const SHEETS = {
   kalle: {
     "select": {"n": 12, "w": 124, "h": 300, "ax": 62.0, "ay": 89.6, "loop": true, "cols": 12},
-    "idle": {"n": 12, "w": 124, "h": 288, "ax": 62.0, "ay": -28.4, "loop": true, "cols": 12},
-    "turn": {"n": 12, "w": 124, "h": 316, "ax": 62.0, "ay": -9.5, "loop": false, "cols": 12},
+    "idle": {"n": 12, "w": 172, "h": 288, "ax": 86.0, "ay": -28.4, "loop": true, "cols": 11},
+    "turn": {"n": 12, "w": 172, "h": 316, "ax": 86.0, "ay": -9.5, "loop": false, "cols": 11},
     "trip": {"n": 24, "w": 204, "h": 412, "ax": 102.0, "ay": 87.1, "loop": false, "cols": 10},
     "roll": {"n": 32, "w": 140, "h": 228, "ax": 70.0, "ay": 114.0, "loop": true, "cols": 14},
     "roll-helmet": {"n": 32, "w": 140, "h": 228, "ax": 70.0, "ay": 114.0, "loop": true, "cols": 14},
@@ -14,8 +14,8 @@ export const SHEETS = {
   },
   tine: {
     "select": {"n": 12, "w": 116, "h": 292, "ax": 58.0, "ay": 82.1, "loop": true, "cols": 12},
-    "idle": {"n": 12, "w": 116, "h": 276, "ax": 58.0, "ay": -33.9, "loop": true, "cols": 12},
-    "turn": {"n": 12, "w": 116, "h": 292, "ax": 58.0, "ay": -29.2, "loop": false, "cols": 12},
+    "idle": {"n": 12, "w": 172, "h": 276, "ax": 86.0, "ay": -33.9, "loop": true, "cols": 11},
+    "turn": {"n": 12, "w": 172, "h": 292, "ax": 86.0, "ay": -29.2, "loop": false, "cols": 11},
     "trip": {"n": 24, "w": 184, "h": 404, "ax": 92.0, "ay": 79.7, "loop": false, "cols": 11},
     "roll": {"n": 32, "w": 132, "h": 220, "ax": 66.0, "ay": 110.0, "loop": true, "cols": 15},
     "roll-helmet": {"n": 32, "w": 132, "h": 220, "ax": 66.0, "ay": 110.0, "loop": true, "cols": 15},

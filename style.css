@@ -65,6 +65,7 @@ canvas { display: block; }
   border-radius: 50%;
   overflow: hidden;
 }
+.pw img { width: 30px; height: 30px; object-fit: contain; }
 .pw i { position: absolute; left: 0; bottom: 0; height: 4px; background: #ffd23f; }
 .pw.helmet { border-color: #e23b3b; background: #ffe3e0; }
 .pw.slowmo { border-color: #2f7de1; background: #e0edff; }
@@ -84,6 +85,7 @@ canvas { display: block; }
   width: 90%;
 }
 #banner strong { display: block; font-size: 34px; font-weight: 900; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 3px 14px rgba(0, 0, 0, 0.6); }
+#banner strong img { height: 1.1em; vertical-align: -0.18em; margin-right: 8px; }
 #banner span { display: block; font-size: 16px; margin-top: 4px; font-weight: 600; }
 #banner.show { animation: banner 2.2s ease-out forwards; }
 @keyframes banner {
@@ -123,6 +125,7 @@ h2 { font-size: 40px; font-weight: 900; }
 .overlay p { font-size: 16px; max-width: 320px; }
 .legend { list-style: none; text-align: left; font-size: 15px; display: grid; gap: 6px; }
 .legend b { display: inline-block; min-width: 2.2em; margin-right: 6px; }
+.legend img { width: 26px; height: 26px; object-fit: contain; vertical-align: middle; }
 .result { font-size: 26px !important; font-weight: 700; }
 .result span { font-size: 56px; font-weight: 900; color: #ffd23f; display: block; line-height: 1; }
 .small { opacity: 0.8; font-size: 14px !important; }

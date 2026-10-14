@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14 (midday): Painted power-up icons, the Storni bottle
+- Power-up icons painted with Nano Banana in the gouache style (the user picked them over a glossy 3D set). They float with a glow on the path and replace the emojis in the HUD, the start legend and the banners. The helmet is now the same red bike helmet the figures wear. → [ADR 0020](decisions/0020-painted-powerup-icons-and-storni.md)
+- The bottle is now "Storni" (the user's name for it): 1.7 × bigger, glossy brown glass, crown cap, painted label. It lies beside the foot where you can see it. Intro clips re-rendered for both figures.
+- New tool `tools/cut-icons.py`; prompts in `assets/src/prompts.md`.
+- Codex worked on the environment in the main checkout at the same time, so this was built in a separate worktree on branch `icons`.
+- Requested by: the user. Built by: Opus 5.5.
+
 ## 2026-10-14 (late morning): Kalle and Tine in the game
 - Start screen with figure cards (breathing sprites), choice remembered. Intro: stand, turn, trip over the Sterni, roll; a tap skips. Roll frames follow the spin, helmet clip, dazed clip with stars at game over. Retry skips the intro; "Figur wechseln" returns to the start. → [ADR 0019](decisions/0019-figure-select-and-intro.md)
 - The painted kid (`js/player.js`) is gone. New: `js/figure-select.js`, `js/render-player.js`, `tests/figure.test.js`.

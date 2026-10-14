@@ -1,7 +1,7 @@
 import { CORRIDOR, WALL_H, PLAYER_Z, SPAWN_Z } from './config.js';
 import { solidSegments, stripSource } from './logic.js';
 import { TILE_W, TILE_H, TILE_UNITS, TILE_LEVELS } from './surfaces.js';
-import { softDot, slab, gabionFaces, pickupSprite, hedgeSprite } from './sprites.js';
+import { softDot, slab, gabionFaces, hedgeSprite } from './sprites.js';
 import { project } from './view.js';
 import { star } from './render-fx.js';
 
@@ -231,7 +231,7 @@ export function drawPuddle(ctx, view, p) {
   ctx.globalAlpha = 1;
 }
 
-export function drawPickup(ctx, view, item, look, time) {
+export function drawPickup(ctx, view, item, look, time, icon) {
   const bob = 0.7 + Math.sin(time * 4 + item.z) * 0.15;
   const { sx, sy, s } = project(view, item.x, item.z, bob);
   const r = 0.72 * s;
@@ -242,8 +242,13 @@ export function drawPickup(ctx, view, item, look, time) {
   ctx.globalAlpha = fade * (0.35 + pulse * 0.3);
   ctx.drawImage(softDot(look.glow), sx - r * 2.3, sy - r * 2.3, r * 4.6, r * 4.6);
   ctx.globalAlpha = fade;
-  const d = r * 2.37 * (1 + pulse * 0.05);
-  ctx.drawImage(pickupSprite(look.id, look.color), sx - d / 2, sy - d / 2, d, d);
+  // the painted icon floats in its glow and sways a little
+  const d = r * 2.2 * (1 + pulse * 0.05), k = d / Math.max(icon.width, icon.height);
+  ctx.save();
+  ctx.translate(sx, sy);
+  ctx.rotate(Math.sin(time * 3 + item.z) * 0.12);
+  ctx.drawImage(icon, (-icon.width * k) / 2, (-icon.height * k) / 2, icon.width * k, icon.height * k);
+  ctx.restore();
   if (r > 5) {
     ctx.fillStyle = '#fff';
     for (let i = 0; i < 2; i++) {

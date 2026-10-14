@@ -5,7 +5,7 @@
 #   clips: every game clip below, plus meta.json
 # LOOK=toon (default: flat colour bands and ink outline) or LOOK=pbr (the model's own materials)
 import bpy, importlib, json, math, os, sys
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 argv = sys.argv[sys.argv.index('--') + 1:]
@@ -37,16 +37,47 @@ TUCK = dict(bend=-45, nod=-25, sh_l=60, sh_r=60, shy_l=10, shy_r=10, el_l=-50, e
 BALL = dict(bend=-60, nod=-40, sh_l=35, sh_r=35, shy_l=-15, shy_r=-15, el_l=-65, el_r=-65, hp_l=105, hp_r=105, kn_l=-150, kn_r=-150, pitch=-30, fwd=1.0, lift=0.45)
 KO = dict(yaw=180, pitch=90, lift=0.16, shy_l=-75, shy_r=-70, sh_l=10, sh_r=-5, el_l=-25, el_r=-30, hpy_l=-22, hpy_r=-18, kn_l=-15, kn_r=-25, nod=-10)   # starfish on his back
 
-# ---------- prop: an empty "Sterni" (brown half-litre bottle, cream label, red band; no logo) ----------
+# ---------- prop: an empty "Storni" (brown half-litre bottle, painted label from assets/src/storni-label.jpg) ----------
+LABEL = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'assets', 'src', 'storni-label.jpg')
+BOTTLE_K = 1.7   # bigger than life so it reads on a phone
+LABEL_TURN = -60   # degrees about the bottle's axis, so the lettering faces the camera
+BOTTLE_AT = (0.3, 0.42, 40)   # x, y, turn in degrees: beside the right foot, neck to the front right, still in the kick's way
+
+def pbr(name, rgb, rough, metal=0.0, coat=0.0, image=None):
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    bsdf = m.node_tree.nodes['Principled BSDF']
+    bsdf.inputs['Base Color'].default_value = (*rgb, 1)
+    bsdf.inputs['Roughness'].default_value = rough
+    bsdf.inputs['Metallic'].default_value = metal
+    bsdf.inputs['Coat Weight'].default_value = coat
+    if image:
+        tex = m.node_tree.nodes.new('ShaderNodeTexImage')
+        tex.image = bpy.data.images.load(image)
+        m.node_tree.links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
+    return m
+
 def bottle():
-    brown, label, band = toon.toon('bottle', '#6e3d1c', dark=0.6, grain=0, shine=1.6), toon.toon('label', '#efe4c8'), toon.toon('band', '#c8302c')
-    R = 0.034
-    secs = [((-0.12, 0, 0), 0.004, 0.004), ((-0.118, 0, 0), R, R), ((0.02, 0, 0), R, R), ((0.05, 0, 0), 0.026, 0.026), ((0.075, 0, 0), 0.013, 0.013),
-            ((0.11, 0, 0), 0.012, 0.012), ((0.112, 0, 0), 0.014, 0.014), ((0.12, 0, 0), 0.013, 0.013), ((0.121, 0, 0), 0.004, 0.004)]
-    mat = lambda p: 1 if -0.085 < p.x < -0.01 else (2 if -0.01 <= p.x < 0.005 else 0)
-    b = toon.part('bottle', [toon.tube(secs, axis='x', n=16)], [brown, label, band], None, mat,
-                  cuts=[((-0.085, 0, 0), (1, 0, 0)), ((-0.01, 0, 0), (1, 0, 0)), ((0.005, 0, 0), (1, 0, 0))])
+    k = BOTTLE_K
+    R = 0.034 * k
+    secs = [((x * k, 0, 0), r * k, r * k) for x, r in ((-0.12, 0.004), (-0.118, 0.034), (0.02, 0.034), (0.05, 0.026), (0.075, 0.013),
+                                                         (0.11, 0.012), (0.112, 0.014), (0.12, 0.013), (0.121, 0.004))]
+    glass = pbr('bottle_glass', (0.11, 0.045, 0.012), 0.08, coat=1.0)
+    b = toon.part('bottle', [toon.tube(secs, axis='x', n=24)], [glass], None, lambda p: 0, ow=0)
     b.rotation_mode = 'XYZ'
+    # the label wraps the body; a cylinder brings its own UVs, so the painted label maps straight on
+    bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=R * 1.01, depth=0.1 * k, end_fill_type='NOTHING',
+                                        location=(-0.048 * k, 0, 0), rotation=(0, math.pi / 2, 0))
+    label = bpy.context.object
+    label.name = 'bottle-label'
+    label.data.materials.append(pbr('bottle_label', (1, 1, 1), 0.6, image=LABEL))
+    label.data.transform(Matrix.Rotation(math.radians(LABEL_TURN), 4, 'Z'))   # turn the lettering up toward the camera
+    bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.0145 * k, depth=0.012 * k, location=(0.121 * k, 0, 0), rotation=(0, math.pi / 2, 0))
+    cap = bpy.context.object
+    cap.name = 'bottle-cap'
+    cap.data.materials.append(pbr('bottle_cap', (0.75, 0.12, 0.08), 0.3, metal=0.8))
+    for o in (label, cap):
+        o.parent = b
     return b, R
 
 # ---------- camera, light ----------
@@ -152,13 +183,14 @@ def apply(name, i, p, bottle_frame, pivot, prop):
         for f in rig.after:   # re-skin: the root moved after the pose
             f()
     b, R = prop
-    b.hide_render = bottle_frame is None
+    for o in (b, *b.children):
+        o.hide_render = bottle_frame is None
     if bottle_frame is not None:
         # the bottle lies in front of the right foot; from frame 6 it gets kicked forward and to the side
         t = max(0, bottle_frame - 6)
         d = 2.4 * (1 - math.exp(-t / 5))
-        b.location = (0.1 + 0.55 * d, 0.4 + d, R)
-        b.rotation_euler = (d / R * 0.6, 0, math.radians(15 + 25 * d))
+        b.location = (BOTTLE_AT[0] + 0.55 * d, BOTTLE_AT[1] + d, R)
+        b.rotation_euler = (d / R * 0.6, 0, math.radians(BOTTLE_AT[2] + 25 * d))
     bpy.context.view_layer.update()
 
 def render_clip(name, pivot, prop, margin=6):
@@ -171,7 +203,9 @@ def render_clip(name, pivot, prop, margin=6):
     xs, ys = [], []
     for i, (p, bf) in enumerate(frames):
         apply(name, i, p, bf, pivot, prop)
-        for o in figure_meshes():
+        # the bottle lying still belongs in the frame; once kicked it may fly out
+        lying = [prop[0], *prop[0].children] if name in ('idle', 'turn') else []
+        for o in figure_meshes() + lying:
             for c in o.bound_box:
                 d = o.matrix_world @ Vector(c) - anchor
                 xs.append(d.dot(right))
