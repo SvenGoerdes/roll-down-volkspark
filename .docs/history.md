@@ -2,6 +2,26 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14 (late morning): Kalle and Tine in the game
+- Start screen with figure cards (breathing sprites), choice remembered. Intro: stand, turn, trip over the Sterni, roll; a tap skips. Roll frames follow the spin, helmet clip, dazed clip with stars at game over. Retry skips the intro; "Figur wechseln" returns to the start. → [ADR 0019](decisions/0019-figure-select-and-intro.md)
+- The painted kid (`js/player.js`) is gone. New: `js/figure-select.js`, `js/render-player.js`, `tests/figure.test.js`.
+- The idle clip now shows the bottle lying there, so it doesn't pop in at the turn.
+- Way of working, as the user asked: Opus 5.5 planned and split the work; four Haiku 5.5 subagents wrote the modules in parallel (no shared files); a Sonnet 5.5 code review found a keyboard focus bug, a stale world after changing the figure, missing load feedback, decode hitches and a short-screen overflow; two Haiku agents fixed them. Opus checked the flow in headless Chrome at 390×844 and 375×667 and placed the standing clips on the ball's ground spot. Frame times in headless Chrome at 4x CPU throttling: steady 16.7 ms (60 fps); at 6x single spikes.
+- Requested by: the user. Built by: Opus 5.5 with Haiku 5.5 and Sonnet 5.5 subagents.
+
+## 2026-10-14 (morning): Figure sprites rendered in the original look
+- The user picked look B: the models' own materials (PBR), no toon outline. Opus rendered all clips for both figures (`LOOK=pbr`) and packed them: 14 WebP sheets, ~1.1 MB in total, ~0.55 MB per figure.
+- Fix: the roll clips moved the root after the pose without re-skinning, so the body orbited the ball centre and the helmet floated off the head. `render.py` now re-skins after moving the root.
+- Not yet wired into the game. Requested by: the user. Built by: main session (Opus 5.5).
+
+## 2026-10-14 (night/morning): Figures as rigged 3D models
+- The user asked how to get 3D models without paying for Tripo. Opus first built both figures by script in Blender (`tools/blender/toon.py` kit: lofted parts, toon shader, outline, pivot-empty rig) and checked them against the model sheets with a 50 % overlay (`tools/blender/compare.py`). The user was not satisfied with the look.
+- The user then built new models of Kalle and Tine with Codex and Blender via blender-mcp and handed them over. Opus decimated them (`tools/blender/prep-glb.py`), rigged them by script without an armature (`tools/blender/skinned.py`), and rendered test poses from the game camera in two looks (toon with outline, original PBR). → [ADR 0018](decisions/0018-rigged-figures-to-sprites.md)
+- Render pipeline ready but not yet run on the new models: `tools/blender/render.py` (clips select, idle, turn, trip over a "Sterni" bottle — the user's choice —, roll, roll with helmet, dazed; auto framing with a ball-centre anchor) and `tools/build-sprites.py` (WebP sheets, `js/figure-sheets.js`).
+- Style samples A and B saved to `assets/src/`. The TRELLIS proof of concept `tools/blender/kalle-poc.py` was removed.
+- Work is on branch `grafik`, not merged, nothing live.
+- Requested by: the user. Built by: main session (Opus 5.5).
+
 ## 2026-10-14: Image generation set up, style samples
 - `tools/gen-image.js` generates images through OpenRouter; `tools/serve.js` replaces the throwaway local server. → [ADR 0013](decisions/0013-ai-image-generation-via-openrouter.md)
 - Three style samples of the same scene (low-poly, painted, flat vector) made with Nano Banana 2 for the user to choose from.
