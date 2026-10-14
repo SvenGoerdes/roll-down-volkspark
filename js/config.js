@@ -12,6 +12,11 @@ export const HORIZON = 0.42;
 export const HILL_DROP = 12;
 export const HILL_RUN = 14;
 
+// Steering spring toward the finger; ice and puddles make it loose, and gravel stones knock less there.
+export const SPRING = { k: 320, c: 36 };
+export const ICE = { k: 70, c: 8, kick: 0.3 };
+export const WIND_WARN = 0.7; // seconds a gust is announced before it pushes
+
 export const WALLS_PER_SEASON = 20;
 
 export const SEASONS = [
@@ -61,7 +66,7 @@ export const SURFACES = {
   dirt: { id: 'dirt', icon: '🟤', name: 'Erde', hint: 'Fester Boden', speedMul: 1, bump: 0, kick: null },
   gravel: {
     id: 'gravel', icon: '🪨', name: 'Schotter', hint: 'Holprig – du hoppelst', speedMul: 1, bump: 0.12,
-    kick: { every: [0.12, 0.3], impulse: [1.2, 2.4] },
+    kick: { every: [0.12, 0.3], impulse: [0.8, 1.6] },
   },
   grass: { id: 'grass', icon: '🌱', name: 'Gras', hint: 'Bremst dich ab', speedMul: 0.9, bump: 0, kick: null },
 };

@@ -84,7 +84,7 @@ export function drawScenery(ctx, view, item, seasonId) {
 
 // Thin wedges racing out of the vanishing point over the ground once the hill gets fast.
 export function drawSpeedLines(ctx, view, speed, time) {
-  const k = clamp((speed - 23) / 15, 0, 1);
+  const k = clamp((speed - 19) / 10, 0, 1);
   if (k <= 0) return;
   const R = Math.hypot(view.W, view.H);
   ctx.fillStyle = '#fff';

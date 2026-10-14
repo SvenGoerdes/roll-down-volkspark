@@ -1,23 +1,130 @@
 import { test, expect } from 'bun:test';
-import { CORRIDOR, WALL_EXT, SEASONS } from '../js/config.js';
+import { CORRIDOR, WALL_EXT, SEASONS, WALLS_PER_SEASON, WIND_WARN } from '../js/config.js';
 import {
-  speedAt, gapWidthAt, spacingAt, seasonIndexAt, makeGaps, widened, passesWall, solidSegments, slipAmount, skidStrength,
-  createSurfaceTrack, stripSource, addHelmet, seasonAhead,
+  speedAt, gapWidthAt, intervalAt, spacingAt, seasonRelief, shiftAt, windAt, stepWind, windArrow, seasonIndexAt, makeGaps, widened,
+  passesWall, solidSegments, slipAmount, skidStrength, createSurfaceTrack, stripSource, addHelmet, seasonAhead,
 } from '../js/logic.js';
 
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
 const [spring, summer] = SEASONS;
 
-test('speed rises slowly and caps', () => {
+test('speed starts at 16 and eases toward 28, never above', () => {
   expect(speedAt(0)).toBe(16);
-  expect(speedAt(60)).toBeGreaterThan(speedAt(30));
-  expect(speedAt(10_000)).toBe(40);
+  expect(speedAt(30)).toBeGreaterThan(speedAt(10));
+  expect(speedAt(10_000)).toBeCloseTo(28);
+  for (const n of [0, 5, 50, 500, 10_000]) expect(speedAt(n)).toBeLessThanOrEqual(28);
 });
 
-test('gaps shrink and spacing tightens, both with a floor', () => {
-  expect(gapWidthAt(0)).toBeGreaterThan(gapWidthAt(40));
-  expect(gapWidthAt(10_000)).toBe(1.9);
-  expect(spacingAt(10_000)).toBe(10);
+test('seasonRelief: breather at the first walls of a season only', () => {
+  expect(seasonRelief(0)).toBe(1);
+  expect(seasonRelief(20)).toBe(1);
+  expect(seasonRelief(5)).toBe(0);
+  expect(seasonRelief(19)).toBe(0);
+});
+
+test('gaps start wide, ease to 1.8, and widen again in a breather', () => {
+  expect(gapWidthAt(0)).toBeCloseTo(3.7);
+  expect(gapWidthAt(10_005)).toBeCloseTo(1.8);
+  expect(gapWidthAt(20)).toBeGreaterThan(gapWidthAt(19));
+});
+
+test('intervals start at 1.35s, ease to 0.45s', () => {
+  expect(intervalAt(0)).toBeCloseTo(1.35);
+  expect(intervalAt(10_005)).toBeCloseTo(0.45);
+});
+
+test('walls never come quicker than 0.45 s at base speed', () => {
+  for (let n = 0; n <= 400; n++) expect(spacingAt(n) / speedAt(n)).toBeGreaterThan(0.45 - 1e-9);
+});
+
+test('spacing is a distance: at the floor interval a faster run spaces walls wider', () => {
+  expect(intervalAt(205)).toBeCloseTo(0.45);
+  expect(intervalAt(305)).toBeCloseTo(0.45);
+  expect(spacingAt(305)).toBeGreaterThan(spacingAt(205));
+});
+
+test('sideways shift: 5 at the start, 3 once walls come quick', () => {
+  expect(shiftAt(0)).toBe(5);
+  expect(shiftAt(10_005)).toBe(3);
+  for (const n of [0, 30, 100, 1000, 10_005]) {
+    expect(shiftAt(n)).toBeGreaterThanOrEqual(3);
+    expect(shiftAt(n)).toBeLessThanOrEqual(5);
+  }
+});
+
+test('wind ramps in over the first walls of autumn, then grows slowly', () => {
+  expect(windAt(40)).toBeLessThan(windAt(45));
+  expect(windAt(45)).toBeCloseTo(118);
+  expect(windAt(10_005)).toBeCloseTo(132);
+});
+
+const calm = () => ({ force: 0, target: 0, next: 0, warn: 0, nextGust: 4, drift: 0 });
+// rng calls in order: gust direction (< 0.5 = left), then the next-gust delay
+const run = (w, seconds, autumn, rng, dt = 0.05) => { for (let t = 0; t < seconds; t += dt) stepWind(w, dt, autumn, 100, rng); };
+
+test('stepWind announces a gust first: arrow shows, nothing pushes yet', () => {
+  const w = calm(), rng = seq(0.9, 0.5);
+  run(w, 4.05, true, rng);
+  expect(w.warn).toBeGreaterThan(0);
+  expect(w.next).toBe(100);
+  expect(w.target).toBe(0);
+  expect(w.force).toBe(0);
+  expect(windArrow(w)).toBe(1);
+});
+
+test('stepWind pushes after WIND_WARN and builds the force', () => {
+  const w = calm(), rng = seq(0.1, 0.5);
+  run(w, 4.05 + WIND_WARN + 0.1, true, rng);
+  expect(w.warn).toBeLessThanOrEqual(0);
+  expect(w.target).toBe(-100);
+  expect(w.force).toBeLessThan(0);
+  run(w, 1.5, true, rng);
+  expect(w.force).toBeLessThan(-80);
+});
+
+test('stepWind ends the gust 1.6 s after the push, then calms down', () => {
+  const w = calm(), rng = seq(0.9, 0, 0);
+  run(w, 4.05 + WIND_WARN + 1.6 + 0.1, true, rng);
+  expect(w.target).toBe(0);
+  expect(w.nextGust).toBeGreaterThan(1.5);
+  expect(w.nextGust).toBeLessThanOrEqual(2); // 2 + rng() * 2.5 with rng 0
+  run(w, 1.8, true, rng); // before the next gust is announced
+  expect(Math.abs(w.force)).toBeLessThan(5);
+});
+
+test('stepWind outside autumn drops the warning and everything calms', () => {
+  const w = { force: 90, target: 100, next: 100, warn: 0.5, nextGust: 1, drift: 100 };
+  run(w, 4, false, seq(0.9));
+  expect(w.warn).toBe(0);
+  expect(w.target).toBe(0);
+  expect(Math.abs(w.force)).toBeLessThan(1);
+  expect(Math.abs(w.drift)).toBeLessThan(1);
+  expect(windArrow(w)).toBe(0);
+});
+
+test('stepWind drift leads the force', () => {
+  const w = calm(), rng = seq(0.9, 0.5);
+  run(w, 4.05 + WIND_WARN, true, rng);
+  expect(w.drift).toBeGreaterThan(w.force);
+  expect(w.drift).toBeGreaterThan(50);
+});
+
+test('windArrow: shows from the warning on, through the push, until the force is gone', () => {
+  expect(windArrow({ warn: 0.4, next: -100, target: 0, force: 0 })).toBe(-1);
+  expect(windArrow({ warn: 0, next: 100, target: 100, force: 5 })).toBe(1); // push has begun, force still small
+  expect(windArrow({ warn: 0, next: 0, target: 0, force: -60 })).toBe(-1); // gust over, force fading
+  expect(windArrow({ warn: 0, next: 0, target: 0, force: 30 })).toBe(0);
+  expect(windArrow({ warn: 0, next: 100, target: 0, force: 0 })).toBe(0);
+});
+
+test('no sudden jump inside a season, the breather steps up by a bounded amount', () => {
+  for (let n = 0; n <= 300; n++) {
+    const newSeason = n % WALLS_PER_SEASON === WALLS_PER_SEASON - 1; // the step into a new season
+    expect(Math.abs(gapWidthAt(n + 1) - gapWidthAt(n))).toBeLessThanOrEqual(newSeason ? 0.6 : 0.15);
+    expect(Math.abs(intervalAt(n + 1) - intervalAt(n))).toBeLessThanOrEqual(newSeason ? 0.2 : 0.05);
+    expect(speedAt(n + 1) - speedAt(n)).toBeLessThan(0.25);
+    expect(windAt(n)).toBeLessThanOrEqual(132);
+  }
 });
 
 test('seasons loop forever', () => {
@@ -35,9 +142,9 @@ test('gap stays inside the corridor', () => {
 });
 
 test('summer can add a second gap later in the run', () => {
-  const gaps = makeGaps(20, 3, summer, seq(0.9, 0.1, 0.5));
+  const gaps = makeGaps(25, 3, summer, seq(0.9, 0.1, 0.5));
   expect(gaps.length).toBe(2);
-  expect(makeGaps(20, 3, spring, seq(0.9, 0.1, 0.5)).length).toBe(1);
+  expect(makeGaps(25, 3, spring, seq(0.9, 0.1, 0.5)).length).toBe(1);
 });
 
 test('player passes only when fully inside a gap', () => {

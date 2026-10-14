@@ -43,7 +43,7 @@ export function drawPlayer(ctx, view, player, time, speed, figure, pose) {
   // squash on every touchdown, stretch when swerving
   const squash = rolling ? (1 - hop / hopMax) ** 6 * 0.11 : 0;
   const swerve = rolling ? clamp(Math.abs(player.vx) * 0.008, 0, 0.08) : 0;
-  const blur = rolling ? clamp((speed - 18) / 20, 0, 1) : 0;
+  const blur = rolling ? clamp((speed - 17) / 13, 0, 1) : 0;
   const lean = rolling ? -clamp(player.vx * 0.05, -0.4, 0.4) * (player.slip || 0) : 0;
   const tilt = rolling ? clamp(player.vx * 0.03, -0.25, 0.25) : 0;
   ctx.save();

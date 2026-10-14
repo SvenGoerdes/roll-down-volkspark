@@ -25,7 +25,7 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 | Module | Job |
 |---|---|
 | `config.js` | All tuning constants: sizes, seasons, surfaces, power-ups, worker URL |
-| `logic.js` | Pure game rules (speed, gaps, seasons, surfaces, slip, helmets). Fully unit tested |
+| `logic.js` | Pure game rules (difficulty curve, gaps, seasons, surfaces, slip, helmets). Fully unit tested |
 | `main.js` | Game state, update loop, input, HUD, wiring |
 | `view.js` | Camera, terrain drop, projection and cached inverse ground rows |
 | `render.js` | Background, ground, walls, puddles, pickups |
@@ -46,9 +46,9 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 | `fx.js` | Short-lived effects: stones, dust, sparkles |
 | `ideas.js`, `leaderboard.js`, `name.js` | Bottom sheets for ideas and leaderboard, shared name storage and network errors |
 
-**Game rules in short.** Speed rises slowly to a cap; gaps get narrower and walls closer. Seasons change every 20 walls (spring: puddles, summer: faster and two gaps, autumn: wind gusts, winter: ice). Path surfaces change every 120–220 units (dirt normal, gravel bumpy, grass slower). Power-ups: helmet (extra life, stacks to 3), slow-mo (5 s), wider gaps (7 s).
+**Game rules in short.** Difficulty follows the walls passed, not the time (ADR 0024): speed eases from 16 toward 28 units/s, the time between walls from 1.2 toward 0.65 s, the gap from 3.2 toward 1.95; the first five walls of each season are a breather, and after the first year (80 walls) gaps and intervals keep tightening slowly. Autumn gusts are announced 0.7 s ahead. Seasons change every 20 walls (spring: puddles, summer: faster and two gaps, autumn: wind gusts, winter: ice). Path surfaces change every 120–220 units (dirt normal, gravel bumpy, grass slower). Power-ups: helmet (extra life, stacks to 3), slow-mo (5 s), wider gaps (7 s).
 
-**Testing hook.** `index.html#debug` exposes `window.rollDown` (`game()`, `start`, `intro`, `step`, `setSeason`, `spawn`, `update`); `step(dt)` advances one frame by hand, for panes where `requestAnimationFrame` is paused during scripted browser tests. `?preview=autumn#debug` provides a frozen seasonal view; add `&surface=gravel` or `&surface=grass` to check surfaces. `&width=390&height=844` fixes the debug game frame for repeatable captures; `&near=4.8` shows a close approaching basket. Basket height is 1.65, with texture cropping to preserve wire proportions.
+**Testing hook.** `index.html#debug` exposes `window.rollDown` (`game()`, `start`, `intro`, `step`, `setSeason`, `spawn`, `update`); `step(dt)` advances one frame by hand (the wind strength follows `game().passed`, so set it too when you jump to autumn with `setSeason(2)`), for panes where `requestAnimationFrame` is paused during scripted browser tests. `?preview=autumn#debug` provides a frozen seasonal view; add `&surface=gravel` or `&surface=grass` to check surfaces. `&width=390&height=844` fixes the debug game frame for repeatable captures; `&near=4.8` shows a close approaching basket. Basket height is 1.65, with texture cropping to preserve wire proportions.
 
 **Security on the page.** A CSP meta tag allows only own files and the worker URL. User text (names, ideas, leaderboard entries) is only ever set with `textContent`.
 

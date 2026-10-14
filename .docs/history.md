@@ -2,6 +2,12 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14 (evening): Fairer difficulty curve
+- Testers said the game gets far too fast and nobody gets past about 50 walls. A new balance sim (`tools/balance-sim.js`) lets a human-like bot play the real rules; tuned to the testers, it got stuck at a median of 48 with 70 % of crashes in autumn. Cause: the autumn wind pushed the ball further than the gap allowed, while the time between walls had fallen to 0.6 s. → [ADR 0024](decisions/0024-difficulty-curve-by-walls.md)
+- Speed, time between walls, gap width and the gap's sideways jump now follow the walls passed and ease toward floors (max ~45 km/h instead of 64). Each season starts with five easier walls. Wind gusts are weaker, build up over autumn and are announced 0.7 s ahead (blinking arrow, leaves drift first). Ice settles instead of swinging. Gravel knocks are lighter and nearly gone on a puddle or ice (tester Luca: "Schotter und Pfütze ist deadly"). Speed lines and blur are rescaled to the new top speed.
+- Sim on the new curve: median 105 walls (old: 48), 90 % of runs end before 151, crashes spread over all seasons, no cliff. The wind logic is now one tested function shared by game and sim.
+- Requested by: the user. Built by: Opus 5.5 (plan, sim, integration); Haiku 5.5 subagents (curve in `logic.js`, wiring in `main.js`); Sonnet 5.5 reviewed (no critical findings) and wrote the review fixes.
+
 ## 2026-10-14: Lower walls and environment release review
 - The user requested lower gabions so the following gap remains easier to see. Basket height is now 1.65 instead of 2.6; the material faces crop to the new dimensions, preserving wire and stone proportions. Added a visibility regression at tight late-game spacing for three phone formats.
 - The environment work is prepared on `feat/painted-park-environment` for a reviewed PR to main, including the current icon/start-screen changes already merged on main.
