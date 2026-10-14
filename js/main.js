@@ -473,19 +473,23 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-async function choose(id) {
-  if (state !== 'start' || loadingFigure) return;
-  document.activeElement?.blur();
+function pick(id) {
   figureId = id;
   saveFigure(id);
   picker.select(id);
+}
+
+async function choose(id) {
+  if (state !== 'start' || loadingFigure) return;
+  document.activeElement?.blur();
+  pick(id);
   const tap = hud.start.querySelector('.tap');
   loadingFigure = true;
   tap.textContent = 'Lädt …';
   try {
     figure = await sheetsFor(id);
   } catch (err) {
-    tap.textContent = 'Figur konnte nicht laden – nochmal tippen.';
+    tap.textContent = 'Nochmal versuchen';
     console.error(err);
     return;
   } finally {
@@ -592,10 +596,10 @@ async function init() {
   setupIdeas(() => ({ score: game.passed, season: season().name }));
   // a card only picks the figure; the button (or a tap anywhere else) starts
   picker = setupFigureSelect(hud.figures, figureId, (id) => {
-    figureId = id;
-    saveFigure(id);
-    picker.select(id);
+    if (loadingFigure) return; // a round is already starting with the other figure
+    pick(id);
     sheetsFor(id).catch(() => {});
+    hud.start.querySelector('.tap').focus(); // so Space/Enter starts next, not the card again
   });
   sheetsFor(figureId).catch(() => {});
   hud.bestStart.textContent = readBest();

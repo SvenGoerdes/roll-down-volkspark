@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-state="loading">
   <main id="stage">
     <canvas id="game"></canvas>
 
@@ -36,7 +36,7 @@
     </div>
 
     <div id="banner"></div>
-    <p id="hint">Wischen zum Lenken</p>
+    <p id="hint" aria-hidden="true">Wischen zum Lenken</p>
 
     <section id="start" class="overlay">
       <h1>Roll Down<br><span>Volkspark</span></h1>
@@ -61,7 +61,7 @@
     </section>
 
     <div id="ideas">
-      <button id="idea-btn" type="button" aria-label="Idee vorschlagen">Idee?</button>
+      <button id="idea-btn" type="button">Idee?</button>
       <div class="backdrop"></div>
       <form id="idea-form" class="sheet" autocomplete="off">
         <div class="sheet-head">
@@ -78,7 +78,7 @@
     </div>
 
     <div id="board">
-      <button id="board-btn" type="button" >Bestenliste</button>
+      <button id="board-btn" type="button">Bestenliste</button>
       <div class="backdrop"></div>
       <form id="board-form" class="sheet" autocomplete="off">
         <div class="sheet-head">
