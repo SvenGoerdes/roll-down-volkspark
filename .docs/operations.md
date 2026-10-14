@@ -35,7 +35,7 @@ Needs `pip install gradio_client`. See ADR 0017 (superseded for the figures by A
 B=/Applications/Blender.app/Contents/MacOS/Blender
 $B -b -P tools/blender/prep-glb.py -- <model.glb> assets/src/characters/kalle-3d.glb   # once per new model
 $B -b -P tools/blender/render.py -- kalle /tmp/frames/kalle poses     # quick rig check
-$B -b -P tools/blender/render.py -- kalle /tmp/frames/kalle clips     # all clips + meta.json (LOOK=toon|pbr)
+LOOK=pbr $B -b -P tools/blender/render.py -- kalle /tmp/frames/kalle clips     # all clips + meta.json; the game uses LOOK=pbr
 python3 tools/build-sprites.py /tmp/frames                            # WebP sheets + js/figure-sheets.js
 ```
 

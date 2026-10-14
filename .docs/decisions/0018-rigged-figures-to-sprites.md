@@ -14,7 +14,7 @@ TRELLIS.2 looked much worse than Tripo, and Tripo export needs a paid plan. Opus
 - `tools/blender/skinned.py` rigs it without an armature: pivot empties at measured joint points (`JOINTS` in `kalle.py` / `tine.py`), each vertex bound to its one or two nearest bone segments (distance scaled by limb thickness, soft-min blend), re-skinned with numpy after every pose. The A-pose is handled by `arm_rest`.
 - `tools/blender/render.py` poses the rig (shared pose table: stand, step, catch, trip, flail, tuck, ball, KO) and renders the game clips from the game camera (ortho, ~30° from behind and above, 160 px per unit): select, idle, turn, trip over a "Sterni" bottle, roll (32 frames, rigid turn about the ball centre), roll with helmet, dazed. Each clip is framed automatically and carries an anchor (the ball centre) so the game can chain clips without jumps.
 - `tools/build-sprites.py` packs each clip into a WebP sheet and writes `js/figure-sheets.js`.
-- Two looks: `LOOK=toon` (model colours in flat bands plus ink outline, matches style B) or `LOOK=pbr` (the model's own materials).
+- Two looks: `LOOK=toon` (model colours in flat bands plus ink outline) or `LOOK=pbr` (the model's own materials). The user picked `pbr` for the game.
 
 ## Alternatives
 - Script-modelled figures from primitives (`toon.py` kit): fully reproducible, but the user did not like the result.

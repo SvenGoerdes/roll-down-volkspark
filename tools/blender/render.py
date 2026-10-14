@@ -149,6 +149,8 @@ def apply(name, i, p, bottle_frame, pivot, prop):
     if name.startswith('roll'):   # rigid turn about the ball centre: no wobble
         bpy.context.view_layer.update()
         rig.root.location = pivot[0] - (rig.root.matrix_world.to_3x3() @ pivot[1])
+        for f in rig.after:   # re-skin: the root moved after the pose
+            f()
     b, R = prop
     b.hide_render = bottle_frame is None
     if bottle_frame is not None:

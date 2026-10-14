@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14 (morning): Figure sprites rendered in the original look
+- The user picked look B: the models' own materials (PBR), no toon outline. Opus rendered all clips for both figures (`LOOK=pbr`) and packed them: 14 WebP sheets, ~1.1 MB in total, ~0.55 MB per figure.
+- Fix: the roll clips moved the root after the pose without re-skinning, so the body orbited the ball centre and the helmet floated off the head. `render.py` now re-skins after moving the root.
+- Not yet wired into the game. Requested by: the user. Built by: main session (Opus 5.5).
+
 ## 2026-10-14 (night/morning): Figures as rigged 3D models
 - The user asked how to get 3D models without paying for Tripo. Opus first built both figures by script in Blender (`tools/blender/toon.py` kit: lofted parts, toon shader, outline, pivot-empty rig) and checked them against the model sheets with a 50 % overlay (`tools/blender/compare.py`). The user was not satisfied with the look.
 - The user then built new models of Kalle and Tine with Codex and Blender via blender-mcp and handed them over. Opus decimated them (`tools/blender/prep-glb.py`), rigged them by script without an armature (`tools/blender/skinned.py`), and rendered test poses from the game camera in two looks (toon with outline, original PBR). → [ADR 0018](decisions/0018-rigged-figures-to-sprites.md)
