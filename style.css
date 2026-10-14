@@ -55,6 +55,31 @@ body[data-state="loading"] #hud, body[data-state="start"] #hud { visibility: hid
   30% { transform: scale(1.3); color: #ffd23f; }
 }
 
+.score-col { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+/* perfect passes in a row; empty until the first one */
+#streak { display: flex; align-items: center; gap: 5px; padding-left: 10px; }
+#streak i {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(20, 28, 18, 0.55);
+  transition: background 0.15s, border-color 0.15s;
+}
+#streak i.on { background: #ffd23f; border-color: #ffd23f; }
+#streak img { width: 18px; height: 18px; object-fit: contain; opacity: 0.6; margin-left: 1px; }
+#streak:not(.active) { visibility: hidden; }
+
+/* progress through the season: a thin bar along the bottom of the chip */
+#season { position: relative; overflow: hidden; }
+#season::after {
+  content: '';
+  position: absolute; left: 0; bottom: 0;
+  height: 3px;
+  width: calc(var(--p, 0) * 100%);
+  background: #ffd23f;
+  transition: width 0.3s;
+}
+
 #powers { display: flex; gap: 6px; }
 .pw {
   position: relative;
@@ -99,6 +124,27 @@ body:not([data-state="playing"]) #wind { visibility: hidden; }
   100% { opacity: 0; transform: translate(-50%, -60%); }
 }
 
+/* "Perfekt" / "Knapp!" above the ball */
+#pop {
+  position: absolute; left: 0; top: 0;
+  transform: translate(-50%, -100%);
+  transform-origin: 50% 100%;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  font-size: 22px; font-weight: 900;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 3px 14px rgba(0, 0, 0, 0.6);
+}
+#pop.perfect { color: #ffd23f; }
+#pop.close { color: #ff8a5c; }
+#pop.show { animation: pop-up 0.7s ease-out forwards; }
+@keyframes pop-up {
+  0% { opacity: 0; transform: translate(-50%, -100%) scale(0.7); }
+  20% { opacity: 1; transform: translate(-50%, -100%) scale(1.15); }
+  35% { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, calc(-100% - 36px)); }
+}
+
 .overlay {
   position: absolute;
   inset: 0;
@@ -135,6 +181,9 @@ h2 { font-size: 40px; font-weight: 900; }
 .legend small { font-size: 12px; opacity: 0.75; }
 .result { font-size: 26px !important; font-weight: 700; }
 .result span { font-size: 56px; font-weight: 900; color: #ffd23f; display: block; line-height: 1; }
+#over-note { font-size: 18px; font-weight: 800; }
+#over-note.record { color: #ffd23f; }
+#over-note:empty { display: none; }
 .small { opacity: 0.8; font-size: 14px !important; }
 .tap {
   margin-top: 8px;

@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14 (evening): Perfekt, streak helmet, record chase
+- To make you want one more run (the user: "geiles Gameplay, das einen hookt"): a pass through the middle pops "Perfekt", a pass by a hair "Knapp!". Six perfect passes in a row give a free helmet; pips under the score show the streak. → [ADR 0025](decisions/0025-perfect-streak-and-record-chase.md)
+- The wall that would beat your record carries a "Rekord" sign; passing it shows "Neuer Rekord!". The season chip fills up over its 20 walls. Game over says "Neuer Rekord!" or "Noch N Mauern bis zum Rekord".
+- Score and leaderboard stay "walls passed".
+- The balance sim now plays the streak too (`--no-streak` to compare): median 105 → 128 for the bot, which is more precise than people.
+- Requested by: the user. Built by: Opus 5.5 (plan, integration); Haiku 5.5 subagent (`js/scoring.js`); Sonnet 5.5 subagent (UI); Sonnet 5.5 reviewed (nothing serious).
+
 ## 2026-10-14 (evening): Fairer difficulty curve
 - Testers said the game gets far too fast and nobody gets past about 50 walls. A new balance sim (`tools/balance-sim.js`) lets a human-like bot play the real rules; tuned to the testers, it got stuck at a median of 48 with 70 % of crashes in autumn. Cause: the autumn wind pushed the ball further than the gap allowed, while the time between walls had fallen to 0.6 s. → [ADR 0024](decisions/0024-difficulty-curve-by-walls.md)
 - Speed, time between walls, gap width and the gap's sideways jump now follow the walls passed and ease toward floors (max ~45 km/h instead of 64). Each season starts with five easier walls. Wind gusts are weaker, build up over autumn and are announced 0.7 s ahead (blinking arrow, leaves drift first). Ice settles instead of swinging. Gravel knocks are lighter and nearly gone on a puddle or ice (tester Luca: "Schotter und Pfütze ist deadly"). Speed lines and blur are rescaled to the new top speed.

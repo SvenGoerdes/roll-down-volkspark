@@ -26,10 +26,12 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 |---|---|
 | `config.js` | All tuning constants: sizes, seasons, surfaces, power-ups, worker URL |
 | `logic.js` | Pure game rules (difficulty curve, gaps, seasons, surfaces, slip, helmets). Fully unit tested |
+| `scoring.js` | Pure pass judging: Perfekt / Knapp, the streak toward a free helmet, the record wall. Unit tested |
 | `main.js` | Game state, update loop, input, HUD, wiring |
 | `view.js` | Camera, terrain drop, projection and cached inverse ground rows |
 | `render.js` | Background, ground, walls, puddles, pickups |
 | `render-player.js` | The chosen figure: sprite frame, shadow, hop, dazed stars |
+| `render-record.js` | The "Rekord" sign above the wall that would beat your best |
 | `render-fx.js` | Plants, particles, speed lines, color grade, debris |
 | `render-slip.js` | Ice sheen, skid marks, spray |
 | `sprites.js` | Shared offscreen canvas helpers, pickup symbols, grade |

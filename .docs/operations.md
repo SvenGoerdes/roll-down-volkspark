@@ -5,6 +5,7 @@
 ```sh
 bun test tests                    # all unit tests (logic, worker, scores, scenery)
 bun tools/balance-sim.js          # a bot plays 600 runs: median, crash share per season, crash rate per wall
+bun tools/balance-sim.js --no-streak   # same without the streak helmet (ADR 0025)
 ```
 
 Run the balance sim after changing the difficulty curve in `js/logic.js` or the steering physics in `js/main.js` (ADR 0024). It copies the physics, so change both together.
