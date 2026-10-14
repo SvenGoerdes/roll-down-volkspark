@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14 (afternoon): Calmer start screen, no emojis
+- The user found the start screen cluttered and the emojis too many. Now: title, one line, the figure cards, one big "Losrollen" button, the three painted power-ups in a compact row, the record. A card only picks the figure; the button (or a tap anywhere else) starts.
+- "Wischen zum Lenken" moved out of the start screen into the intro, shown while the figure turns and trips. The seasons line is gone; the season banners explain each season when it comes.
+- Emojis removed from the UI: start legend, bottom buttons, game over, leaderboard (ranks are numbers), idea sheet, season and surface banners, HUD season chip, wind hint. The score HUD is hidden on the start screen.
+- Found on the way: after a deploy the browser may mix the new `index.html` with cached old CSS/JS for up to 10 minutes (GitHub Pages `max-age=600`). That made the new icons huge for the user. Logged in the backlog.
+- Requested by: the user. Built by: Opus 5.5.
+
 ## 2026-10-14 (midday): Painted power-up icons, the Storni bottle
 - Power-up icons painted with Nano Banana in the gouache style (the user picked them over a glossy 3D set). They float with a glow on the path and replace the emojis in the HUD, the start legend and the banners. The helmet is now the same red bike helmet the figures wear. → [ADR 0020](decisions/0020-painted-powerup-icons-and-storni.md)
 - The bottle is now "Storni" (the user's name for it): 1.7 × bigger, glossy brown glass, crown cap, painted label. It lies beside the foot where you can see it. Intro clips re-rendered for both figures.

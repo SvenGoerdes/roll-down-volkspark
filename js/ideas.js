@@ -1,7 +1,7 @@
 import { WORKER_URL } from './config.js';
 import { readName, writeName, netError, FETCH_TIMEOUT } from './name.js';
 
-// Wires the 💡 button and the idea form. `context()` returns { score, season } of the last run.
+// Wires the idea button and the idea form. `context()` returns { score, season } of the last run.
 export function setupIdeas(context) {
   const root = document.getElementById('ideas');
   const form = document.getElementById('idea-form');
@@ -41,7 +41,7 @@ export function setupIdeas(context) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Senden fehlgeschlagen');
       text.value = '';
-      status.textContent = 'Danke! Deine Idee ist im Backlog 🙌';
+      status.textContent = 'Danke! Deine Idee ist im Backlog.';
       status.className = 'ok';
       setTimeout(close, 1600);
     } catch (err) {

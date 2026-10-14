@@ -1,9 +1,8 @@
 import { WORKER_URL } from './config.js';
 import { readName, writeName, netError, FETCH_TIMEOUT } from './name.js';
 
-const MEDALS = ['🥇', '🥈', '🥉'];
 const DONE = {
-  added: 'Eingetragen! 🙌',
+  added: 'Eingetragen!',
   exists: 'Dein Eintrag steht schon drin – mit gleich vielen oder mehr Mauern.',
   too_low: 'Zu wenig für die Top 20 – nächstes Mal!',
 };
@@ -18,7 +17,7 @@ async function call(path, body) {
   return data;
 }
 
-// Wires the 🏆 button, the game-over "eintragen" button and the list sheet.
+// Wires the leaderboard button, the game-over "eintragen" button and the list sheet.
 // Returns { offer(score, season) }: main.js calls it after a crash, and with null on a new run.
 export function setupLeaderboard() {
   const root = document.getElementById('board');
@@ -39,7 +38,7 @@ export function setupLeaderboard() {
       const rank = document.createElement('span');
       const name = document.createElement('span');
       const score = document.createElement('b');
-      rank.textContent = MEDALS[i] || `${i + 1}.`;
+      rank.textContent = `${i + 1}.`;
       name.textContent = e.name;
       score.textContent = e.score;
       li.append(rank, name, score);
