@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-14 (night): CI, tickets and OpenCode panes
+- GitHub Actions runs `bun test tests` on every PR; `main` takes only green PRs. `opencode.jsonc` sets the OpenCode permissions and two sub-agents (`coder` on GPT-6 Luna, `reviewer` on GPT-6.1 Sol medium).
+- The user's new idea list became epics with sub-issues on GitHub. Claude runs the OpenCode panes in herdr. → [ADR 0026](decisions/0026-opencode-panes-tickets-and-ci.md)
+- Requested by: the user. Built by: Opus 5.5 (main session).
+
 ## 2026-10-14 (evening): Perfekt, streak helmet, record chase
 - To make you want one more run (the user: "geiles Gameplay, das einen hookt"): a pass through the middle pops "Perfekt", a pass by a hair "Knapp!". Six perfect passes in a row give a free helmet; pips under the score show the streak. → [ADR 0025](decisions/0025-perfect-streak-and-record-chase.md)
 - The wall that would beat your record carries a "Rekord" sign; passing it shows "Neuer Rekord!". The season chip fills up over its 20 walls. Game over says "Neuer Rekord!" or "Noch N Mauern bis zum Rekord".
