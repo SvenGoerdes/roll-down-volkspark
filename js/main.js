@@ -1,5 +1,5 @@
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON, SPRING, ICE,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON, SPRING, ICE, VOLKSPARK_LANDMARK_PRELOAD,
 } from './config.js';
 import {
   speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow,
@@ -73,6 +73,14 @@ function gatesFor() {
     throw err;
   });
   return gateLoad;
+}
+
+// Volkspark loads the landmark sprites late, once. A failed load is not retried: the gabion walls stay.
+let landmarksTried = false;
+function preloadLandmarks() {
+  if (landmarksTried || themeId !== 'volkspark' || game.passed < VOLKSPARK_LANDMARK_PRELOAD) return;
+  landmarksTried = true;
+  gatesFor().catch(() => {});
 }
 
 // The Berlin-Tour ground loads and builds on first choice; Volkspark never pays for it.
@@ -285,6 +293,7 @@ function update(dt) {
       const gaps = w.gaps.map((g) => widened(g, widenFactor));
       if (passesWall(p.x, PLAYER_R * 0.75, gaps)) {
         game.passed++;
+        preloadLandmarks();
         setSeason(seasonIndexAt(game.passed, WALLS_PER_SEASON, SEASONS.length));
         onPass(judgePass(p.x, PLAYER_R * 0.75, gaps));
       } else {

@@ -36,3 +36,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0053](0053-oberbaum-bridge-runtime-parts.md) | Oberbaumbrücke aus vier Modellteilen, dritte Jahreszeit der Berlin-Tour | User (scope), Sonnet 5.5 (parts, renderer) |
 | [0054](0054-oberbaum-towers-outside-corridor.md) | Oberbaum-Türme außerhalb des Wegs, Folgelücke lesbar | User (visibility), Sonnet 5.5 (placement) |
 | [0055](0055-plant-order-for-oberbaum.md) | Galerie-Pflanzenreihenfolge auch für die Brücke | User (plants stay), Sonnet 5.5 |
+| [0062](0062-volkspark-landmark-walls.md) | Bauwerke als jede 10. Mauer im Volkspark ab Herbst | User (Ticket #81), Sonnet 5.5 |

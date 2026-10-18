@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: #81 – Bauwerke im Volkspark-Modus ab Herbst
+- Auftrag des Nutzers über den Orchestrator: ab Mauer 41 jede 10. Mauer ein Bauwerk statt der Gabionen-Mauer, dasselbe Bauwerk wie die Berlin-Tour in dieser Jahreszeit (`landmarkAt`). → [ADR 0062](decisions/0062-volkspark-landmark-walls.md)
+- Neu: `VOLKSPARK_LANDMARK_FROM` (40), `_EVERY` (10), `_PRELOAD` (25) in `config.js`, reine Funktion `volksparkLandmarkAt` in `logic.js`, `landmarkFor` in `render-scene.js` (gilt für beide Themen, auch für `PLANT_BEHIND_LANDMARKS`). `main.js` lädt die Sprites einmal bei 25 passierten Mauern; Fehler wird nicht wiederholt, die Gabionen-Mauer bleibt.
+- Lücken, Abstände, Treffer, Tempo unverändert; vor Mauer 41 ist der Volkspark pixelgleich (gleicher Zeichenpfad, leere Pflanzenliste).
+- `bun test tests`: 141 grün (zwei neue Tests). Spielbilder 390×844, DPR 2 unter `.claude/review/81/` (Mauer 41 und 51 Brücke, Mauer 42 Gabionen, Ladefehler-Fall). Vor Mauer 25 kein Sprite-Request. Echte Handys nicht geprüft.
+- Baut auf PR #87 auf. Gebaut von Claude Sonnet 5.5; entschieden hat der Nutzer.
+
 ## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
 - Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
 - Neu: `export-alaska.py` (Auswahl, Roll, Roll mit Helm, Crash), `build-figure.py` (Atlas und `figure-sheets.js`-Block pro Figur); `export-intro.py` kennt Alaska und einen Figurenmaßstab; `intro.py` hat Katzenposen für den neuen Körper; `alaska.py` hat einen Helm. `assets/figures/alaska/` (469 KB). `FIGURES` erhält `alaska`.
