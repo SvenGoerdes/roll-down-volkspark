@@ -1,6 +1,6 @@
 """Render the accepted human intro through the existing Blender/PNG pipeline.
 
-blender -b -P tools/blender/export-intro.py -- <kalle|tine> <review-dir>
+blender -b -P tools/blender/export-intro.py -- <kalle|tine|alaska> <review-dir>
 Then python3 tools/build-intro.py <review-dir> to update only that intro atlas.
 The 36 source poses through tuck are sampled at 20 fps; roll/helmet/dazed stay untouched.
 """
@@ -21,12 +21,16 @@ PPU = 192  # native DPR 2 through a ~457 CSS-px-wide game frame
 FPS = 20
 DURATION = 1.5
 GAME = Vector((0, -6, 3.5))
+UNIT = {'alaska': 1.1}   # Blender units per figure unit; the others are modelled at figure size
+BALL_HEIGHT = .7 / 1.75  # ball centre above the ground in figure units (PLAYER_R / FIG_UNIT)
 
 
 def main():
     name, out = sys.argv[sys.argv.index('--') + 1:]
-    if name not in ('kalle', 'tine'):
-        raise SystemExit('Nur Kalle und Tine; Alaska gehört zu #20.')
+    if name not in ('kalle', 'tine', 'alaska'):
+        raise SystemExit('Nur Kalle, Tine und Alaska.')
+    unit = UNIT.get(name, 1)
+    ppb = PPU / unit   # sprite pixels per Blender unit
     out = os.path.realpath(out)
     if not out.startswith(os.path.join(review.ROOT, '.claude', 'review') + os.sep):
         raise SystemExit('PNG-Ausgabe muss unter .claude/review liegen.')
@@ -51,7 +55,7 @@ def main():
     for ob in helmet:
         ob.hide_render = True
     actors = review.meshes(helmet)
-    prop, _ = storni.build()
+    prop, _ = storni.build(intro.BOTTLE_SCALE if name == "alaska" else 4.0)
     props = [prop, *prop.children_recursive]
     # The accepted game-facing typography transform, not the front beauty view.
     for ob in props:
@@ -91,7 +95,7 @@ def main():
         # Keep the actual foot/neck contact geometry together while easing to roll.
         progress = max(0, (i - intro.CONTACT) / (intro.TUCK - intro.CONTACT))
         floor = Vector((0, pose.get('fwd', 0), 0))
-        correction = (.7 / 1.75 - (anchor - floor).dot(up)) * (1 - progress)
+        correction = (BALL_HEIGHT * unit - (anchor - floor).dot(up)) * (1 - progress)
         return correction
 
     points = []
@@ -104,11 +108,11 @@ def main():
     margin = 8
     min_x, max_x = min(p[0] for p in points), max(p[0] for p in points)
     min_y, max_y = min(p[1] for p in points), max(p[1] for p in points)
-    width = math.ceil(((max_x - min_x) * PPU + margin * 2) / 4) * 4
-    height = math.ceil(((max_y - min_y) * PPU + margin * 2) / 4) * 4
+    width = math.ceil(((max_x - min_x) * ppb + margin * 2) / 4) * 4
+    height = math.ceil(((max_y - min_y) * ppb + margin * 2) / 4) * 4
     center = anchor + right * ((min_x + max_x) / 2) + up * ((min_y + max_y) / 2)
     scene.render.resolution_x, scene.render.resolution_y = width, height
-    cam.data.ortho_scale = max(width, height) / PPU
+    cam.data.ortho_scale = max(width, height) / ppb
     for i, source_frame in enumerate(source_frames):
         correction = apply(source_frame)
         target.location = center + up * correction
@@ -118,8 +122,8 @@ def main():
     meta = dict(figure=name, n=len(source_frames), fps=FPS, contact=source_frames.index(intro.CONTACT),
                 source_frames=source_frames,
                 w=width, h=height, ppu=PPU, loop=False,
-                ax=width / 2 - (center - anchor).dot(right) * PPU,
-                ay=height / 2 + (center - anchor).dot(up) * PPU)
+                ax=width / 2 - (center - anchor).dot(right) * ppb,
+                ay=height / 2 + (center - anchor).dot(up) * ppb)
     with open(os.path.join(out, 'meta.json'), 'w') as handle:
         json.dump(meta, handle, indent=2)
 

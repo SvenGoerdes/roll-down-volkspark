@@ -2,6 +2,20 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
+- Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
+- Neu: `export-alaska.py` (Auswahl, Roll, Roll mit Helm, Crash), `build-figure.py` (Atlas und `figure-sheets.js`-Block pro Figur); `export-intro.py` kennt Alaska und einen Figurenmaßstab; `intro.py` hat Katzenposen für den neuen Körper; `alaska.py` hat einen Helm. `assets/figures/alaska/` (469 KB). `FIGURES` erhält `alaska`.
+- Geprüft: 124 Bun-Tests und 7 Python-Tests grün; Chrome 390×844 DPR 2 mit Start, Intro, Skip, Rollen, Helm, Crash, Neustart und Figurenwechsel ohne Konsolenfehler. Aufnahmen und Intro-GIF unter `.claude/review/20/stufe2/`. Echte Handys nicht geprüft. Noch kein PR; wartet auf die Spielabnahme.
+- Gebaut durch Claude Sonnet 5.5; entschieden hat der Nutzer.
+
+## 2026-10-18: Issue #20 – Alaska Stufe 1: Körper aufgeräumt, Rig, Testposen
+- Auftrag des Nutzers (Ticket #20): neuer TRELLIS-Körper mit Regenbogenbrille als dritte Figur, zwei Freigabe-Stufen. Stufe 1: Rig plus ausgebesserte Artefakte, Testposen stehen, laufen, eingerollt unter `.claude/review/20/`. → [ADR 0046](decisions/0046-alaska-trellis-body-clean-rig.md)
+- `tools/blender/prep-alaska.py`: Mesh verschweißt, neu vernetzt, geglättet, auf rund 60.000 Dreiecke reduziert, Fellfarbe in Vertexfarben, Ohren innen geglättet und rosa. Ergebnis `assets/src/characters/alaska-3d.glb` (2,3 MB). Die Brille bleibt ein eigenes Objekt mit Regenbogenlinsen.
+- `tools/blender/alaska.py` neu: Pivot-Rig auf dem neuen Körper mit eigenen Gewichten und zwei Rumpf-Gelenken (`bend`, `curl`). `tools/blender/alaska-poses.py` rendert die Testposen und Übersichtsblätter. 124 Bun-Tests und `test_intro.py` grün.
+- Rückmeldung des Nutzers, Stufe 1 v2: Brille fällt beim Losrollen (neue Testpose „Brille fällt“, eingerollt ohne Brille); eingerollte Pose klarer als Katze (drei Rumpf-Gelenke, Kopf, Pfoten, Schwanz sichtbar); rosa Fleck und Fellfalte weg (Ursache der Sprenkel: alte Split-Normalen im GLB). Renders unter `.claude/review/20/v2/`.
+- Offen (Stufe 2, nach Freigabe): `BALL_ALASKA` und Intro-Posen für den neuen Körper, alle Clips, Atlas, Einbau als dritte Figur.
+- Gebaut durch Claude Sonnet 5.5; entschieden hat der Nutzer (Ticket #20). Lokal committet, kein Push.
+
 ## 2026-10-18: #85 – harte senkrechte Kanten in nahen Baumreihen
 - Ursache: `forestSprite()` schnitt für Baum-Variante 1 die linke 10 % des gemalten Waldbildes ab (`inset`). Der Schnitt ging mitten durch das Laub und ließ eine harte senkrechte Kante, bei gespiegelten Pflanzen auf der anderen Seite. Bei nahen, großen Bäumen fiel das auf, in allen Jahreszeiten und Themen. Nicht aus der Galerie, schon vor #71 vorhanden.
 - Fix: das Bild wird nicht mehr beschnitten. Variante 1 wird stattdessen gespiegelt, damit die Bäume abwechslungsreich bleiben. Keine Änderung an Spawn, Abständen oder Spielregeln.
@@ -18,6 +32,7 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - `bun test tests`: 129 grün, neue Tests in `tests/gallery.test.js` (Wechsel, Kachelung, Beschnitt auf feste Spannen, Laden, Asset-Hashes und Budget). Spielbilder 390×844, DPR 2 unter `.claude/review/71/` (links, rechts schmal, doppelt, verbreitert; Tor zum Vergleich). Echte Handys nicht geprüft, keine 4×-CPU-Messung.
 - Nutzer-Rückmeldung: Galerie passt, Busch vor der Mauer muss weg. Ursache war die Tiefensortierung (Mauer reicht bis in die Büsche, nähere Pflanze wird davor gezeichnet). Erster Fix (Pflanzen ausblenden) riss Löcher in die Baumreihen, der Nutzer hat ihn verworfen. Endgültig: alle Pflanzen bleiben, `plantDepth()` zeichnet Pflanzen kurz vor einer Galerie-Mauer hinter dieser (`GALLERY_PLANT_BEHIND`), nur in der Berlin-Tour, ohne Spawn-/Abstandsänderung. Spielbilder fern/mittel/nah für alle Lückenarten und Live-Lauf (Durchfahrt, Crash, Neustart, keine JS-Fehler) unter `.claude/review/71/v3/`. Echte Handys und 4×-CPU-Messung nicht geprüft.
 - Gebaut von Claude Sonnet 5.5, Rebase auf `origin/main` nach PR #82.
+
 
 ## 2026-10-18: Issue #24 – bestätigte Storni, menschliches Intro zur Spielabnahme
 - Nutzerentscheidung: Hero-Flasche mit großer roter Schrift, kräftigem Orange und größer vor der Figur übernehmen; kein neuer Look, keine Spielregeländerung, Alaska separat in #20. ADR 0037 aus Doku-PR #78 gelesen. → [ADR 0031](decisions/0031-approved-storni-human-intro.md)

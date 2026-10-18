@@ -31,3 +31,5 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0026](0026-opencode-panes-tickets-and-ci.md) | OpenCode panes run by Claude, GitHub epics, CI on PRs | User (orchestration, CI), Opus 5.5 (setup) |
 | [0052](0052-gate-drawn-whole-without-sight-window.md) | Gate always drawn whole, no see-through sight window | User (looked like a bug), Opus 5.5 (fix) |
 | [0037](0037-integrate-reviewed-art-without-rebalancing.md) | Preserve new model look, shifted passages, full art integration without rebalancing | User (scope), Codex (handoff/ticket drafts) |
+| [0046](0046-alaska-trellis-body-clean-rig.md) | Alaska: TRELLIS-Körper neu vernetzt, Pivot-Rig mit Brust- und Hinterteil-Gelenk | User (Körper, Look), Sonnet 5.5 (Verfahren) |
+| [0047](0047-alaska-clips-and-third-figure.md) | Alaska als dritte Figur: Intro auf vier Pfoten, Clips, Atlas, fallende Brille | User (Ablauf, Brille), Sonnet 5.5 (Umsetzung) |
