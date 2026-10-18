@@ -62,7 +62,9 @@ export function drawGround(ctx, view, season, travelled, surfaceAt, tiles) {
       );
       const q = 2 ** level;
       for (const p of parts) {
-        ctx.drawImage(mips[level], 0, p.sy / q, TILE_W >> level, p.sh / q, cx - pw, y + 2 * p.f0, pw * 2, 2 * (p.f1 - p.f0));
+        // Cover subpixel gaps under the following slice, without another blit.
+        const overlap = p.f1 < 1 ? 1 : 0;
+        ctx.drawImage(mips[level], 0, p.sy / q, TILE_W >> level, p.sh / q, cx - pw, y + 2 * p.f0, pw * 2, 2 * (p.f1 - p.f0) + overlap);
       }
       if (fog > 0.02) {
         ctx.globalAlpha = fog;

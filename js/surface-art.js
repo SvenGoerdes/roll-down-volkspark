@@ -2,8 +2,8 @@
 export const surfaceArt = {};
 
 export async function loadSurfaceArt(loadImage) {
-  await Promise.all(['earth', 'gabion'].map(async (id) => {
-    try { surfaceArt[id] = await loadImage(`assets/environment/${id}-painted.webp`); }
-    catch (err) { console.warn('Materialbild nicht verfügbar', id, err); }
+  await Promise.all([['earth', 'ground-earth'], ['verge', 'ground-verge'], ['gabion', 'gabion-painted']].map(async ([id, file]) => {
+    try { surfaceArt[id] = await loadImage(`assets/environment/${file}.webp`); }
+    catch (err) { delete surfaceArt[id]; console.warn('Materialbild nicht verfügbar', id, err); }
   }));
 }

@@ -47,6 +47,7 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - `index.html#debug` exposes `window.rollDown` in production. Harmless: it only gives access to a game you can already play.
 
 ## Not yet verified
+- **Issue #75, neuer scrollender Boden:** technische Umsetzung und Browserprüfung liegen auf `feat/boden-scroll`; nummerierte Aufnahmen/Animation unter `.claude/review/75/` warten auf Grafikfreigabe. Danach echter Handy-/iOS-Safari-Test (einschließlich längerer Läufe und Speicher). 4×-CPU-Prüfung im Desktop-Chrome ersetzt das nicht. Die alte `earth-painted.webp` wird nicht mehr geladen, bleibt vorerst als historischer Build-Output erhalten.
 - A wall absorbed by a helmet does not count as passed, so `passed` can lag the wall index by up to 3. The season breather and the wind ramp then sit up to 3 walls off the real season start. Old behaviour, minor.
 - The new difficulty curve (ADR 0024) comes from a bot simulation. Playtest it on real phones: does the start feel too slow, is year two hard enough, is autumn still the hardest season but no wall?
 - Never tested on a real phone (only headless Chrome at iPhone size). Check iOS Safari above all.

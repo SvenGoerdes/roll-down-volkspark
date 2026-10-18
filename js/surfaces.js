@@ -12,6 +12,28 @@ const rgba = ([r, g, b], a = 1) => `rgba(${r | 0},${g | 0},${b | 0},${a})`;
 const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
 const shade = (c, k) => c.map((v) => Math.max(0, Math.min(255, v * k)));
 
+function paintVerge(ctx, season, winter) {
+  if (!surfaceArt.verge) return;
+  const layer = document.createElement('canvas');
+  layer.width = TILE_W; layer.height = TILE_H;
+  const lc = layer.getContext('2d');
+  lc.drawImage(surfaceArt.verge, 0, 0, TILE_W, TILE_H);
+  lc.globalCompositeOperation = 'source-atop';
+  lc.fillStyle = winter ? rgba(SNOW, 0.42) : rgba(season.grass, 0.2);
+  lc.fillRect(0, 0, TILE_W, TILE_H);
+  lc.globalCompositeOperation = 'source-over';
+  const mask = lc.createLinearGradient(0, 0, TILE_W, 0);
+  mask.addColorStop(0, 'rgba(255,255,255,0.9)');
+  mask.addColorStop(0.16, 'rgba(255,255,255,0.65)');
+  mask.addColorStop(0.36, 'rgba(255,255,255,0)');
+  mask.addColorStop(0.64, 'rgba(255,255,255,0)');
+  mask.addColorStop(0.84, 'rgba(255,255,255,0.65)');
+  mask.addColorStop(1, 'rgba(255,255,255,0.9)');
+  lc.globalCompositeOperation = 'destination-in'; lc.fillStyle = mask; lc.fillRect(0, 0, TILE_W, TILE_H);
+  ctx.save(); ctx.globalAlpha = winter ? 0.42 : 0.72;
+  ctx.drawImage(layer, 0, 0); ctx.restore();
+}
+
 function rngFor(seed) {
   let a = seed >>> 0;
   return () => {
@@ -28,20 +50,25 @@ const LEAVES = ['#d9822b', '#c4561d', '#e8b33a', '#8f3b1b'];
 
 function paint(ctx, id, season, rnd) {
   const winter = season.id === 'winter', autumn = season.id === 'autumn';
-  // draw twice so specks crossing the bottom edge wrap to the top
-  const put = (y, h, fn) => { fn(y); if (y + h > TILE_H) fn(y - TILE_H); };
+  // Repeat any mark crossing either horizontal tile edge.
+  const put = (y, topExtent, bottomExtent, fn) => {
+    fn(y);
+    if (y - topExtent < 0) fn(y + TILE_H);
+    if (y + bottomExtent > TILE_H) fn(y - TILE_H);
+  };
   const speck = (n, size, color) => {
     for (let i = 0; i < n; i++) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, w = size * (0.5 + rnd()), h = w * (0.6 + rnd() * 0.6);
       ctx.fillStyle = color(i);
-      put(y, h, (yy) => ctx.fillRect(x, yy, w, h));
+      put(y, 0, h, (yy) => ctx.fillRect(x, yy, w, h));
     }
   };
   const blob = (n, rx, ry, color) => {
     for (let i = 0; i < n; i++) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, k = 0.6 + rnd() * 0.8, rot = rnd() * 3;
       ctx.fillStyle = color(i);
-      put(y, ry * k, (yy) => { ctx.beginPath(); ctx.ellipse(x, yy, rx * k, ry * k, rot, 0, 7); ctx.fill(); });
+      const extent = Math.max(rx, ry) * k + 1;
+      put(y, extent, extent, (yy) => { ctx.beginPath(); ctx.ellipse(x, yy, rx * k, ry * k, rot, 0, 7); ctx.fill(); });
     }
   };
   const leaves = (n) => blob(n, 5, 2.6, () => LEAVES[(rnd() * LEAVES.length) | 0]);
@@ -51,6 +78,7 @@ function paint(ctx, id, season, rnd) {
     ctx.fillStyle = rgba(base); ctx.fillRect(0, 0, TILE_W, TILE_H);
     if (surfaceArt.earth) {
       ctx.drawImage(surfaceArt.earth, 0, 0, TILE_W, TILE_H);
+      paintVerge(ctx, season, winter);
       ctx.fillStyle = winter ? rgba(SNOW, 0.9) : rgba(season.path, 0.13);
       ctx.fillRect(0, 0, TILE_W, TILE_H);
     }
@@ -86,10 +114,11 @@ function paint(ctx, id, season, rnd) {
       ctx.fillStyle = rgba(base, winter ? 0.65 : 0.38);
       ctx.fillRect(0, 0, TILE_W, TILE_H);
     }
+    paintVerge(ctx, season, winter);
     for (let i = 0; i < (surfaceArt.earth ? 220 : 550); i++) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, r = 2 + rnd() * 4.2, g = 0.62 + rnd() * 0.7, rot = rnd() * 3;
       const col = shade(mix([150, 146, 140], [176, 160, 140], rnd()), g);
-      put(y, r, (yy) => {
+      put(y, r * 2, r * 2, (yy) => {
         ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(x + 0.8, yy + 1.2, r, r * 0.8, 0, 0, 7); ctx.fill();
         ctx.fillStyle = rgba(col); ctx.beginPath(); ctx.ellipse(x, yy, r, r * 0.8, rot, 0, 7); ctx.fill();
         ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fillRect(x - r * 0.4, yy - r * 0.5, r * 0.7, r * 0.3);
@@ -109,7 +138,7 @@ function paint(ctx, id, season, rnd) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, h = 4 + rnd() * 7, lean = (rnd() - 0.5) * 3;
       const col = winter ? mix([150, 175, 170], [225, 235, 240], rnd()) : shade(season.grass, 0.6 + rnd() * 0.8);
       ctx.strokeStyle = rgba(col, 0.85); ctx.lineWidth = 1.3;
-      put(y, h, (yy) => { ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + lean, yy - h); ctx.stroke(); });
+      put(y, h + 1, 1, (yy) => { ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + lean, yy - h); ctx.stroke(); });
     }
     if (season.id === 'spring') blob(70, 2.2, 2.2, (i) => (i % 3 ? '#fff6f8' : '#ffd84a'));
     if (autumn) leaves(50);
