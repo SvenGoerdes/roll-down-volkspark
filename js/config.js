@@ -36,8 +36,8 @@ export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbau
 
 // Roadside plants this close in front of a gallery wall are drawn behind it, so no bush covers a mural.
 export const GALLERY_PLANT_BEHIND = 12;
-// Landmarks whose closed wall spans stand among the bushes and get the same plant order.
-export const PLANT_BEHIND_LANDMARKS = ['east-side-gallery', 'oberbaum-bridge'];
+// Landmarks whose closed wall spans stand among the bushes and get the same plant order, so no bush cuts a pillar or mural.
+export const PLANT_BEHIND_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge'];
 
 // The pier sprite is wider than its brick shaft (plinth). Tiles step by the shaft width, so shafts meet
 // and plinths overlap, and the first shaft starts INSET before the span edge: no light gap between tiles.

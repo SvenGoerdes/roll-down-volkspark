@@ -8,7 +8,7 @@
 
 ## Decision
 
-Pfeiler und Türme reichen wie die Galerie-Mauer bis in die Büsche. `PLANT_BEHIND_LANDMARKS` in `js/config.js` listet die Bauwerke, für die `plantDepth()` (ADR 0049) gilt: `east-side-gallery` und `oberbaum-bridge`. Pflanzen werden nicht ausgeblendet, nur hinter der Mauer gezeichnet; das Tor behält seine Reihenfolge.
+Pfeiler und Türme reichen wie die Galerie-Mauer bis in die Büsche. `PLANT_BEHIND_LANDMARKS` in `js/config.js` listet die Bauwerke, für die `plantDepth()` (ADR 0049) gilt: `brandenburg-gate`, `east-side-gallery` und `oberbaum-bridge`. Das Tor kam auf Wunsch des Nutzers dazu, damit kein naher Busch eine Säule abschneidet. Pflanzen werden nicht ausgeblendet, nur hinter der Mauer gezeichnet; 
 
 ## Consequences
 

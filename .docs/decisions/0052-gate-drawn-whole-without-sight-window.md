@@ -19,3 +19,7 @@ Das Tor wird immer vollständig und deckend gezeichnet. Das Sichtfenster entfäl
 ## Consequences
 - Weniger Code im Zeichenpfad, ein Clip pro Bauteil statt bis zu drei.
 - Die nächste Lücke kann kurz hinter einer Säule des nahen Tors verschwinden. Durch die eigene Durchfahrt bleibt sie sichtbar (Spielbilder 06 und 13). #71–#74 erben dieses Verhalten.
+
+## Nachtrag 2026-10-18
+
+Die hellen Mittellinien bei mehreren Lücken (`#ffe7ae`) sind entfernt; der Nutzer sah sie als Bug-Rahmen. Pflanzenreihenfolge am Tor: ADR 0055.
