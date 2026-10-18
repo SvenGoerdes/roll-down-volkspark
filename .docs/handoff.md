@@ -4,6 +4,35 @@ Stand: **18. Oktober 2026**. Für eine neue Session zuerst dieses Dokument, die 
 
 ## Stand und nächster Schritt
 
+### Stand 18.10.2026, Nacht (zuerst lesen)
+
+**Live auf main:** Brandenburger Tor und Auswahl Berlin-Tour (#28), Storni und Intro (#24), Tor ohne Sichtfenster (ADR 0052), Boden: Volkspark alt, Berlin-Tour neu (#75), East Side Gallery (#71), Baumkanten-Fix (#85), Alaska als dritte Figur (#20). Fernsehturm gestrichen (#47).
+
+**Offene PRs zur Durchsicht durch den Nutzer, nichts davon gemergt:**
+
+| PR | Inhalt | Hinweis |
+|---|---|---|
+| #87 | Oberbaumbrücke (#72), Tor ohne helle Mittellinien, Büsche hinter dem Tor | zuerst mergen |
+| #97 | Sammel-PR Gesamtprüfung (#76) mit #89, #92, #91 | nach #87; dann #89/#92/#91 schließen |
+| #89 | Bauwerke im Volkspark ab Mauer 41 (#81) | in #97 enthalten |
+| #92 | Reichstag (#73) | in #97 enthalten |
+| #91 | Rotes Rathaus (#74) | in #97 enthalten; Frage: Turm links einseitig |
+| #90 | Performance-Skript (#15) | unabhängig |
+| #93 | Bestenliste nur mit Turnstile-Token (#77) | Live-Schritte in operations.md, Deploy nur mit Nutzer |
+| #94 | Lücken-Untergrenze 2,0, halbe Helm-Häufigkeit (#45, #48) | Frage 2,0 oder 2,1 |
+| #95 | Herbstlaub (#44) | Frage Blattform |
+| #96 | Weltrekord als Ziel (#46) | drei Fragen zu Bannern |
+
+Spielbilder zu jedem PR: Freigabe-Seite https://claude.ai/artifact/JsfoceEbQ1orqF56HvKAJ4 (Quelle im Session-Scratchpad, `review/template.html` + `build.js`).
+
+**Entscheidungen des Nutzers vom 18.10.:** Berlin-Tour je Jahreszeit ein Bauwerk im Kreis (Tor, Galerie, Oberbaum, Reichstag, Rathaus); im Volkspark ab Mauer 41 jede 10. Mauer ein Bauwerk (#81, Startwerte vom Orchestrator); Bauwerke ohne Sichtfenster und ohne helle Linien; Pflanzen nie ausblenden, Bauwerke über nahe Büsche zeichnen; Mauerstücke ohne Lücken; Alaska verliert beim Losrollen die Brille; Fell vorerst plüschig glatt.
+
+**Arbeitsweise:** Claude-Panes in herdr (Sonnet, `--permission-mode auto`), ein Worktree pro Ticket, Regeln in `<worktree>/.claude/review/REGELN.txt`. OpenCode-Kontingent war am 18.10. aufgebraucht. Nachtmodus: Panes prüfen Bilder selbst und öffnen PRs, Merges nur mit Nutzer-OK.
+
+**Noch offen ohne PR:** #43 Pfützen, #64 Superattacke, #21 Alaska-Freischaltung (Schwelle braucht Nutzerentscheidung), #14 Cache-Busting, Epics Daten/Profile/Party/Spritzen/Tageschallenge, #70.
+
+### Frühere Stände
+
 Der Nutzer möchte die neuen Modelle vollständig ins Spiel übernehmen. Die Produktentscheidungen unten sind getroffen. **Implementiert ist diese Integration noch nicht.** Elf einzelne Ticket-Entwürfe mit Abnahmekriterien liegen jetzt dauerhaft unter `.docs/plans/art-integration-2026-10-18/`; sie waren zuvor nur im ignorierten Review-Verzeichnis vorhanden.
 
 **Nachtrag 18.10., später:** Der Nutzer hat die Aufteilung freigegeben. Claude Opus 5.5 hat sie auf GitHub veröffentlicht: 01 → #28, 02 → #71, 03 → #72, 04 → #73, 05 → #74, 06 → #47, 07 → #75, 08 → #24, 09 → #20, 10 → #76, 11 → #77 (geparkt, ohne `ready-for-agent`). Blockierungen und Epic-Zuordnung sind gesetzt, Vermerke an #27, #19 und den Epics. Die Arbeit läuft in OpenCode-Panes in herdr: `sightseeing` an #28, `figuren` an #24, `boden` an #75 (Worktree `boden`, Branch `feat/boden-scroll`). **Der Fernsehturm ist gestrichen:** Nach Sichtung der Spielbilder wollte der Nutzer ihn gar nicht mehr, auch nicht in der Berlin-Tour. #47 ist geschlossen; die Arbeit im Worktree `turm` (Branch `feat/fernsehturm-rand`) bleibt lokal ohne PR, das Pane `turm` ist frei. Die nötigen Art-Quellen liegen pro Worktree unter `.claude/review/quellen/`. Nicht erneut über den Look oder einen Probelauf verhandeln. Der Bestenlisten-Schutz (#77) wird **erst später bearbeitet**.
