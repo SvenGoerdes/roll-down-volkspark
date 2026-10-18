@@ -14,3 +14,14 @@ python3 tools/build-gate-sprites.py
 ```
 
 Transparente WebPs, maximal 2048 Pixel breite Dachpartie; nur bei Auswahl der Berlin-Tour geladen. Zusammen 80.388 Bytes WebP und 5.687.728 Bytes dekodiertes RGBA (ca. 5,42 MiB). Die großen Review-Renders werden nicht ausgeliefert. Keine neuen API-Bilder für diesen Export. Herkunft und Abwägung: ADR 0034/0035; die vier weiteren Gebäudetickets sind keine alternative Designvorlage.
+
+# East Side Gallery
+
+Sechs freigestellte Blender-Renders (je eine Bucht, drei je Flügel) aus `east-side-gallery-detailed.blend`, mit den freigegebenen Wandbildern (Porträt/Taube, Hände/Olivenzweig), Rollkappen, L-Füßen, Fugen und Schild. Alle Buchten haben gleiche Breite und Mitte (Raster `GALLERY_PITCH` in `js/gallery-sprite-data.js`). Quelle: `.claude/review/quellen/east-side-gallery/` (lokal); Herkunft und Hashes in `gallery-provenance.json`.
+
+```sh
+blender -b -P tools/blender/render-gallery-sprites.py
+python3 tools/build-gallery-sprites.py
+```
+
+Nur bei Auswahl der Berlin-Tour geladen. Zusammen etwa 75 KB WebP, 2,4 MB dekodiertes RGBA. Entscheidung: ADR 0049.

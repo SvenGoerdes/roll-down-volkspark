@@ -1,0 +1,75 @@
+{
+  "source": ".claude/review/quellen/east-side-gallery/east-side-gallery-detailed.blend",
+  "sourceSha256": "44ea3b70f2010cf634e2507bcf910fd78158090ff64af6bb6b6d0781f1ffe814",
+  "scriptSha256": "40ff563acf3e60e496f53cf3026a650321ecd0caa19661c7d51e918b0d86fc55",
+  "pitch": 1.3666666666666665,
+  "parts": {
+    "l1": {
+      "width": 206,
+      "height": 503,
+      "worldWidth": 1.4266666666666659,
+      "worldHeight": 3.4835598705501596,
+      "bottom": -0.06360443191042275,
+      "objects": 41,
+      "pngSha256": "bfe0a303c5c93aca4b723ba934f2e4864eda7d6afb9b6e756da5c555cfef070f",
+      "bytes": 12212,
+      "webpSha256": "b7673acdabdb3d77f51e9e080710c791a394c23491fdd608441e020940f863b2"
+    },
+    "l2": {
+      "width": 206,
+      "height": 503,
+      "worldWidth": 1.4266666666666667,
+      "worldHeight": 3.483559870550162,
+      "bottom": -0.054106670184042804,
+      "objects": 33,
+      "pngSha256": "01a16443a9689aae77d7a49192d272e4d76487e73eabfb815662d88b073c6deb",
+      "bytes": 12656,
+      "webpSha256": "897ff4e8294145a94e90a61cedb98699e640bc59dac22b52c66ffcbb9531d1d3"
+    },
+    "l3": {
+      "width": 206,
+      "height": 503,
+      "worldWidth": 1.4266666666666667,
+      "worldHeight": 3.483559870550162,
+      "bottom": -0.0663403447102574,
+      "objects": 33,
+      "pngSha256": "e5a2f01ccb4ab02178493a4a184714d32caef712a7e21c916037dea6f635c4a7",
+      "bytes": 12910,
+      "webpSha256": "cc923ca797ee9e25329a51c6040025ed4cfbfe801acc9c7cf9294beb4656eda5"
+    },
+    "r1": {
+      "width": 206,
+      "height": 503,
+      "worldWidth": 1.4266666666666667,
+      "worldHeight": 3.483559870550162,
+      "bottom": -0.06516362981310164,
+      "objects": 33,
+      "pngSha256": "fe62bb3b8aab57968f7204c5b9d8d2f03ee8a5b91e5cf0c8f79995f72904303e",
+      "bytes": 11284,
+      "webpSha256": "122f9f77f07b44fb10c12b79d2cd63a6932760fa2e5dd33b5442be7a31b1830a"
+    },
+    "r2": {
+      "width": 206,
+      "height": 503,
+      "worldWidth": 1.4266666666666667,
+      "worldHeight": 3.483559870550162,
+      "bottom": -0.05566729859819686,
+      "objects": 33,
+      "pngSha256": "087973f2d72812d993393723736eda0f83b06fce4deb2ffc9380cb40c452092f",
+      "bytes": 14144,
+      "webpSha256": "41b92a464dd1df91cda015f4fbd85f2c23b899ecbf708c1b8832b285ce0d83de"
+    },
+    "r3": {
+      "width": 206,
+      "height": 503,
+      "worldWidth": 1.4266666666666659,
+      "worldHeight": 3.4835598705501596,
+      "bottom": -0.06220157699098916,
+      "objects": 41,
+      "pngSha256": "3c1fb40436e536c498c79a676e8b4d36a70b7fa96c999f8cdab72238e43a0230",
+      "bytes": 11332,
+      "webpSha256": "937bc739c95d13e78b5fce63a3f2402a391026f33a4769aecae10ae60f787856"
+    }
+  },
+  "packerSha256": "c950b671849a991b6565ec178f2193689a027a2e36ad762bb9a9ebd7afce8c28"
+}

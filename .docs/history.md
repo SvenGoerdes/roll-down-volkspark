@@ -7,6 +7,12 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - `render-gate.js` zeichnet jedes Bauteil jetzt mit einem einfachen Spannen-Clip und gleicher Deckkraft; `revealAlpha`/`revealMargin` und der `nextWall`-Parameter sind entfallen. Tests: 123 grün; die zwei Fenster-Tests ersetzt ein Test, dass nichts ausgeschnitten oder abgeblendet wird. `tools/check-sightseeing.py` ohne JS-Fehler, Spielbilder bei 390×844 geprüft.
 - Entschieden vom Nutzer, gebaut von Claude Opus 5.5 (Hauptsession). Commit: dieser Commit.
 
+## 2026-10-18: #71 – East Side Gallery in der Berlin-Tour
+- Rückfrage an den Nutzer, wie Tor und Galerie wechseln. Antwort: ein Bauwerk je Jahreszeit (20 Mauern), im Kreis, Reihenfolge als Liste in `js/config.js`. Auftauchen im Volkspark ist ein späteres Ticket. Hinweis des Orchestrators: PR #82 entfernt das Sichtfenster, die Galerie entsteht ohne. → [ADR 0049](decisions/0049-east-side-gallery-per-season.md)
+- Gebaut von Claude Sonnet 5.5: `tools/blender/render-gallery-sprites.py` und `tools/build-gallery-sprites.py` erzeugen sechs freigestellte Bucht-WebPs (Herkunft `assets/landmarks/gallery-provenance.json`), `landmarkAt()` und `galleryTiles()` als reine Logik, `render-gallery.js` als Zeichenpfad. Treffer, Lücken, Abstände, Tempo, Wertung unverändert.
+- `bun test tests`: 129 grün, neue Tests in `tests/gallery.test.js` (Wechsel, Kachelung, Beschnitt auf feste Spannen, Laden, Asset-Hashes und Budget). Spielbilder 390×844, DPR 2 unter `.claude/review/71/` (links, rechts schmal, doppelt, verbreitert; Tor zum Vergleich). Echte Handys nicht geprüft, keine 4×-CPU-Messung.
+- Commit: Feature-Commit auf `feat/east-side-gallery`; vor dem PR auf `origin/main` rebasen (nach PR #82). Grafikfreigabe des Nutzers steht aus.
+
 ## 2026-10-18: Issue #24 – bestätigte Storni, menschliches Intro zur Spielabnahme
 - Nutzerentscheidung: Hero-Flasche mit großer roter Schrift, kräftigem Orange und größer vor der Figur übernehmen; kein neuer Look, keine Spielregeländerung, Alaska separat in #20. ADR 0037 aus Doku-PR #78 gelesen. → [ADR 0031](decisions/0031-approved-storni-human-intro.md)
 - Uncommittete Figuren-Vorarbeit zuerst gelesen und auf `feat/storni-intro` weiterverwendet. Der bestätigte Storni-Builder ersetzt den früheren Entwurf; Kalle/Tine erhalten vorberechnete 1,5-s-WebP-Intros. Export richtet die Posen am Boden aus und übernimmt den letzten Frame aus dem vorhandenen Rollatlas. Alte Roll-/Helm-/Crash-/Auswahlgrafiken und das Gameplay bleiben unverändert.

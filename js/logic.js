@@ -54,6 +54,25 @@ export const addHelmet = (n, max) => Math.min(max, n + 1);
 
 export const seasonIndexAt = (n, perSeason, count) => Math.floor(n / perSeason) % count;
 
+// Which landmark wall n shows in the Berlin tour: one per season-length block, in order, cycling.
+export const landmarkAt = (n, order, perSeason) => order[Math.floor(n / perSeason) % order.length];
+
+// East Side Gallery bays tile a closed wall span outward from its open edge, so a full
+// bay with its cap stands at every passage. Bay order is the mural strip l1..l3 r1..r3.
+export function galleryTiles(a, b, pitch, wallExt, count = 6) {
+  const fromRight = b < wallExt, tiles = [];
+  for (let k = 0; ; k++) {
+    const lo = fromRight ? b - (k + 1) * pitch : a + k * pitch;
+    const hi = lo + pitch;
+    if (fromRight ? hi <= a : lo >= b) break;
+    tiles.push({
+      x: (lo + hi) / 2, from: Math.max(a, lo), to: Math.min(b, hi),
+      bay: fromRight ? (((2 - k) % count) + count) % count : (3 + k) % count,
+    });
+  }
+  return tiles;
+}
+
 // Plants past the last wall of the current season already show the next one.
 // Returns the z beyond which that applies (Infinity if no such wall is out yet) and the season index there.
 export function seasonAhead(walls, seasonIdx, perSeason, count) {

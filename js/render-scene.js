@@ -1,5 +1,5 @@
-import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS } from './config.js';
-import { seasonAhead, widened, seasonIndexAt } from './logic.js';
+import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS, TOUR_LANDMARKS } from './config.js';
+import { seasonAhead, widened, seasonIndexAt, landmarkAt } from './logic.js';
 import { drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup } from './render.js';
 import { drawPlayer } from './render-player.js';
 import { poseFor } from './figure.js';
@@ -9,6 +9,7 @@ import { sceneryAt } from './scenery.js';
 import { recordWall } from './scoring.js';
 import { drawRecordMark } from './render-record.js';
 import { drawGate } from './render-gate.js';
+import { drawGallery } from './render-gallery.js';
 
 const drawList = [];
 const byDepth = (a, b) => b.depth - a.depth;
@@ -57,8 +58,11 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
       case 'wall': {
         const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
         const wallSeason = SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)];
-        if (game.theme === 'berlin-tour' && gateSprites) drawGate(ctx, view, o, gaps, wallSeason, gateSprites);
-        else drawWall(ctx, view, o.z, gaps, wallSeason);
+        if (game.theme === 'berlin-tour' && gateSprites) {
+          const id = landmarkAt(o.index, TOUR_LANDMARKS, WALLS_PER_SEASON);
+          if (id === 'east-side-gallery') drawGallery(ctx, view, o, gaps, gateSprites[id]);
+          else drawGate(ctx, view, o, gaps, wallSeason, gateSprites[id]);
+        } else drawWall(ctx, view, o.z, gaps, wallSeason);
         if (o === look.record) drawRecordMark(ctx, view, o);
         break;
       }
