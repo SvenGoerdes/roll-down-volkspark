@@ -45,6 +45,7 @@
       "file *": "allow",
       "du *": "allow",
       "sips *": "allow",
+      "sqlite3 *": "allow",
       "cp *": "allow",
       "mv *": "allow",
       "touch *": "allow",
@@ -54,7 +55,15 @@
       "git reset --hard*": "ask",
       "gh pr merge*": "deny",
       "gh repo *": "ask",
-      "gh api *": "ask"
+      // gh api may read; anything that sends a method or a body asks.
+      "gh api *": "allow",
+      "gh api *-X*": "ask",
+      "gh api *--method*": "ask",
+      "gh api *-f *": "ask",
+      "gh api *-F *": "ask",
+      "gh api *--field*": "ask",
+      "gh api *--raw-field*": "ask",
+      "gh api *--input*": "ask"
     }
   },
   "agent": {
