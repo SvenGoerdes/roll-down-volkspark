@@ -32,7 +32,7 @@ export const SIGHTSEEING_LANDMARKS = [
 ];
 
 // Berlin tour: one landmark per WALLS_PER_SEASON walls, in this order, then around again.
-export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge', 'reichstag'];
+export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge', 'reichstag', 'red-town-hall'];
 
 // Volkspark: from this wall index (autumn, wall 41) every Nth wall is the landmark of the season instead of the gabion wall.
 export const VOLKSPARK_LANDMARK_FROM = 40;
@@ -43,7 +43,7 @@ export const VOLKSPARK_LANDMARK_PRELOAD = 25;
 // Roadside plants this close in front of a gallery wall are drawn behind it, so no bush covers a mural.
 export const GALLERY_PLANT_BEHIND = 12;
 // Landmarks whose closed wall spans stand among the bushes and get the same plant order, so no bush cuts a pillar or mural.
-export const PLANT_BEHIND_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge', 'reichstag'];
+export const PLANT_BEHIND_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge', 'reichstag', 'red-town-hall'];
 
 // The pier sprite is wider than its brick shaft (plinth). Tiles step by the shaft width, so shafts meet
 // and plinths overlap, and the first shaft starts INSET before the span edge: no light gap between tiles.
@@ -57,6 +57,8 @@ export const OBERBAUM_TOWER_X = CORRIDOR / 2 + 1.2;
 // The column sprite is slightly wider than its step, so neighbouring plinths overlap and the wall slice behind them has no seam.
 export const REICHSTAG_PORTICO = 4.44;
 export const REICHSTAG_COLUMN_STEP = 0.82;
+// The Rathaus clocktower's inner edge stands this far from the middle (left side), outside the corridor.
+export const RATHAUS_TOWER_INNER = CORRIDOR / 2 + 1.2;
 
 export const SEASONS = [
   {

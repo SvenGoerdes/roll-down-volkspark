@@ -12,6 +12,7 @@ import { drawGate } from './render-gate.js';
 import { drawGallery } from './render-gallery.js';
 import { drawOberbaum } from './render-oberbaum.js';
 import { drawReichstag } from './render-reichstag.js';
+import { drawRathaus } from './render-rathaus.js';
 
 const drawList = [];
 const byDepth = (a, b) => b.depth - a.depth;
@@ -76,6 +77,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
           if (id === 'east-side-gallery') drawGallery(ctx, view, o, gaps, gateSprites[id]);
           else if (id === 'oberbaum-bridge') drawOberbaum(ctx, view, o, gaps, gateSprites[id]);
           else if (id === 'reichstag') drawReichstag(ctx, view, o, gaps, gateSprites[id]);
+          else if (id === 'red-town-hall') drawRathaus(ctx, view, o, gaps, gateSprites[id]);
           else drawGate(ctx, view, o, gaps, wallSeason, gateSprites[id]);
         } else drawWall(ctx, view, o.z, gaps, wallSeason);
         if (o === look.record) drawRecordMark(ctx, view, o);
