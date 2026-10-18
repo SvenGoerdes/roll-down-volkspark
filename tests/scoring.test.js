@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test';
-import { PERFECT, STREAK_NEED, judgePass, nextStreak, wallsToRecord, recordWall } from '../js/scoring.js';
+import { PERFECT, STREAK_NEED, judgePass, nextStreak, wallsToRecord, recordWall, validWorldBest, applyWorldBest, recordGoal, overNote } from '../js/scoring.js';
 
 const gap = { x: 0, w: 2 };
 
@@ -88,4 +88,36 @@ test('recordWall: null without a record, once it is beaten, or past the last wal
   expect(recordWall(walls, 3, 2, 5)).toBeNull();
   expect(recordWall(walls, 0, 3, 5)).toBeNull(); // three walls ahead, index 3 is out
   expect(recordWall([], 0, 1, 5)).toBeNull();
+});
+
+test('validWorldBest: only a sane positive whole score', () => {
+  expect(validWorldBest(42)).toBe(42);
+  for (const bad of [0, -1, 1.5, 10_001, NaN, '42', null, undefined]) expect(validWorldBest(bad)).toBeNull();
+});
+
+test('applyWorldBest: a late answer counts only before the first wall', () => {
+  expect(applyWorldBest(0, 42)).toBe(42);
+  expect(applyWorldBest(1, 42)).toBeNull();
+  expect(applyWorldBest(0, 'x')).toBeNull();
+});
+
+test('recordGoal: the nearer of own and world record, with the flags that apply', () => {
+  expect(recordGoal(2, 0, null)).toBeNull();
+  expect(recordGoal(2, 5, null)).toEqual({ target: 5, walls: 4, own: true, world: false });
+  expect(recordGoal(2, 0, 9)).toEqual({ target: 9, walls: 8, own: false, world: true });
+  expect(recordGoal(2, 5, 9)).toEqual({ target: 5, walls: 4, own: true, world: false });
+  expect(recordGoal(2, 9, 5)).toEqual({ target: 5, walls: 4, own: false, world: true });
+  expect(recordGoal(2, 5, 5)).toEqual({ target: 5, walls: 4, own: true, world: true });
+  expect(recordGoal(6, 5, 9)).toEqual({ target: 9, walls: 4, own: false, world: true }); // own already beaten
+  expect(recordGoal(10, 5, 9)).toBeNull();
+});
+
+test('overNote: which record fell, else the distance to the nearest one', () => {
+  expect(overNote(10, 5, 9)).toEqual({ text: 'Neuer Weltrekord!', record: true });
+  expect(overNote(7, 5, 9)).toEqual({ text: 'Neuer Rekord!', record: true });
+  expect(overNote(7, 0, 9).text).toBe('Noch 3 Mauern bis zum Weltrekord');
+  expect(overNote(8, 0, 9).text).toBe('Noch 2 Mauern bis zum Weltrekord');
+  expect(overNote(9, 0, 9).text).toBe('Noch 1 Mauer bis zum Weltrekord');
+  expect(overNote(2, 5, 9).text).toBe('Noch 4 Mauern bis zum Rekord');
+  expect(overNote(3, 0, null)).toEqual({ text: '', record: false });
 });
