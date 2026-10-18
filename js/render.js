@@ -36,7 +36,7 @@ function sideColors(season) {
   return roadside.get(season);
 }
 
-export function drawGround(ctx, view, season, travelled, surfaceAt, tiles) {
+export function drawGround(ctx, view, season, travelled, surfaceAt, tiles, seamOverlap = 0) {
   const { W, H, horizonY, F, cx, groundRows } = view;
   const half = CORRIDOR / 2;
   const fogCss = rgb(season.fog);
@@ -62,7 +62,7 @@ export function drawGround(ctx, view, season, travelled, surfaceAt, tiles) {
       );
       const q = 2 ** level;
       for (const p of parts) {
-        ctx.drawImage(mips[level], 0, p.sy / q, TILE_W >> level, p.sh / q, cx - pw, y + 2 * p.f0, pw * 2, 2 * (p.f1 - p.f0));
+        ctx.drawImage(mips[level], 0, p.sy / q, TILE_W >> level, p.sh / q, cx - pw, y + 2 * p.f0, pw * 2, 2 * (p.f1 - p.f0) + (p.f1 < 1 ? seamOverlap : 0));
       }
       if (fog > 0.02) {
         ctx.globalAlpha = fog;

@@ -7,3 +7,13 @@ export async function loadSurfaceArt(loadImage) {
     catch (err) { console.warn('Materialbild nicht verfügbar', id, err); }
   }));
 }
+
+// Berlin-Tour ground (#75): loaded only when that theme is chosen. Volkspark keeps `surfaceArt.earth`.
+export const groundArt = {};
+
+export async function loadGroundArt(loadImage) {
+  await Promise.all(['earth', 'verge'].map(async (id) => {
+    try { groundArt[id] = await loadImage(`assets/environment/ground-${id}.webp`); }
+    catch (err) { delete groundArt[id]; console.warn('Bodenbild nicht verfügbar', id, err); }
+  }));
+}

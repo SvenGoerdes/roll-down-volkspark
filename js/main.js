@@ -7,6 +7,7 @@ import {
 import { loadSeasonBackgrounds } from './seasons.js';
 import { environmentPreview, preparePreview } from './environment-preview.js';
 import { buildGroundTiles } from './surfaces.js';
+import { loadGroundArt } from './surface-art.js';
 import { setupIdeas } from './ideas.js';
 import { setupLeaderboard } from './leaderboard.js';
 import { computeView, project } from './render.js';
@@ -55,7 +56,7 @@ const preview = environmentPreview();
 let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
 let figureId = readFigure(), figure = null, picker, loadingFigure = false;
-let themeId = 'volkspark', gateSprites, gateLoad;
+let themeId = 'volkspark', gateSprites, gateLoad, groundLoad;
 const figureSheets = new Map();
 
 const newGame = () => ({ ...createGameState(readBest), theme: themeId });
@@ -68,8 +69,16 @@ function gatesFor() {
   return gateLoad;
 }
 
+// The Berlin-Tour ground loads and builds on first choice; Volkspark never pays for it.
+function berlinGroundFor() {
+  groundLoad ??= loadGroundArt(loadImage).then(() => {
+    groundTiles['berlin-tour'] = buildGroundTiles(SEASONS, preview?.idx ?? 0, true);
+  }).catch((err) => { groundLoad = null; throw err; });
+  return groundLoad;
+}
+
 async function sheetsForRound(id) {
-  const [sheets] = await Promise.all([sheetsFor(id), themeId === 'berlin-tour' ? gatesFor() : null]);
+  const [sheets] = await Promise.all([sheetsFor(id), themeId === 'berlin-tour' ? Promise.all([gatesFor(), berlinGroundFor()]) : null]);
   return sheets;
 }
 
@@ -352,7 +361,7 @@ async function init() {
     ]);
     backgrounds = seasonBackgrounds;
     powerIcons = Object.fromEntries(Object.keys(POWERUPS).map((k, i) => [k, icons[i]]));
-    groundTiles = buildGroundTiles(SEASONS, preview?.idx ?? 0);
+    groundTiles = { volkspark: buildGroundTiles(SEASONS, preview?.idx ?? 0) };
     warmUp(SEASONS);
   } catch (err) {
     hud.start.querySelector('.tap').textContent = 'Laden fehlgeschlagen – bitte neu laden.';
@@ -367,7 +376,7 @@ async function init() {
   setupThemeSelect($('themes'), themeId, (id) => {
     themeId = id;
     game.theme = id;
-    if (id === 'berlin-tour') gatesFor().catch(() => {});
+    if (id === 'berlin-tour') { gatesFor().catch(() => {}); berlinGroundFor().catch(() => {}); }
   });
   // a card only picks the figure; the button (or a tap anywhere else) starts
   picker = setupFigureSelect(hud.figures, figureId, (id) => {

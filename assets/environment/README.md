@@ -1,7 +1,9 @@
 # Painted park environment
 
-Runtime assets: `spring`, `summer`, `autumn`, `winter` × `horizon.webp`, `forest.webp`.
-Ten WebPs, 992,006 bytes total (including two shared earth/gabion materials). Figure sheets remain separate (~1.1 MB).
+Runtime assets: `spring`, `summer`, `autumn`, `winter` × `horizon.webp`, `forest.webp`,
+plus `earth-painted.webp`, `gabion-painted.webp`, and for the Berlin-Tour only
+`ground-earth.webp` and `ground-verge.webp` (loaded on first choice of that theme).
+Figure sheets remain separate (~1.1 MB for both figures; only the selected figure loads).
 The user's full references remain in `assets/seasons/` and are never loaded by the game.
 
 ## Horizons
@@ -75,6 +77,7 @@ python3 tools/build-surface-art.py --source /Users/svengoerdes/.codex/generated_
 ```
 
 Earth is mapped through the existing ground mipmaps, with seasonal tint and snow.
+Issue #75 adds a second ground for the Berlin-Tour, described below; Volkspark keeps this one.
 Gabion front, top and end faces are cached from the shared stone/wire material.
 Procedural equivalents remain available if a material fails to load. Wire/end posts
 stay inside solid collision segments. The material textures are visually repeatable
@@ -88,3 +91,37 @@ as a descending park slope. Ice and projected obstacles use that same curve.
 For exact game-frame checks add `&width=390&height=844` or `&width=375&height=667` to the preview URL. These apply only to the frozen debug fixture; normal play uses the actual viewport.
 
 Basket height is 1.65 world units; face crops preserve stone/wire proportions. Add `&near=4.8` to a debug fixture to inspect a wall just before the collision plane and check the following gap.
+
+## Reviewed, scrolling ground for the Berlin-Tour (#75 / ADR 0043)
+
+The approved `ground-v2.png` landscape was generated with Nano Banana 2.1 on
+2026-10-14. It is a static art study, not a replacement backdrop. The local
+source and its original prompt/provenance live in `.claude/review/quellen/floor/`;
+the full PNG and phone presentation WebP are not runtime assets.
+
+Rebuild the materials with Pillow (requires that local source):
+
+```sh
+python3 tools/build-ground-materials.py
+```
+
+- `ground-earth.webp`: 384×512, 34,652 bytes; foreground earth crop `(470, 2210, 760, 2560)`.
+- `ground-verge.webp`: 384×512, 50,192 bytes; grass/low-plant crop `(0, 1630, 300, 2030)`.
+- Total: 84,844 bytes, requested only by the Berlin-Tour.
+- No new generation or external image service was needed. Both materials use a
+  smooth 96-row overlap in Y, the direction of travel; no second painted horizon
+  or perspective path edge is carried into the playable corridor.
+
+For the Berlin-Tour `surfaces.js` bakes softly masked verges into dirt/gravel, retains the seasonal
+snow/leaf treatment and procedural gravel/grass, and wraps procedural details at
+both Y edges before producing the existing mip levels. The twelve Berlin-Tour caches
+occupy about 12 MiB decoded pixel bytes, built on first choice next to the Volkspark set. There is no change to the
+eight-world-unit repeat distance. The existing split-row blits now overlap
+slightly to prevent Canvas subpixel gaps at tile boundaries, with no additional
+draw calls or per-frame material processing.
+
+Phone-sized captures and an eight-second animated game capture are local at
+`.claude/review/75/index.html`. All 12 seasonal/surface caches and all 60 mip
+levels were inspected in an actual browser Canvas. A debug bot completed 85
+walls across a full seasonal cycle; the bot supplies player positions, not new
+game rules. This is not a manual or real-device playtest. Art approval is pending.
