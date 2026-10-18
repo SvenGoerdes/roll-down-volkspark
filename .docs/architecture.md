@@ -85,3 +85,7 @@ Die Originalquelle ist das freigegebene detaillierte Blender-Modell, nicht der a
 Limits: ideas 5 per hour per IP and 100 per day in total; scores 20 per hour per IP; bodies up to 4 KB; JSON only. Only `https://svengoerdes.github.io` may call it (extra dev origins via the `DEV_ORIGINS` env var, unset in production).
 
 The GitHub token is a Cloudflare secret, never in the repo or the browser. Details in [operations.md](operations.md).
+**Oberbaumbrücke (#72, ADR 0053–0055).** `render-oberbaum.js` kachelt den Pfeiler über feste Spannen, setzt die Türme bei `OBERBAUM_TOWER_X` außerhalb des Wegs und den Bogen über Mauerhöhe. `PLANT_BEHIND_LANDMARKS` gibt Galerie und Brücke die Pflanzenreihenfolge. Herkunft: `assets/landmarks/oberbaum-provenance.json`.
+
+**Reichstag (#73, ADR 0056–0058).** `render-reichstag.js` zeichnet die Flügel auf feste Spannen, füllt den Portikusbereich (`REICHSTAG_PORTICO`) mit Säulen im Abstand `REICHSTAG_COLUMN_STEP` und hängt Giebel mit Kuppel über Mauerhöhe. `TOUR_LANDMARKS` hat vier Einträge, der Reichstag steht im Winter. Herkunft: `assets/landmarks/reichstag-provenance.json`.
+
