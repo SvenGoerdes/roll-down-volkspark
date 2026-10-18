@@ -19,6 +19,18 @@ export const WIND_WARN = 0.7; // seconds a gust is announced before it pushes
 
 export const WALLS_PER_SEASON = 20;
 
+// Visual-only gate layout and sight window; never used by collision or spawning.
+export const GATE_ART = { pierSpacing: 2.25, revealAlpha: 0.18, revealMargin: 0.2 };
+
+// Landmark opening styles are visual metadata; passage width stays in world units.
+export const SIGHTSEEING_LANDMARKS = [
+  { id: 'brandenburg-gate', name: 'Brandenburger Tor', openingForm: 'columned' },
+  { id: 'reichstag', name: 'Reichstag', openingForm: 'arched' },
+  { id: 'red-town-hall', name: 'Rotes Rathaus', openingForm: 'arched' },
+  { id: 'oberbaum-bridge', name: 'Oberbaumbrücke', openingForm: 'arched' },
+  { id: 'east-side-gallery', name: 'East Side Gallery', openingForm: 'framed' },
+];
+
 export const SEASONS = [
   {
     id: 'spring', name: 'Frühling', icon: '🌸', hint: 'Pfützen machen rutschig',

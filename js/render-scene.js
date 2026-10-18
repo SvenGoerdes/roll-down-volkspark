@@ -8,11 +8,12 @@ import { drawIceSheen, drawSkidMarks, drawSpray } from './render-slip.js';
 import { sceneryAt } from './scenery.js';
 import { recordWall } from './scoring.js';
 import { drawRecordMark } from './render-record.js';
+import { drawGate } from './render-gate.js';
 
 const drawList = [];
 const byDepth = (a, b) => b.depth - a.depth;
 
-export function renderScene(ctx, view, game, state, figure, backgrounds, groundTiles, powerIcons) {
+export function renderScene(ctx, view, game, state, figure, backgrounds, groundTiles, powerIcons, gateSprites) {
   const s = SEASONS[game.seasonIdx];
   const prev = game.prevSeasonIdx !== null ? SEASONS[game.prevSeasonIdx] : null;
   ctx.save();
@@ -53,7 +54,11 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
       case 'puddle': drawPuddle(ctx, view, o); break;
       case 'wall': {
         const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
-        drawWall(ctx, view, o.z, gaps, SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)]);
+        const wallSeason = SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)];
+        if (game.theme === 'berlin-tour' && gateSprites) {
+          const nextWall = game.walls.find((w) => w.z > o.z && !w.broken);
+          drawGate(ctx, view, o, gaps, wallSeason, gateSprites, nextWall, look.widen);
+        } else drawWall(ctx, view, o.z, gaps, wallSeason);
         if (o === look.record) drawRecordMark(ctx, view, o);
         break;
       }

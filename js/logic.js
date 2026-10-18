@@ -80,6 +80,29 @@ export function passesWall(px, radius, gaps) {
   return gaps.some((g) => px - radius >= g.x - g.w / 2 && px + radius <= g.x + g.w / 2);
 }
 
+// Build once per wall: merge open spans for rendering; preserve individual passages for collision.
+export function gateLayout(gaps, doorways = []) {
+  const passages = [...gaps, ...doorways.filter((doorway) => doorway.open)].map(({ x, w }) => ({ x, w }));
+  const sorted = [...passages]
+    .sort((a, b) => (a.x - a.w / 2) - (b.x - b.w / 2));
+  const openings = [];
+  for (const gap of sorted) {
+    const left = gap.x - gap.w / 2;
+    const right = gap.x + gap.w / 2;
+    const last = openings[openings.length - 1];
+    if (last && left <= last.x + last.w / 2) {
+      const mergedLeft = last.x - last.w / 2;
+      const mergedRight = Math.max(last.x + last.w / 2, right);
+      openings[openings.length - 1] = { x: (mergedLeft + mergedRight) / 2, w: mergedRight - mergedLeft };
+    } else openings.push(gap);
+  }
+  return { openings, passages, solids: solidSegments(openings) };
+}
+
+export function passesGate(px, radius, layout) {
+  return passesWall(px, radius, layout.passages);
+}
+
 // Solid wall pieces between the gaps, as [from, to] pairs.
 export function solidSegments(gaps) {
   const sorted = [...gaps].sort((a, b) => a.x - b.x);

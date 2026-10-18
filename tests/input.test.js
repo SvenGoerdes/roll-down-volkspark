@@ -46,3 +46,45 @@ test('figure change resolves the board after input setup', () => {
     else delete globalThis.document;
   }
 });
+
+test('theme controls do not trigger gameplay, while Enter still activates gameplay', () => {
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  const events = {};
+  let state = 'start';
+  let chosen = 0;
+  let started = 0;
+  const over = { dataset: {} };
+  const windowMock = { addEventListener: (name, fn) => { events[name] = fn; } };
+  const documentMock = { addEventListener() {} };
+  const themeTarget = { closest: (selector) => selector.includes('#themes') };
+  const ordinaryTarget = { closest: () => null };
+  try {
+    Object.defineProperty(globalThis, 'window', { configurable: true, value: windowMock });
+    Object.defineProperty(globalThis, 'document', { configurable: true, value: documentMock });
+    bindInput({
+      input: { dragging: false, lastX: 0, keys: new Set() },
+      hud: { over, changeFigure: { addEventListener() {} } },
+      getState: () => state, getGame: () => ({}), getView: () => ({ F: 1 }),
+      choose: () => { chosen++; }, start: () => { started++; },
+      newGame: () => ({}), setGame() {}, getBoard: () => ({ offer() {} }), readBest: () => 0,
+      setState: (next) => { state = next; }, beginPlay() {}, resize() {}, setLast() {},
+    });
+    events.pointerdown({ target: themeTarget, clientX: 0 });
+    events.keydown({ target: themeTarget, key: 'Enter' });
+    expect(chosen).toBe(0);
+    expect(started).toBe(0);
+    events.keydown({ target: ordinaryTarget, key: 'Enter' });
+    expect(chosen).toBe(1);
+    state = 'over';
+    // A ready game-over screen still starts with Enter, as it did before theme selection.
+    over.dataset.ready = '1';
+    events.keydown({ target: ordinaryTarget, key: 'Enter' });
+    expect(started).toBe(1);
+  } finally {
+    if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow);
+    else delete globalThis.window;
+    if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
+    else delete globalThis.document;
+  }
+});

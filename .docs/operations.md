@@ -16,6 +16,8 @@ Open `http://127.0.0.1:8765/#debug` to get `window.rollDown` for scripted tests.
 
 Visual checks so far used headless Chrome over the DevTools protocol (Python + `websocket-client`) to take phone-size screenshots (390×844, DPR 2). These scripts lived in the session scratchpad, not in the repo.
 
+Sightseeing #28 now has a reproducible local check (macOS Chrome, Python `websocket-client` and Pillow): `python3 tools/check-sightseeing.py --port 8765`. Use the actual local server port (8773 in the sightseeing worktree). It writes numbered real-game screenshots, three sprite close-ups, failure/retry checks and a 4×-CPU render measurement under `.claude/review/28/`. The browser uses its own temporary profile and blocks production worker requests; no leaderboard writes. Game-loop stepping is controlled, while deferred art/tile preparation still runs normally. This does not replace real-device testing.
+
 ## Generate images
 
 ```sh
