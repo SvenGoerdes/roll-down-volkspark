@@ -17,7 +17,6 @@ function canvas() {
     restore() { const old = stack.pop(); clips = old.clips; this.globalAlpha = old.alpha; },
     beginPath() { rects = []; }, rect(...args) { rects.push(args); },
     clip(rule) { clips.push({ rects: [...rects], rule }); },
-    moveTo() {}, lineTo() {}, stroke() {},
     drawImage(...args) { calls.push({ args, clips: [...clips], alpha: this.globalAlpha }); },
   };
 }

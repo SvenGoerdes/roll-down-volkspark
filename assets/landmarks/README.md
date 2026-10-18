@@ -25,3 +25,14 @@ python3 tools/build-gallery-sprites.py
 ```
 
 Nur bei Auswahl der Berlin-Tour geladen. Zusammen etwa 75 KB WebP, 2,4 MB dekodiertes RGBA. Entscheidung: ADR 0049.
+
+# Oberbaumbrücke
+
+Vier freigestellte Blender-Renders aus `oberbaum-bridge.blend`: zwei Türme (`tower-left` achteckig, `tower-right` rund), der Bogen `arch` und der Pfeiler `pier`. Quelle: `.claude/review/quellen/oberbaum-bridge/` (lokal); Herkunft und Hashes in `oberbaum-provenance.json`.
+
+```sh
+blender -b -P tools/blender/render-oberbaum-sprites.py
+python3 tools/build-oberbaum-sprites.py
+```
+
+Nur bei Auswahl der Berlin-Tour geladen. Zusammen etwa 138 KB WebP, 5,2 MB dekodiertes RGBA. Entscheidung: ADR 0053.
