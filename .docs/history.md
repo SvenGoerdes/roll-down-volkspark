@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: Feinschliff #44 – Herbstlaub statt Blütenblatt-Form
+- Die Herbst-Partikel waren schon als Laub gedacht, zeichneten sich aber als glatte Spindel und lasen sich wie Kirschblütenblätter. Jetzt malt `render-fx.js` pro Herbstfarbe einmal ein gezacktes Blatt mit Adern in ein kleines Canvas (`warmUp`), `drawParticles` stempelt es mit `drawImage`. Im Frame-Loop entsteht nichts Neues.
+- Geprüft: Chrome 390×844 DPR 2, Herbst vorher/nachher (`.claude/review/feinschliff/`), keine Konsolenfehler. 134 Tests grün (die Zeichnung selbst hat keinen Test).
+- Versuch vom 14.10. von GPT-6 Luna, neu aufgesetzt und geprüft durch Claude Sonnet 5.5.
+
 ## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
 - Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
 - Neu: `export-alaska.py` (Auswahl, Roll, Roll mit Helm, Crash), `build-figure.py` (Atlas und `figure-sheets.js`-Block pro Figur); `export-intro.py` kennt Alaska und einen Figurenmaßstab; `intro.py` hat Katzenposen für den neuen Körper; `alaska.py` hat einen Helm. `assets/figures/alaska/` (469 KB). `FIGURES` erhält `alaska`.
