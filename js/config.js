@@ -19,6 +19,9 @@ export const WIND_WARN = 0.7; // seconds a gust is announced before it pushes
 
 export const WALLS_PER_SEASON = 20;
 
+// Difficulty curve: the gap eases toward a wider late-run floor without changing its opening width.
+export const GAP_WIDTH = { start: 3.2, target: 1.95, floor: 2.0, tau: 35, lateTightening: 0.003, relief: 0.5 };
+
 // Visual-only gate layout; never used by collision or spawning.
 export const GATE_ART = { pierSpacing: 2.25 };
 
@@ -97,7 +100,8 @@ export const POWERUPS = {
   widen: { id: 'widen', img: 'assets/powerups/widen.webp', icon: '↔️', name: 'Breite Lücken', hint: 'Lücken größer', duration: 7, color: '#1f9d55', glow: '80,220,140' },
 };
 export const MAX_HELMETS = 3;
-export const POWERUP_CHANCE = 0.3;
+// Per-wall chance for each pickup type; the combined chance is 25%.
+export const POWERUP_CHANCES = { helmet: 0.05, slowmo: 0.1, widen: 0.1 };
 
 // Cloudflare Worker: ideas → GitHub issues, shared leaderboard (see worker/)
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
