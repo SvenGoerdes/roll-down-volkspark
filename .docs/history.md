@@ -5,7 +5,8 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 ## 2026-10-18: Art-Tickets veröffentlicht, Arbeit auf Panes verteilt
 - Der Nutzer hat die elf Ticket-Entwürfe freigegeben. Veröffentlicht als #28, #71–#74 (Bauwerke), #47 (Fernsehturm), #75 (Boden), #24 (Storni + Intro), #20 (Alaska), #76 (Gesamtprüfung) und #77 (Bestenlisten-Token, geparkt). Blockierungen, Unter-Issues, das neue Label `ready-for-agent` und Vermerke an #27/#19 und den Epics gesetzt.
 - Vier OpenCode-Panes in herdr arbeiten parallel an #28, #24, #47 und #75; neue Worktrees `turm` und `boden` von `origin/main`. Der herdr-Skill ist jetzt als Claude-Skill installiert (`herdr --skill`).
-- Entschieden vom Nutzer. Veröffentlicht und verteilt von Claude Opus 5.5 (Hauptsession). Commit: dieser Commit.
+- Der Fernsehturm (#47) war als Erster zur Freigabe fertig (GPT-6.1 Sol im Pane `turm`). Nach Sichtung der Spielbilder hat der Nutzer ihn ganz gestrichen, auch aus der Berlin-Tour. #47 geschlossen, kein PR; Nachtrag in ADR 0037.
+- Entschieden vom Nutzer. Veröffentlicht und verteilt von Claude Opus 5.5 (Hauptsession). Commits: PR #78.
 
 ## 2026-10-18: Neue Art-Runde, Ticket-Entwürfe und Session-Übergabe
 - Sechs detaillierte Berliner Wahrzeichen mit tatsächlich erzeugten Nano-Banana-2.1-Referenzen, Blender-Szenen, Renders und Parkkompositionen; Alaska über einen erfolgreich abgeschlossenen kostenlosen TRELLIS.2-Lauf rekonstruiert und in Blender mit Fellfarbe und separater Regenbogenbrille nachbearbeitet. Quellen bleiben lokal im ignorierten Review-Verzeichnis; [Quellenübersicht](art-review-sources-2026-10-18.md).

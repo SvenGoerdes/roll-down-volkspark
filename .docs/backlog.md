@@ -4,8 +4,8 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 
 ## Aktueller Integrationsplan (18. Oktober 2026)
 - [Session-Übergabe](handoff.md) und [elf konkrete Ticket-Entwürfe](plans/art-integration-2026-10-18/README.md) sind der aktuelle Plan. Die älteren Grafikabschnitte unten liefern historischen Kontext, nicht die Freigabe für einen Rückbau des neuen Looks.
-- Offene Integration: fünf detaillierte Gebäude mit dynamisch versetzten Durchfahrten; sichtbarer Fernsehturm am Rand; scrollender neuer Boden; bestätigte Storni-Flasche mit gemeinsamem Intro; neuer Alaska-Körper mit Rig/Animation; vollständige Spiel-/Sicht-/Performanceprüfung ohne veränderte Schwierigkeit.
-- Die konkrete Ticketaufteilung ist noch nicht freigegeben oder in GitHub veröffentlicht. Vorhandene Untertickets #28/#47/#24/#20 konkretisieren, Überschneidungen mit #27/#19 kenntlich machen; Eltern-Epics unverändert lassen.
+- Offene Integration: fünf detaillierte Gebäude mit dynamisch versetzten Durchfahrten; scrollender neuer Boden; bestätigte Storni-Flasche mit gemeinsamem Intro; neuer Alaska-Körper mit Rig/Animation; vollständige Spiel-/Sicht-/Performanceprüfung ohne veränderte Schwierigkeit. Der Fernsehturm ist gestrichen (#47 geschlossen).
+- Tickets auf GitHub: #28, #71–#74, #75, #24, #20, #76; #77 geparkt.
 - Lokale Art-Dateien und uncommittete Worktree-Arbeit sind noch keine integrierten Laufzeit-Assets. `.claude/` nicht bereinigen, bevor benötigte Quellen gesichert bzw. gezielt übernommen sind.
 - **Später, nicht in dieser Grafikarbeit:** ungeprüfte Bestenlisten-Schreibzugriffe absichern. Turnstile mit serverseitiger Prüfung ist ein noch nicht freigegebener Vorschlag. Anti-Bot-Tokens allein validieren keine erspielten Scores; weitergehende Laufprüfung ist nicht beauftragt. Siehe [Ticket 11](plans/art-integration-2026-10-18/11-bestenliste-token.md).
 

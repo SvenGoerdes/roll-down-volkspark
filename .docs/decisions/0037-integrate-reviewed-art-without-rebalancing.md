@@ -18,6 +18,8 @@ Alle fünf Gebäude werden im Sightseeing-Theme als durchfahrbare Hindernisse in
 
 Der Fernsehturm wird ausschließlich als deutlich sichtbare Randkulisse eingebunden, ohne Kollision oder durchfahrbaren Turmfuß. Die bestehende Aufgabe für den Jahreszeiten-Modus bleibt der Geltungsbereich. Der neue Boden, der bestätigte Storni-Stand und das neue Alaska-Modell gehören zum vollständigen Integrationsziel.
 
+**Nachtrag 18.10.2026:** Nach Sichtung der ersten Spielbilder hat der Nutzer den Fernsehturm ganz gestrichen („sieht nicht geil aus“), am Rand wie in der Berlin-Tour. #47 ist geschlossen; die Arbeit im Worktree `turm` bleibt lokal ohne PR.
+
 Die vorhandene Canvas-/WebP-Pipeline bleibt bestehen. Aktuelle Worktree-Arbeit gezielt wiederverwenden; weder neue Live-3D-Engine noch vorsorgliches Bauwerk-Framework. Einzelne vertikale Implementierungstickets erlauben eigenständige Prüfung, begrenzen aber nicht das vereinbarte vollständige Endergebnis.
 
 ## Alternatives

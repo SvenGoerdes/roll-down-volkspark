@@ -9,7 +9,7 @@ Festgehaltene Nutzerentscheidungen: neuer Modell-Look bleibt, fünf Gebäude als
 3. [Oberbaumbrücke mit versetzten Durchfahrten integrieren](03-oberbaumbruecke.md) — blockiert durch: 01; GitHub: neu.
 4. [Reichstag mit sichtbarer Kuppel und korrekten Durchfahrten integrieren](04-reichstag.md) — blockiert durch: 01; GitHub: neu.
 5. [Rotes Rathaus mit offenem Tor und freier Sicht im Spiel integrieren](05-rotes-rathaus.md) — blockiert durch: 01; GitHub: neu.
-6. [Neuen Fernsehturm als deutlich sichtbares Wahrzeichen am Rand integrieren](06-fernsehturm.md) — blockiert durch: keine; GitHub: bestehendes #47.
+6. [Neuen Fernsehturm als deutlich sichtbares Wahrzeichen am Rand integrieren](06-fernsehturm.md) — blockiert durch: keine; GitHub: bestehendes #47. **Gestrichen** am 18.10.2026 nach Sichtung der Spielbilder, #47 geschlossen.
 7. [Neuen Boden als tatsächlich scrollende Spielfläche integrieren](07-boden.md) — blockiert durch: keine; GitHub: neu.
 8. [Freigegebene Storni-Flasche und fertiges Intro für Kalle und Tine integrieren](08-storni-intro.md) — blockiert durch: keine; GitHub: bestehendes #24.
 9. [Neues Alaska-Modell als vollständig spielbare dritte Figur integrieren](09-alaska-spielbar.md) — blockiert durch: 08; GitHub: bestehendes #20.
