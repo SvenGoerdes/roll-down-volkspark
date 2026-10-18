@@ -2,6 +2,26 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: #76 – Gesamtprüfung der neuen Grafik
+- Sammel-Branch `feat/gesamtpruefung`: #87 (Oberbaum), #89 (Volkspark-Bauwerke), #92 (Reichstag), #91 (Rathaus) zusammengeführt; Konflikte in Config, Laden, Szene, Tests und Doku gelöst. → [ADR 0074](decisions/0074-combined-integration-branch.md), [0075](decisions/0075-five-landmark-order.md), [0076](decisions/0076-all-landmarks-loaded-together.md)
+- Gebaut von Claude Sonnet 5.5 (Auftrag des Nutzers). Ein Fix: Der Test der Volkspark-Bauwerke erwartete die Liste mit drei Einträgen und folgt jetzt der Liste mit fünf.
+- Prüfung (Chrome 390×844, DPR 2; Bilder `.claude/review/76/`):
+
+| Prüfung | Ergebnis |
+|---|---|
+| `bun test tests` | 153 grün |
+| Berlin-Tour: Tor, Galerie, Brücke, Reichstag, Rathaus (`01`–`06`) | je mit Lücke und Folgelücke lesbar; keine Nähte, kein heller Rahmen; Büsche hinter den Bauwerken |
+| Volkspark ab Mauer 41 (`07`–`10`) | Bauwerke an Mauer 40, 50, 60, 80 wie in ADR 0075 |
+| Boden beider Modi | Volkspark alter Boden, Berlin-Tour neuer (in `04`, `05` und `09`) |
+| Intro Kalle, Tine, Alaska (`12-uebersicht-figuren.png`) | Intro, Rollen und Sprung ins Spiel laufen; keine Konsolenfehler |
+| 4× CPU: Bildabstand Median | 16,7 ms in beiden Modi bei allen fünf Bauwerken |
+| 4× CPU: Ausreißer | max 50 ms, Update+Rendern p95 bis 37 ms bei Mauer 45 und 65 |
+| Speicher aller Bauwerke | 20,8 MiB dekodiert, 510 KB WebP |
+
+- Kirschblüten im Winter: **Testartefakt, kein Fehler.** Die Bilder sprangen per `setSeason` direkt in den Winter, die schon fallenden Blüten blieben. Im echten Lauf ab Mauer 65 hat der Winter 0 Blüten (Winter-Bild `04`).
+- Bildsprung im Test: Jahreszeitenwechsel mitten im Bild zeigt für kurze Zeit den Himmel der alten Jahreszeit (Bild `09`); ebenfalls Folge des Sprungs, nicht untersucht.
+- Nicht geprüft: Safari, echte Geräte, 4×-Drossel auf Geräten. Alle Treffer, Helm und Wertung unberührt (Tests).
+
 ## 2026-10-18: #81 – Bauwerke im Volkspark-Modus ab Herbst
 - Auftrag des Nutzers über den Orchestrator: ab Mauer 41 jede 10. Mauer ein Bauwerk statt der Gabionen-Mauer, dasselbe Bauwerk wie die Berlin-Tour in dieser Jahreszeit (`landmarkAt`). → [ADR 0062](decisions/0062-volkspark-landmark-walls.md)
 - Neu: `VOLKSPARK_LANDMARK_FROM` (40), `_EVERY` (10), `_PRELOAD` (25) in `config.js`, reine Funktion `volksparkLandmarkAt` in `logic.js`, `landmarkFor` in `render-scene.js` (gilt für beide Themen, auch für `PLANT_BEHIND_LANDMARKS`). `main.js` lädt die Sprites einmal bei 25 passierten Mauern; Fehler wird nicht wiederholt, die Gabionen-Mauer bleibt.

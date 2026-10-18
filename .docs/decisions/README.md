@@ -40,3 +40,6 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0056](0056-reichstag-runtime-parts.md) | Reichstag aus vier Modellteilen, vierte Jahreszeit der Berlin-Tour | User (scope), Sonnet 5.5 (parts, renderer) |
 | [0057](0057-reichstag-gap-readability.md) | Reichstag: Durchfahrt folgt der Spiellücke, Folgelücke lesbar | User (no rebalancing), Sonnet 5.5 (placement) |
 | [0058](0058-plant-order-for-reichstag.md) | Galerie-Pflanzenreihenfolge auch für den Reichstag | User (plants stay), Sonnet 5.5 |
+| [0074](0074-combined-integration-branch.md) | Sammel-Branch für die Gesamtprüfung (#76) | User (Auftrag), Sonnet 5.5 |
+| [0075](0075-five-landmark-order.md) | Reihenfolge der fünf Bauwerke, Volkspark folgt der Liste | User (Reihenfolge), Sonnet 5.5 |
+| [0076](0076-all-landmarks-loaded-together.md) | Alle fünf Bauwerke laden gemeinsam; Budget und Messung | Sonnet 5.5 (Messung) |
