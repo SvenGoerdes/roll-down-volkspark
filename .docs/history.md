@@ -2,6 +2,20 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: Art-Tickets veröffentlicht, Arbeit auf Panes verteilt
+- Der Nutzer hat die elf Ticket-Entwürfe freigegeben. Veröffentlicht als #28, #71–#74 (Bauwerke), #47 (Fernsehturm), #75 (Boden), #24 (Storni + Intro), #20 (Alaska), #76 (Gesamtprüfung) und #77 (Bestenlisten-Token, geparkt). Blockierungen, Unter-Issues, das neue Label `ready-for-agent` und Vermerke an #27/#19 und den Epics gesetzt.
+- Vier OpenCode-Panes in herdr arbeiten parallel an #28, #24, #47 und #75; neue Worktrees `turm` und `boden` von `origin/main`. Der herdr-Skill ist jetzt als Claude-Skill installiert (`herdr --skill`).
+- Entschieden vom Nutzer. Veröffentlicht und verteilt von Claude Opus 5.5 (Hauptsession). Commit: dieser Commit.
+
+## 2026-10-18: Neue Art-Runde, Ticket-Entwürfe und Session-Übergabe
+- Sechs detaillierte Berliner Wahrzeichen mit tatsächlich erzeugten Nano-Banana-2.1-Referenzen, Blender-Szenen, Renders und Parkkompositionen; Alaska über einen erfolgreich abgeschlossenen kostenlosen TRELLIS.2-Lauf rekonstruiert und in Blender mit Fellfarbe und separater Regenbogenbrille nachbearbeitet. Quellen bleiben lokal im ignorierten Review-Verzeichnis; [Quellenübersicht](art-review-sources-2026-10-18.md).
+- Die Galerie mit neun Motiven und sieben drehbaren GLBs wurde in Safari geöffnet. Lokal 64 Bild-/Quellen-/Blender-/GLB-Verweise mit HTTP 200 und sieben GLB-Dateiköpfe geprüft. Rathaus-Torbogen repariert; Folgelücken-Sicht und Alaska-Rig/Animation bleiben offen. Keine Runtime-Integration, keine vollständige neue Spielprüfung und kein Nachweis auf echten Geräten.
+- Nutzerentscheidungen: neuen Modell-Look behalten, fünf Gebäude als Hindernisse mit tatsächlich versetzten Durchfahrten, Fernsehturm ausschließlich prominent am Rand; Abstände und Schwierigkeit erhalten; alle Motive integrieren, KISS. → [ADR 0037](decisions/0037-integrate-reviewed-art-without-rebalancing.md).
+- Aktive Sightseeing-/Figuren-/Daten-/Feinschliff-Worktrees read-only geprüft. Vorbereitete Torlogik und Intro-/Rig-Arbeit sind überwiegend uncommittet und noch nicht in die Runtime verdrahtet. Der Überlappungs-Grenzfall der Torlogik darf nicht nebenbei die Trefferregeln ändern.
+- Elf einzelne [Ticket-Entwürfe](plans/art-integration-2026-10-18/README.md) mit Kriterien, Abhängigkeiten und Zuordnung zu vorhandenen GitHub-Aufgaben vorbereitet und nach `.docs` gesichert. Aufteilung noch nicht ausdrücklich freigegeben; keine Issues veröffentlicht oder verändert. Token-Absicherung der Bestenliste nur für später vorgeschlagen, nicht umgesetzt; Anti-Bot-Nachweis ist kein Beweis für erspielte Punkte.
+- Auf Nutzerwunsch [handoff.md](handoff.md) als vollständigen Wiedereinstieg für eine neue Session ergänzt. Produktentscheidungen nicht erneut aufrollen; nächste Aktion ist die konkrete Ticketaufteilung freigeben/anpassen und danach in GitHub veröffentlichen.
+- Angefragt und Produktumfang entschieden vom Nutzer. Art-Modelle: GPT-6.1 Sol High auf Subagenten, geprüft/nachbearbeitet durch Codex-Hauptsession. Übergabe/Ticket-Entwürfe: Codex; Read-only-Faktenprüfung: GPT-6.1 Sol High. Commits: uncommitted, keine PRs/Merges/Deployments dieser Session.
+
 ## 2026-10-14: Review-Fixes zur Modul-Aufteilung
 - Der Game-Flow-Test ersetzt beim Start den Spielzustand jetzt wirklich und prüft, dass Pass und Pickup nur den neuen Zustand ändern. Wiederhergestellte WHY-Kommentare erklären Sicherheitsgrenze, Animations-Neustarts, Rekord-Banner, Tastatursteuerung und schnellen Neustart. `main.js` reicht die vorhandene `pick`-Funktion direkt weiter.
 - Angefragt vom Claude-Orchestrator nach Review durch Sonnet 5.5. Implementiert von GPT-6 Luna; Integration und Review durch GPT-6.1 Sol. Verifiziert: 105 Tests, Browser-Bundle und `git diff --check`. Commit: dieser Commit (`test(game): cover replacement state and restore intent comments`, PR #63).

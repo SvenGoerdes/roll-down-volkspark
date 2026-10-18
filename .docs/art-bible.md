@@ -2,6 +2,9 @@
 
 One page that keeps all game art consistent. Decided on 2026-10-14 ([ADR 0014](decisions/0014-painted-art-style.md)).
 
+## Aktuelle Modellfreigabe (18. Oktober 2026)
+Der Nutzer hat ausdrücklich entschieden, den Look der neueren detaillierten Blender-Modelle beizubehalten. Diese Modelle nicht anhand älterer Vorher-Bilder wieder vereinfachen oder grundsätzlich neu malen. Die vorhandenen PBR-Figuren und neue Modellgrafik werden weiterhin als optimierte Sprites gerendert. Lesbarkeit, Licht, Jahreszeiten und das Handybudget gelten weiter. Siehe [ADR 0037](decisions/0037-integrate-reviewed-art-without-rebalancing.md) und [aktuelle Quellen](art-review-sources-2026-10-18.md).
+
 ## Look in one sentence
 Volkspark Friedrichshain as a warm, hand-painted picture book: gouache textures, soft light, crisp silhouettes, readable on a small phone screen.
 
