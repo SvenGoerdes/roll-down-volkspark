@@ -75,3 +75,69 @@ test('ideas stop at the daily cap and still work without KV', async () => {
     globalThis.fetch = realFetch;
   }
 });
+
+// Turnstile: official test secrets (always valid / always invalid), siteverify mocked, no network.
+const SECRET_OK = '1x0000000000000000000000000000000AA';
+const SECRET_BAD = '2x0000000000000000000000000000000AA';
+const withSiteverify = async (fn) => {
+  const realFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url, form: new URLSearchParams(init.body) });
+    const ok = calls.at(-1).form.get('secret') === SECRET_OK && calls.at(-1).form.get('response') !== 'used';
+    const body = ok ? { success: true } : { success: false, 'error-codes': [calls.at(-1).form.get('response') === 'used' ? 'timeout-or-duplicate' : 'invalid-input-response'] };
+    return new Response(JSON.stringify(body));
+  };
+  try { await fn(calls); } finally { globalThis.fetch = realFetch; }
+};
+const post = (env, body, ip) => worker.fetch(req('/scores', { method: 'POST', body: JSON.stringify(body), ip }), env);
+
+test('turnstile: without secret the token is ignored (rollout in any order)', async () => {
+  const res = await post({ LEADERBOARD: fakeKv() }, { name: 'A', score: 3 }, '10.0.0.1');
+  expect(res.status).toBe(200);
+});
+
+test('turnstile: secret set and no token is rejected without calling Cloudflare', async () => {
+  await withSiteverify(async (calls) => {
+    const env = { LEADERBOARD: fakeKv(), TURNSTILE_SECRET: SECRET_OK };
+    const res = await post(env, { name: 'A', score: 3 }, '10.0.0.2');
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain('kein Bot');
+    expect((await post(env, { name: 'A', score: 3, token: 'x'.repeat(3000) }, '10.0.0.2')).status).toBe(400);
+    expect(calls.length).toBe(0);
+    expect((await (await worker.fetch(req('/leaderboard'), env)).json()).entries).toEqual([]);
+  });
+});
+
+test('turnstile: valid token is checked with secret and IP, then the entry lands', async () => {
+  await withSiteverify(async (calls) => {
+    const env = { LEADERBOARD: fakeKv(), TURNSTILE_SECRET: SECRET_OK };
+    const res = await post(env, { name: 'Kim', score: 9, token: 'XXXX.DUMMY.TOKEN.XXXX' }, '10.0.0.3');
+    expect((await res.json()).status).toBe('added');
+    expect(calls[0].url).toBe('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+    expect(calls[0].form.get('remoteip')).toBe('10.0.0.3');
+  });
+});
+
+test('turnstile: invalid secret/token and used token are rejected with German errors, nothing stored', async () => {
+  await withSiteverify(async () => {
+    const env = { LEADERBOARD: fakeKv(), TURNSTILE_SECRET: SECRET_BAD };
+    const bad = await post(env, { name: 'A', score: 3, token: 't' }, '10.0.0.4');
+    expect(bad.status).toBe(403);
+    expect((await bad.json()).error).toContain('fehlgeschlagen');
+    const used = await post({ ...env, TURNSTILE_SECRET: SECRET_OK }, { name: 'A', score: 3, token: 'used' }, '10.0.0.5');
+    expect(used.status).toBe(403);
+    expect((await used.json()).error).toContain('abgelaufen');
+    expect((await (await worker.fetch(req('/leaderboard'), env)).json()).entries).toEqual([]);
+  });
+});
+
+test('turnstile: invalid score does not use up the token; Cloudflare outage gives 503, not a pass', async () => {
+  await withSiteverify(async (calls) => {
+    const env = { LEADERBOARD: fakeKv(), TURNSTILE_SECRET: SECRET_OK };
+    expect((await post(env, { name: '', score: 3, token: 't' }, '10.0.0.6')).status).toBe(400);
+    expect(calls.length).toBe(0);
+    globalThis.fetch = async () => { throw new TypeError('offline'); };
+    expect((await post(env, { name: 'A', score: 3, token: 't' }, '10.0.0.7')).status).toBe(503);
+  });
+});

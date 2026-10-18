@@ -101,3 +101,5 @@ export const POWERUP_CHANCE = 0.3;
 
 // Cloudflare Worker: ideas → GitHub issues, shared leaderboard (see worker/)
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
+// Public Turnstile sitekey for leaderboard entries. Empty = no widget (the worker then must not have the secret).
+export const TURNSTILE_SITEKEY = '';

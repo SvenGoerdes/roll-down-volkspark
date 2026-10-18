@@ -1,5 +1,6 @@
 import { parseIdea, toIssue } from './idea.js';
 import { parseScore, addScore, limited } from './score.js';
+import { verifyTurnstile } from './turnstile.js';
 
 const ALLOWED_ORIGINS = ['https://svengoerdes.github.io'];
 const IDEAS_PER_HOUR = 5;
@@ -98,6 +99,12 @@ async function postScore(request, env, headers) {
   if (bad) return bad;
   const { entry, error } = parseScore(body);
   if (error) return json({ error }, 400, headers);
+  // Only with a secret set: lets frontend and worker go live in any order. Checked after the
+  // cheap validation, so a typo in the name does not burn the one-time token.
+  if (env.TURNSTILE_SECRET) {
+    const check = await verifyTurnstile(body.token, env.TURNSTILE_SECRET, clientIp(request));
+    if (!check.ok) return json({ error: check.error }, check.status, headers);
+  }
 
   const { list, status } = addScore(await readBoard(env), entry, Date.now());
   if (status === 'added') await env.LEADERBOARD.put(BOARD_KEY, JSON.stringify(list));
