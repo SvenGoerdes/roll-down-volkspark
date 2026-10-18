@@ -26,6 +26,7 @@ export function createTurnstile(container) {
       await load();
       id = window.turnstile.render(container, {
         sitekey: TURNSTILE_SITEKEY,
+        action: 'score', // the worker checks this value
         callback: (t) => { token = t; },
         'expired-callback': () => { token = ''; },
         'error-callback': () => { token = ''; },

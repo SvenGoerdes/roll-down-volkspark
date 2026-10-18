@@ -79,15 +79,17 @@ test('ideas stop at the daily cap and still work without KV', async () => {
 // Turnstile: official test secrets (always valid / always invalid), siteverify mocked, no network.
 const SECRET_OK = '1x0000000000000000000000000000000AA';
 const SECRET_BAD = '2x0000000000000000000000000000000AA';
+let siteverifyExtra = {}; // overrides the hostname/action Cloudflare reports
 const withSiteverify = async (fn) => {
   const realFetch = globalThis.fetch;
   const calls = [];
   globalThis.fetch = async (url, init) => {
     calls.push({ url, form: new URLSearchParams(init.body) });
     const ok = calls.at(-1).form.get('secret') === SECRET_OK && calls.at(-1).form.get('response') !== 'used';
-    const body = ok ? { success: true } : { success: false, 'error-codes': [calls.at(-1).form.get('response') === 'used' ? 'timeout-or-duplicate' : 'invalid-input-response'] };
+    const body = ok ? { success: true, hostname: siteverifyExtra.hostname ?? 'svengoerdes.github.io', action: 'action' in siteverifyExtra ? siteverifyExtra.action : 'score' } : { success: false, 'error-codes': [calls.at(-1).form.get('response') === 'used' ? 'timeout-or-duplicate' : 'invalid-input-response'] };
     return new Response(JSON.stringify(body));
   };
+  siteverifyExtra = {};
   try { await fn(calls); } finally { globalThis.fetch = realFetch; }
 };
 const post = (env, body, ip) => worker.fetch(req('/scores', { method: 'POST', body: JSON.stringify(body), ip }), env);
@@ -139,5 +141,25 @@ test('turnstile: invalid score does not use up the token; Cloudflare outage give
     expect(calls.length).toBe(0);
     globalThis.fetch = async () => { throw new TypeError('offline'); };
     expect((await post(env, { name: 'A', score: 3, token: 't' }, '10.0.0.7')).status).toBe(503);
+  });
+});
+
+test('turnstile: wrong website, wrong action or missing action is rejected and nothing is stored', async () => {
+  for (const [extra, ip] of [[{ hostname: 'evil.example' }, '10.0.1.1'], [{ action: 'login' }, '10.0.1.2'], [{ action: undefined }, '10.0.1.3']]) {
+    await withSiteverify(async () => {
+      siteverifyExtra = extra;
+      const env = { LEADERBOARD: fakeKv(), TURNSTILE_SECRET: SECRET_OK };
+      const res = await post(env, { name: 'A', score: 3, token: 't' }, ip);
+      expect(res.status).toBe(403);
+      expect((await (await worker.fetch(req('/leaderboard'), env)).json()).entries).toEqual([]);
+    });
+  }
+});
+
+test('turnstile: hostname and action can be overridden by env for local tests', async () => {
+  await withSiteverify(async () => {
+    siteverifyExtra = { hostname: 'example.com', action: 'local' };
+    const env = { LEADERBOARD: fakeKv(), TURNSTILE_SECRET: SECRET_OK, TURNSTILE_HOSTNAME: 'example.com', TURNSTILE_ACTION: 'local' };
+    expect((await post(env, { name: 'A', score: 3, token: 't' }, '10.0.1.4')).status).toBe(200);
   });
 });

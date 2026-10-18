@@ -93,7 +93,9 @@ Der Code ist fertig. Ohne Secret prüft der Worker nichts, ohne Sitekey zeigt da
 
 Zwischen Schritt 3 und 4 können Spieler nicht eintragen (Fehlermeldung „Bitte bestätige zuerst, dass du kein Bot bist“). Wer das vermeiden will, macht Schritt 4 vor 2 und 3: das Widget erscheint, der Worker ignoriert das Token noch.
 
-Lokal testen: `worker/.dev.vars` (nicht committen) mit `TURNSTILE_SECRET=1x0000000000000000000000000000000AA` und `DEV_ORIGINS=http://127.0.0.1:<Port>`, dann `npx wrangler dev`; im Frontend lokal Sitekey `1x00000000000000000000AA`. Cloudflares Testschlüssel: Secret `1x…AA` = immer gültig, `2x…AA` = immer ungültig. Abschalten: `npx wrangler secret delete TURNSTILE_SECRET`.
+Der Worker prüft zusätzlich, dass Cloudflare als Website `svengoerdes.github.io` und als Aktion `score` meldet (das Widget setzt `action: 'score'`). Sonst 403, kein Eintrag. Beim Widget in Schritt 1 genau diesen Hostnamen eintragen.
+
+Lokal testen: `worker/.dev.vars` (nicht committen) mit `TURNSTILE_SECRET=1x0000000000000000000000000000000AA` und `DEV_ORIGINS=http://127.0.0.1:<Port>`, dann `npx wrangler dev`; im Frontend lokal Sitekey `1x00000000000000000000AA`. Cloudflares Testschlüssel melden Hostname `example.com` und keine Aktion: lokal `TURNSTILE_HOSTNAME=example.com` und `TURNSTILE_ACTION=` (leer) in `.dev.vars` setzen, in Produktion nie. Cloudflares Testschlüssel: Secret `1x…AA` = immer gültig, `2x…AA` = immer ungültig. Abschalten: `npx wrangler secret delete TURNSTILE_SECRET`.
 
 ## Infrastructure
 
