@@ -1,0 +1,60 @@
+{
+  "source": ".claude/review/quellen/oberbaum-bridge/oberbaum-bridge.blend",
+  "sourceSha256": "b68e34f0f9617f6e0bf2810c629ad0284fe2eaf0c766fb01f1a5eff20e29a2f2",
+  "scriptSha256": "1c94cb197da13bb3b78befe317dcfdb5791837712f414b265c9a525410c0c8b6",
+  "parts": {
+    "tower-left": {
+      "width": 247,
+      "height": 1627,
+      "worldWidth": 1.926000055420783,
+      "worldHeight": 12.68664813833852,
+      "left": -4.185000076293945,
+      "bottom": -0.4039053059153019,
+      "objects": 251,
+      "pngSha256": "15de4fbb139cb52d3f33cfd135def5e3b2a440ad67537e4ebf3b07ee454872d5",
+      "src": "assets/landmarks/oberbaum-tower-left.webp",
+      "bytes": 39730,
+      "webpSha256": "353b890670ea330ab7b1376d2c8b97e0260912845d1d2eee0cc231f8723cda03"
+    },
+    "tower-right": {
+      "width": 252,
+      "height": 1631,
+      "worldWidth": 1.9622134957294688,
+      "worldHeight": 12.699881791804618,
+      "left": 2.222786580564476,
+      "bottom": -0.4200760123722639,
+      "objects": 259,
+      "pngSha256": "38c3668ad0804cbc6077bfa8a5a9596b84d8dad63383677bc64905bfb1a73ee2",
+      "src": "assets/landmarks/oberbaum-tower-right.webp",
+      "bytes": 42588,
+      "webpSha256": "4328c22b929268dc6f3521918798ce4bb127a18622a4f1d6c333367ad9661a81"
+    },
+    "arch": {
+      "width": 696,
+      "height": 709,
+      "worldWidth": 5.430000095367432,
+      "worldHeight": 5.531422510941823,
+      "left": -2.715000047683716,
+      "bottom": 1.9235456340014936,
+      "objects": 2838,
+      "pngSha256": "7f9e9a6ceac13a30a9d231646f49753fb623716c20a5fe84444cc0346b219db5",
+      "src": "assets/landmarks/oberbaum-arch.webp",
+      "bytes": 50166,
+      "webpSha256": "6e5a7736ecd6142ae8f842af49fadea06997cea7b29391b2f3ed2227f7c984ab"
+    },
+    "pier": {
+      "width": 96,
+      "height": 600,
+      "worldWidth": 0.74999990940094,
+      "worldHeight": 4.687499433755875,
+      "left": -2.594999923706055,
+      "bottom": -1.1917665874461332,
+      "objects": 2,
+      "pngSha256": "ac2be97b50455ce73773441bb19fa8e5bc9edd07f505b2bcaf498bae77518cdf",
+      "src": "assets/landmarks/oberbaum-pier.webp",
+      "bytes": 5258,
+      "webpSha256": "72565022607469f2dd1bd5cc01332cfd659416f82d73e0198ab74c14d1cc29d5"
+    }
+  },
+  "packerSha256": "8f07aa62cce6d2dd5d7e953701d01bdf3628a8fb60202fa6a0dfad717650ddfa"
+}

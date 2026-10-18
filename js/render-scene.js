@@ -1,5 +1,5 @@
-import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS, TOUR_LANDMARKS, GALLERY_PLANT_BEHIND } from './config.js';
-import { seasonAhead, widened, seasonIndexAt, landmarkAt, plantDepth } from './logic.js';
+import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS, TOUR_LANDMARKS, GALLERY_PLANT_BEHIND, PLANT_BEHIND_LANDMARKS, VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY } from './config.js';
+import { seasonAhead, widened, seasonIndexAt, landmarkAt, volksparkLandmarkAt, plantDepth } from './logic.js';
 import { drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup } from './render.js';
 import { drawPlayer } from './render-player.js';
 import { poseFor } from './figure.js';
@@ -10,9 +10,20 @@ import { recordWall } from './scoring.js';
 import { drawRecordMark } from './render-record.js';
 import { drawGate } from './render-gate.js';
 import { drawGallery } from './render-gallery.js';
+import { drawOberbaum } from './render-oberbaum.js';
+import { drawReichstag } from './render-reichstag.js';
+import { drawRathaus } from './render-rathaus.js';
 
 const drawList = [];
 const byDepth = (a, b) => b.depth - a.depth;
+
+// The landmark a wall shows, or null for the gabion wall: Berlin-Tour every wall, Volkspark every Nth from autumn.
+// Without loaded sprites it stays a gabion wall.
+function landmarkFor(game, wall, sprites) {
+  if (!sprites) return null;
+  if (game.theme === 'berlin-tour') return landmarkAt(wall.index, TOUR_LANDMARKS, WALLS_PER_SEASON);
+  return volksparkLandmarkAt(wall.index, VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY, TOUR_LANDMARKS, WALLS_PER_SEASON);
+}
 
 export function renderScene(ctx, view, game, state, figure, backgrounds, groundTiles, powerIcons, gateSprites) {
   const s = SEASONS[game.seasonIdx];
@@ -39,8 +50,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
   const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1, pose };
   look.record = state === 'playing' ? recordWall(game.walls, game.passed, game.best, PLAYER_Z) : null;
   drawList.length = 0;
-  const galleryZ = game.theme === 'berlin-tour'
-    ? game.walls.filter((w) => landmarkAt(w.index, TOUR_LANDMARKS, WALLS_PER_SEASON) === 'east-side-gallery').map((w) => w.z) : [];
+  const galleryZ = game.walls.filter((w) => PLANT_BEHIND_LANDMARKS.includes(landmarkFor(game, w, gateSprites))).map((w) => w.z);
   for (const o of sceneryAt(game.travelled)) {
     o.layer = 'plant'; o.depth = plantDepth(o.z, galleryZ, GALLERY_PLANT_BEHIND); drawList.push(o);
   }
@@ -62,9 +72,12 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
       case 'wall': {
         const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
         const wallSeason = SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)];
-        if (game.theme === 'berlin-tour' && gateSprites) {
-          const id = landmarkAt(o.index, TOUR_LANDMARKS, WALLS_PER_SEASON);
+        const id = landmarkFor(game, o, gateSprites);
+        if (id) {
           if (id === 'east-side-gallery') drawGallery(ctx, view, o, gaps, gateSprites[id]);
+          else if (id === 'oberbaum-bridge') drawOberbaum(ctx, view, o, gaps, gateSprites[id]);
+          else if (id === 'reichstag') drawReichstag(ctx, view, o, gaps, gateSprites[id]);
+          else if (id === 'red-town-hall') drawRathaus(ctx, view, o, gaps, gateSprites[id]);
           else drawGate(ctx, view, o, gaps, wallSeason, gateSprites[id]);
         } else drawWall(ctx, view, o.z, gaps, wallSeason);
         if (o === look.record) drawRecordMark(ctx, view, o);
