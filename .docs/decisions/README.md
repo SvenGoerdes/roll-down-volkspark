@@ -33,3 +33,7 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0037](0037-integrate-reviewed-art-without-rebalancing.md) | Preserve new model look, shifted passages, full art integration without rebalancing | User (scope), Codex (handoff/ticket drafts) |
 | [0046](0046-alaska-trellis-body-clean-rig.md) | Alaska: TRELLIS-Körper neu vernetzt, Pivot-Rig mit Brust- und Hinterteil-Gelenk | User (Körper, Look), Sonnet 5.5 (Verfahren) |
 | [0047](0047-alaska-clips-and-third-figure.md) | Alaska als dritte Figur: Intro auf vier Pfoten, Clips, Atlas, fallende Brille | User (Ablauf, Brille), Sonnet 5.5 (Umsetzung) |
+| [0053](0053-oberbaum-bridge-runtime-parts.md) | Oberbaumbrücke aus vier Modellteilen, dritte Jahreszeit der Berlin-Tour | User (scope), Sonnet 5.5 (parts, renderer) |
+| [0054](0054-oberbaum-towers-outside-corridor.md) | Oberbaum-Türme außerhalb des Wegs, Folgelücke lesbar | User (visibility), Sonnet 5.5 (placement) |
+| [0055](0055-plant-order-for-oberbaum.md) | Galerie-Pflanzenreihenfolge auch für die Brücke | User (plants stay), Sonnet 5.5 |
+| [0062](0062-volkspark-landmark-walls.md) | Bauwerke als jede 10. Mauer im Volkspark ab Herbst | User (Ticket #81), Sonnet 5.5 |

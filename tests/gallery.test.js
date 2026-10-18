@@ -1,7 +1,7 @@
-import { test, expect } from 'bun:test';
+import { test, expect, describe } from 'bun:test';
 import { createHash } from 'node:crypto';
-import { WALL_EXT, WALLS_PER_SEASON, TOUR_LANDMARKS, PLAYER_Z } from '../js/config.js';
-import { landmarkAt, galleryTiles, gateLayout, plantDepth } from '../js/logic.js';
+import { WALL_EXT, WALLS_PER_SEASON, TOUR_LANDMARKS, PLAYER_Z, VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY } from '../js/config.js';
+import { landmarkAt, volksparkLandmarkAt, galleryTiles, gateLayout, plantDepth } from '../js/logic.js';
 import { computeView, project } from '../js/view.js';
 import { drawGallery, GALLERY_BAYS } from '../js/render-gallery.js';
 import { EAST_SIDE_GALLERY_ART, GALLERY_PITCH } from '../js/gallery-sprite-data.js';
@@ -26,12 +26,13 @@ function canvas() {
 
 test('the Berlin tour shows one landmark per season block, in order, around again', () => {
   const at = (n) => landmarkAt(n, TOUR_LANDMARKS, WALLS_PER_SEASON);
-  expect(TOUR_LANDMARKS).toEqual(['brandenburg-gate', 'east-side-gallery']);
+  expect(TOUR_LANDMARKS).toEqual(['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge']);
   expect(at(0)).toBe('brandenburg-gate');
   expect(at(WALLS_PER_SEASON - 1)).toBe('brandenburg-gate');
   expect(at(WALLS_PER_SEASON)).toBe('east-side-gallery');
   expect(at(2 * WALLS_PER_SEASON - 1)).toBe('east-side-gallery');
-  expect(at(2 * WALLS_PER_SEASON)).toBe('brandenburg-gate');
+  expect(at(2 * WALLS_PER_SEASON)).toBe('oberbaum-bridge');
+  expect(at(3 * WALLS_PER_SEASON)).toBe('brandenburg-gate');
   expect(landmarkAt(45, ['a', 'b', 'c'], 20)).toBe('c');
   expect(landmarkAt(60, ['a', 'b', 'c'], 20)).toBe('a');
 });
@@ -114,4 +115,20 @@ test('plants right in front of a gallery wall are drawn behind it, others keep t
   // Moved plants keep their relative order: farther plant, larger depth, drawn first.
   expect(plantDepth(25, walls, 12)).toBeGreaterThan(plantDepth(20, walls, 12));
   expect(plantDepth(20, walls, 12)).toBeGreaterThan(30);
+});
+
+describe('Volkspark landmarks (#81)', () => {
+  const at = (n) => volksparkLandmarkAt(n, VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY, TOUR_LANDMARKS, WALLS_PER_SEASON);
+  test('gabion walls before wall 41 and between landmarks', () => {
+    for (let n = 0; n < 40; n++) expect(at(n)).toBeNull();
+    expect(at(41)).toBeNull();
+    expect(at(49)).toBeNull();
+  });
+  test('every 10th wall from wall 41 is the landmark of the tour season', () => {
+    expect(at(40)).toBe('oberbaum-bridge');
+    expect(at(50)).toBe('oberbaum-bridge');
+    expect(at(60)).toBe('brandenburg-gate');
+    expect(at(70)).toBe('brandenburg-gate');
+    expect(at(80)).toBe('east-side-gallery');
+  });
 });

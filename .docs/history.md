@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: #81 – Bauwerke im Volkspark-Modus ab Herbst
+- Auftrag des Nutzers über den Orchestrator: ab Mauer 41 jede 10. Mauer ein Bauwerk statt der Gabionen-Mauer, dasselbe Bauwerk wie die Berlin-Tour in dieser Jahreszeit (`landmarkAt`). → [ADR 0062](decisions/0062-volkspark-landmark-walls.md)
+- Neu: `VOLKSPARK_LANDMARK_FROM` (40), `_EVERY` (10), `_PRELOAD` (25) in `config.js`, reine Funktion `volksparkLandmarkAt` in `logic.js`, `landmarkFor` in `render-scene.js` (gilt für beide Themen, auch für `PLANT_BEHIND_LANDMARKS`). `main.js` lädt die Sprites einmal bei 25 passierten Mauern; Fehler wird nicht wiederholt, die Gabionen-Mauer bleibt.
+- Lücken, Abstände, Treffer, Tempo unverändert; vor Mauer 41 ist der Volkspark pixelgleich (gleicher Zeichenpfad, leere Pflanzenliste).
+- `bun test tests`: 141 grün (zwei neue Tests). Spielbilder 390×844, DPR 2 unter `.claude/review/81/` (Mauer 41 und 51 Brücke, Mauer 42 Gabionen, Ladefehler-Fall). Vor Mauer 25 kein Sprite-Request. Echte Handys nicht geprüft.
+- Baut auf PR #87 auf. Gebaut von Claude Sonnet 5.5; entschieden hat der Nutzer.
+
 ## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
 - Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
 - Neu: `export-alaska.py` (Auswahl, Roll, Roll mit Helm, Crash), `build-figure.py` (Atlas und `figure-sheets.js`-Block pro Figur); `export-intro.py` kennt Alaska und einen Figurenmaßstab; `intro.py` hat Katzenposen für den neuen Körper; `alaska.py` hat einen Helm. `assets/figures/alaska/` (469 KB). `FIGURES` erhält `alaska`.
@@ -20,6 +27,14 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Ursache: `forestSprite()` schnitt für Baum-Variante 1 die linke 10 % des gemalten Waldbildes ab (`inset`). Der Schnitt ging mitten durch das Laub und ließ eine harte senkrechte Kante, bei gespiegelten Pflanzen auf der anderen Seite. Bei nahen, großen Bäumen fiel das auf, in allen Jahreszeiten und Themen. Nicht aus der Galerie, schon vor #71 vorhanden.
 - Fix: das Bild wird nicht mehr beschnitten. Variante 1 wird stattdessen gespiegelt, damit die Bäume abwechslungsreich bleiben. Keine Änderung an Spawn, Abständen oder Spielregeln.
 - Vorher/Nachher bei 390×844, DPR 2, Volkspark und Berlin-Tour, vier Jahreszeiten, zwei Fahrstrecken unter `.claude/review/85/`. `bun test tests` 134 grün. Gebaut von Claude Sonnet 5.5. Echte Handys nicht geprüft. Grafikfreigabe des Nutzers steht aus.
+
+## 2026-10-18: #72 – Oberbaumbrücke in der Berlin-Tour
+- Schritt 1 (Nutzer-Auftrag über den Orchestrator): vier Teile aus `oberbaum-bridge.blend` headless rendern, ohne Spielcode. Schritt 2 nach Merge von PR #84: Brücke als dritter Eintrag in `TOUR_LANDMARKS` (Herbst), `render-oberbaum.js` nach dem Muster von Tor und Galerie, kein Sichtfenster. → [ADR 0053](decisions/0053-oberbaum-bridge-runtime-parts.md), [0054](decisions/0054-oberbaum-towers-outside-corridor.md), [0055](decisions/0055-plant-order-for-oberbaum.md)
+- Gebaut von Claude Sonnet 5.5: `tools/blender/render-oberbaum-sprites.py`, `tools/build-oberbaum-sprites.py`, `js/render-oberbaum.js`, Laden in `main.js`, Pflanzenliste `PLANT_BEHIND_LANDMARKS`. Treffer, Lücken, Abstände, Tempo, Wertung unverändert.
+- `bun test tests`: 139 grün, neue Tests in `tests/oberbaum.test.js`. Spielbilder 390×844, DPR 2 unter `.claude/review/72/` (links, rechts, doppelt, verbreitert; fern/mittel/nah; Pickup; Durchfahrt und Crash im laufenden Spiel). Echte Handys und 4×-CPU-Messung nicht geprüft.
+- Nutzer-Rückmeldung: helle Lücken zwischen den Mauerstücken gefallen nicht. Ursache: der Pfeiler-Sprite ist breiter als sein Schaft. Fix: Kacheln rücken um die Schaftbreite vor (`OBERBAUM_PIER_STEP`/`_INSET`), Lücken und Treffer unverändert. Neue Bilder unter `.claude/review/72/v2/`. Gebaut von Claude Sonnet 5.5.
+
+- Zusatz-Fixes am Tor (Nutzer): die hellen Mittellinien bei mehreren Lücken (`#ffe7ae`) sah der Nutzer als Bug-Rahmen, sie sind aus `render-gate.js` entfernt; Galerie und Brücke zeichnen keine solchen Linien. `brandenburg-gate` steht jetzt auch in `PLANT_BEHIND_LANDMARKS`, damit kein naher Busch eine Säule abschneidet. Bilder unter `.claude/review/72/tor/`. Gebaut von Claude Sonnet 5.5.
 
 ## 2026-10-18: Brandenburger Tor ohne Sichtfenster
 - Der Nutzer hat nach dem Merge von #28 gemeldet, dass beim Anfahren ein Stück von Tor und Säule fehlt. Ursache war das Sichtfenster aus ADR 0034, das hohe Teile vor der nächsten Durchfahrt halb durchsichtig zeichnete. Der Nutzer hat entschieden: Tor immer vollständig. → [ADR 0052](decisions/0052-gate-drawn-whole-without-sight-window.md).
