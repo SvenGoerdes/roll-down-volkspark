@@ -59,3 +59,5 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 ## Reminders
 - The GitHub token needs an expiry date (e.g. 90 days) plus a calendar reminder to rotate it.
 - Keep 2FA on for GitHub and Cloudflare.
+
+- **Reichstag #73:** Die Berlin-Tour lädt jetzt Tor, Galerie, Brücke und Reichstag zusammen (etwa 17 MiB dekodiert RGBA). Speicher auf echten Handys und Safari messen, bei Bedarf je Jahreszeit nachladen. Das Gebäude endet bei |x| ≈ 9,9; bis `WALL_EXT` bleibt frei.
