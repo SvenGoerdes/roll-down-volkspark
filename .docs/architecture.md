@@ -71,6 +71,8 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 
 Die Originalquelle ist das freigegebene detaillierte Blender-Modell, nicht der alte Generator aus ADR 0033. `render-brandenburg-sprites.py` und `build-gate-sprites.py` exportieren drei WebPs plus `gate-sprite-data.js` und `assets/landmarks/provenance.json`. 80.388 Bytes komprimiert, ca. 5,42 MiB RGBA; keine Laufzeit-3D-Engine. Die alten `sightseeing-*.py` bleiben als historische Offline-Vorbereitung erhalten, ohne durchfahrbaren Turmfuß. Grafikfreigabe des echten Spiels bleibt vor dem PR erforderlich.
 
+**Berlin-Tour, mehrere Bauwerke (#71, ADR 0049).** `TOUR_LANDMARKS` (config) legt die Reihenfolge fest, `landmarkAt()` wählt je `WALLS_PER_SEASON` Mauern ein Bauwerk. `render-gallery.js` zeichnet die East Side Gallery: `galleryTiles()` füllt jede feste Spanne von der offenen Kante nach außen mit sechs Bucht-Sprites, beschnitten auf die Spanne. Kein Sichtfenster. Bilder und Herkunft: `assets/landmarks/gallery-provenance.json`.
+
 ## The worker (`worker/`)
 
 | File | Job |

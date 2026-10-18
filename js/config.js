@@ -31,6 +31,12 @@ export const SIGHTSEEING_LANDMARKS = [
   { id: 'east-side-gallery', name: 'East Side Gallery', openingForm: 'framed' },
 ];
 
+// Berlin tour: one landmark per WALLS_PER_SEASON walls, in this order, then around again.
+export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery'];
+
+// Roadside plants this close in front of a gallery wall are drawn behind it, so no bush covers a mural.
+export const GALLERY_PLANT_BEHIND = 12;
+
 export const SEASONS = [
   {
     id: 'spring', name: 'Frühling', icon: '🌸', hint: 'Pfützen machen rutschig',
