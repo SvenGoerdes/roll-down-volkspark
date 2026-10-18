@@ -74,8 +74,12 @@ export const forestSprite = (id, kind, variant) => memo(`forest:${id}:${kind}:${
   g.drawImage(softDot(season.shadow.join(','), 0.6), 0, h - 26, w, 28);
   if (painted) {
     if (tree) {
-      const inset = variant === 1 ? 0.1 : 0;
-      g.drawImage(painted, painted.width * inset, 0, painted.width * (1 - inset), painted.height, 0, 0, w, h - 10);
+      // Whole image, never cropped: a crop cut straight through the foliage and left hard vertical edges.
+      // Variant 1 is mirrored for some variety.
+      g.save();
+      if (variant === 1) { g.translate(w, 0); g.scale(-1, 1); }
+      g.drawImage(painted, 0, 0, w, h - 10);
+      g.restore();
     } else {
       g.drawImage(painted, 0, painted.height * 0.75, painted.width, painted.height * 0.25, 0, 0, w, h - 6);
     }
