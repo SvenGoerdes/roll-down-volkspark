@@ -59,6 +59,16 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 
 **Security on the page.** A CSP meta tag allows only own files and the worker URL. User text (names, ideas, leaderboard entries) is only ever set with `textContent`.
 
+## Sightseeing (#28, ADR 0034/0035)
+
+`theme-select.js` bietet auf dem Startscreen „Volkspark“ (Vorgabe) / „Berlin-Tour“. `main.js` übernimmt die Sitzungswahl in jeden neuen Spielzustand; schnelle Wiederholungen behalten das Thema. Nur die Berlin-Tour lädt vor dem Start die drei optionalen Tor-WebPs über `gate-sprites.js`. Fehlschläge lassen den Start wiederholbar; Volkspark braucht diese Bilder nicht.
+
+`render-scene.js` ersetzt dort ausschließlich den vorhandenen Wand-Zeichenaufruf durch `render-gate.js`: Dach/Quadriga bleiben mittig, volle Säulen stehen innerhalb der festen Spannen an den aktuellen Lückenkanten, Holzsperren schließen alle übrigen Spannen. Der kleine Zeichenpfad nimmt die konkreten Bildteile samt Weltmaß-Ankern entgegen; #71–#74 können ihre eigenen Teile verwenden, ohne neue Spiellogik oder ein Bauwerk-Framework. Gegenwärtig ist nur das Brandenburger Tor integriert. Fünf Tor-Motive sind registriert. Der Fernsehturm ist nach jüngster Nutzerentscheidung in keinem Thema Bestandteil des Spiels, auch nicht am Rand; #47 ist geschlossen, es gibt keine Turm-Schnittstelle.
+
+`gateLayout()` bewahrt ursprüngliche `passages` und eine davon getrennte sichtbare `openings`-Vereinigung. `passesGate()` prüft nur die ursprünglichen Einzelspannen; die Laufzeit bleibt unverändert bei `passesWall()`. Layouts werden pro Hindernis und Lückenwerten zwischengespeichert und bei Aktivierung/Ablauf des Verbreiterungs-Pickups erneuert. Ein transparentes Sichtfenster in **hohen** Bauteilen zeigt die nachfolgende tatsächliche Durchfahrt; die unteren Kollisionsränder bleiben deckend. Keine zusätzliche Gebäudetiefen-Kollision, keine Änderung von Spawn, Tempo, Abständen, Radius, Wertung oder Helmen.
+
+Die Originalquelle ist das freigegebene detaillierte Blender-Modell, nicht der alte Generator aus ADR 0033. `render-brandenburg-sprites.py` und `build-gate-sprites.py` exportieren drei WebPs plus `gate-sprite-data.js` und `assets/landmarks/provenance.json`. 80.388 Bytes komprimiert, ca. 5,42 MiB RGBA; keine Laufzeit-3D-Engine. Die alten `sightseeing-*.py` bleiben als historische Offline-Vorbereitung erhalten, ohne durchfahrbaren Turmfuß. Grafikfreigabe des echten Spiels bleibt vor dem PR erforderlich.
+
 ## The worker (`worker/`)
 
 | File | Job |

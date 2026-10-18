@@ -12,6 +12,8 @@ import { setupLeaderboard } from './leaderboard.js';
 import { computeView, project } from './render.js';
 import { loadFigure, introAt } from './figure.js';
 import { readFigure, saveFigure, setupFigureSelect } from './figure-select.js';
+import { setupThemeSelect } from './theme-select.js';
+import { loadGateSprites } from './gate-sprites.js';
 import {
   primeGrade, warmUp,
 } from './render-fx.js';
@@ -53,9 +55,23 @@ const preview = environmentPreview();
 let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
 let figureId = readFigure(), figure = null, picker, loadingFigure = false;
+let themeId = 'volkspark', gateSprites, gateLoad;
 const figureSheets = new Map();
 
-const newGame = () => createGameState(readBest);
+const newGame = () => ({ ...createGameState(readBest), theme: themeId });
+
+function gatesFor() {
+  gateLoad ??= loadGateSprites(loadImage).then((art) => { gateSprites = art; return art; }).catch((err) => {
+    gateLoad = null; // A failed optional theme load can be retried, never start with invisible gates.
+    throw err;
+  });
+  return gateLoad;
+}
+
+async function sheetsForRound(id) {
+  const [sheets] = await Promise.all([sheetsFor(id), themeId === 'berlin-tour' ? gatesFor() : null]);
+  return sheets;
+}
 
 // One load per figure. A failed load leaves no entry behind, so the next tap retries it.
 function sheetsFor(id) {
@@ -99,8 +115,11 @@ const season = () => SEASONS[game.seasonIdx];
 const gameHud = createHud(hud, { getGame: () => game, getSeason: season, playerSpot, windArrow });
 const { showBanner, popText: showPopText, update: updateHud, showOver } = gameHud;
 const flow = createGameFlow({ hud, getState: () => state, getGame: () => game, getLoadingFigure: () => loadingFigure,
-  setLoadingFigure: (value) => { loadingFigure = value; }, setGame: (value) => { game = value; },
-  newGame, getBoard: () => board, setState, updateHud, speedAt, showBanner, season, sheetsFor,
+  setLoadingFigure: (value) => {
+    loadingFigure = value;
+    for (const button of $('themes').children) button.disabled = value;
+  }, setGame: (value) => { game = value; },
+  newGame, getBoard: () => board, setState, updateHud, speedAt, showBanner, season, sheetsFor: sheetsForRound,
   figureSheets, pick,
   setFigure: (value) => { figure = value; }, playerSpot,
   popText: showPopText, showOver, readBest, writeBest });
@@ -284,7 +303,7 @@ function update(dt) {
 }
 
 function render() {
-  renderScene(ctx, view, game, state, figure, backgrounds, groundTiles, powerIcons);
+  renderScene(ctx, view, game, state, figure, backgrounds, groundTiles, powerIcons, gateSprites);
 }
 
 function step(dt) {
@@ -345,6 +364,11 @@ async function init() {
   hud.streak.innerHTML = '<i></i>'.repeat(STREAK_NEED) + `<img src="${POWERUPS.helmet.img}" alt="">`; // only our own markup
   board = setupLeaderboard();
   setupIdeas(() => ({ score: game.passed, season: season().name }));
+  setupThemeSelect($('themes'), themeId, (id) => {
+    themeId = id;
+    game.theme = id;
+    if (id === 'berlin-tour') gatesFor().catch(() => {});
+  });
   // a card only picks the figure; the button (or a tap anywhere else) starts
   picker = setupFigureSelect(hud.figures, figureId, (id) => {
     if (loadingFigure) return; // a round is already starting with the other figure

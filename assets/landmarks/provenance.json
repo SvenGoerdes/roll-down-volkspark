@@ -1,0 +1,41 @@
+{
+  "source": ".claude/review/quellen/brandenburg-gate/brandenburg-gate-detailed.blend",
+  "sourceSha256": "5299a4594e5d56c0e5382d172f5430fefa00318187eeeb10b711f036d67055c3",
+  "scriptSha256": "843541c3037b74983bbc79c4509db41dae7a6694923d72efd24bd9dbde45daaa",
+  "parts": {
+    "roof": {
+      "width": 2048,
+      "height": 606,
+      "worldWidth": 18.397500305175782,
+      "worldHeight": 5.443791594207287,
+      "bottom": 5.532334417700768,
+      "objects": 1365,
+      "pngSha256": "3d0c3fa76222c77b6ae9ec19509214de95d6653dc7719ed015165cca42e7d014",
+      "bytes": 61926,
+      "webpSha256": "3280f4882e5888cc28d78c4bdd87591fada13543fbc902d708ccc994779e1d1d"
+    },
+    "pier": {
+      "width": 148,
+      "height": 902,
+      "worldWidth": 1.1536599219004313,
+      "worldHeight": 7.03108952401479,
+      "bottom": -0.9505841046651204,
+      "objects": 74,
+      "pngSha256": "8163cb217ea90a5361271b0792efc86a09625f9369abc331900690ba6ee32822",
+      "bytes": 10944,
+      "webpSha256": "dd8546a243d4b0472f3c8ed213a205abbbc035bff7ac9b0ddf948035e7043492"
+    },
+    "barrier": {
+      "width": 178,
+      "height": 266,
+      "worldWidth": 1.3878999474685707,
+      "worldHeight": 2.0740527304867404,
+      "bottom": -0.8548793268876957,
+      "objects": 52,
+      "pngSha256": "132aa4ad8d919a2c3941d801fd30a2fe1762cf8f995d3224615b2016291834d6",
+      "bytes": 7518,
+      "webpSha256": "ede36d501ce8f4416bf7ae35ed4bfe2303ee6678d893ef43095e85f936e2cda7"
+    }
+  },
+  "packerSha256": "f20d20716604133cc22dc5477f00cce503ebde533516970ea64c6b5bcda043ca"
+}
