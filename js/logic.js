@@ -57,6 +57,10 @@ export const seasonIndexAt = (n, perSeason, count) => Math.floor(n / perSeason) 
 // Which landmark wall n shows in the Berlin tour: one per season-length block, in order, cycling.
 export const landmarkAt = (n, order, perSeason) => order[Math.floor(n / perSeason) % order.length];
 
+// A roadside plant that would stand in front of one of these walls stays out of the picture.
+// Plants and walls scroll together, so this never flips for a plant that is already in view.
+export const plantHidden = (z, wallZs, clear) => wallZs.some((wz) => z < wz && z >= wz - clear);
+
 // East Side Gallery bays tile a closed wall span outward from its open edge, so a full
 // bay with its cap stands at every passage. Bay order is the mural strip l1..l3 r1..r3.
 export function galleryTiles(a, b, pitch, wallExt, count = 6) {

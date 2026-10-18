@@ -4,7 +4,7 @@
 - **Date:** 2026-10-18
 - **Decided by:** Nutzer (Issue #71, ADR 0037; Abwechslung der Bauwerke in der Antwort vom 18.10.2026)
 - **Built by:** Claude Sonnet 5.5 (Blender-Export, Renderer, Logik, Tests, Doku)
-- **Commits:** Feature-Commit auf `feat/east-side-gallery`
+- **Commits:** Feature-Commits auf `feat/east-side-gallery` (PR „Closes #71“)
 
 ## Context
 
@@ -17,6 +17,7 @@ ADR 0034 hat der Berlin-Tour zunächst nur das Brandenburger Tor gegeben und den
 - `galleryTiles()` (rein, getestet) füllt jede geschlossene Wandspanne von ihrer offenen Kante nach außen mit Buchten. An jeder Durchfahrt steht eine ganze Bucht mit Kappe; die Bilder laufen als Streifen l1..l3 r1..r3 im Kreis. Jede Bucht wird auf ihre Spanne beschnitten. Wandbilder liegen damit nie über einer Durchfahrt.
 - Öffnungen folgen den bestehenden Lücken über `gateLayout()`; Treffer bleiben bei `passesWall()` mit einzelnen Originallücken (ADR 0035). Kein Sichtfenster: es entfällt auf Wunsch des Nutzers in PR #82; die Galerie hat keines.
 - `js/render-gallery.js` ist eigenständig und ändert `render-gate.js` nicht. Das hält den Merge mit PR #82 klein.
+- **Pflanzen (Nachtrag, Nutzer am 18.10.2026: „Busch weg“):** Ursache war die Tiefensortierung. Pflanzen und Mauern sortieren nach z; die Mauer reicht bis `WALL_EXT` (11) in die Büsche (x 5,9–7,1), also stand ein näherer Busch zeichnerisch vor dem äußeren Wandstück. Lösung klein: `plantHidden()` blendet in der Berlin-Tour jede Pflanze aus, die weniger als `GALLERY_PLANT_CLEAR` (12) Einheiten vor einer Galerie-Mauer steht. Pflanzen und Mauern scrollen gemeinsam, daher springt keine bereits sichtbare Pflanze ein oder aus. Spawn, Abstände, Lücken und Volkspark bleiben unberührt. Verworfen: Pflanze hinter die Wand sortieren; ihr Fuß ragte dann unter dem Sockel hervor.
 - Nur die Berlin-Tour lädt die Bilder, zusammen mit den Tor-Teilen. Ein Ladefehler hält den Start an und lässt sich wiederholen.
 
 ## Alternatives
