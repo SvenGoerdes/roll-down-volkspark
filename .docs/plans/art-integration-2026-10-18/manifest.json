@@ -1,0 +1,275 @@
+[
+  {
+    "n": 1,
+    "slug": "brandenburger-tor",
+    "title": "Brandenburger Tor mit versetzten Durchfahrten ins Spiel integrieren",
+    "blocked": [],
+    "parent": 25,
+    "related": [
+      27,
+      28
+    ],
+    "labels": [
+      "grafik",
+      "gameplay"
+    ],
+    "deliver": "Das neue Brandenburger Tor ersetzt im Sightseeing-Theme ein vorhandenes Hindernis. Seine sichtbaren Durchfahrten liegen genau an den vom Spiel erzeugten Lücken, einschließlich links und rechts versetzter Öffnungen. Auf dem Startbildschirm kann zwischen Volkspark und Berlin-Tour gewählt werden; die Berlin-Tour führt anschließend durch die neuen Tore.",
+    "criteria": [
+      "Den neuesten freigegebenen Modell-Look mit Säulen, Reliefs und Quadriga übernehmen; ältere Vorher-Bilder und alte Prototyp-Modelle sind keine Designvorlage.",
+      "Die bereits entschiedene Auswahl zwischen Volkspark und Berlin-Tour tatsächlich in die Oberfläche einbinden. In der aktuellen Codebase ist der Einstieg noch nicht verdrahtet; nicht als vorhanden voraussetzen und kein neues Theme-Konzept erfinden.",
+      "Die bereits im Sightseeing-Worktree vorbereitete Toraufteilung und Tests prüfen und wiederverwenden. Uncommittete Arbeit gezielt übernehmen; das bloße Zusammenführen der Branch-Spitze genügt nicht.",
+      "Sichtbare Öffnungen und Kollisionsgrenzen stimmen bei seitlichen Lücken, kleinen und großen Lücken, Sommer-Doppellücken und dem Verbreiterungs-Pickup überein. Säulen oder gezeichnete Durchgänge versprechen keine falsche Fahrmöglichkeit.",
+      "Bestehende Lückenerzeugung, Geschwindigkeit, Abstände, Schwierigkeit, Wertung und Helmwirkung bleiben unverändert. Eine im Prototyp vorhandene Zusammenführung überlappender Lücken darf die bisherige Trefferentscheidung nicht stillschweigend erweitern; Grenzfälle gegen das bisherige Verhalten testen.",
+      "Neue Art in die bestehende WebP-/Canvas-Pipeline einbauen. Kleine konkrete Renderteile oder Varianten nur soweit nötig; keine neue Live-3D-Engine und kein allgemeines Bauwerk-Framework.",
+      "Nahes Tor und nachfolgende Durchfahrt bleiben während der Annäherung bei 390 × 844 verständlich. Verdeckungen innerhalb der Darstellung lösen, ohne die Hindernisabstände zu ändern.",
+      "Der vollständige Weg vom Einstieg ins Sightseeing-Theme über Durchfahrt und Treffer bis zum Neustart ist vorführbar; gezielte Logiktests und bestehende Tests bestehen. Phone-Vorschauen, Herkunft der Assets und die neue Entscheidung sind dokumentiert."
+    ],
+    "draft": "01-brandenburger-tor.md",
+    "target": 28
+  },
+  {
+    "n": 2,
+    "slug": "east-side-gallery",
+    "title": "East Side Gallery mit ihren neuen Wandbildern durchfahrbar integrieren",
+    "blocked": [
+      1
+    ],
+    "parent": 25,
+    "related": [
+      27,
+      28
+    ],
+    "labels": [
+      "grafik"
+    ],
+    "deliver": "Im Sightseeing-Theme erscheint die neue East Side Gallery als Hindernis mit den tatsächlich erzeugten Wandbildern und den passenden Durchfahrten.",
+    "criteria": [
+      "Freigegebene neue Porträt-, Tauben- und Hände-Motive sowie Betonfugen, Kappen und Kanten erhalten; alte einfache Farbflächen ersetzen.",
+      "Die mit Ticket 01 eingebundene Darstellung nutzen. Seitliche, doppelte und verbreiterte Öffnungen entsprechen der vorhandenen Hindernisgeometrie.",
+      "Wandbilder bleiben auf den geschlossenen Wandsegmenten plausibel und auf dem Handy erkennbar; keine Bilder über einem offenen Durchgang.",
+      "Durchfahrt und nachfolgende Lücke bleiben aus der echten Spielkamera lesbar. Treffer, Wertung, Abstände und Schwierigkeit entsprechen dem bisherigen Spiel.",
+      "Optimierte WebP-Assets, tatsächliche Spielansichten auf Handygröße und erfolgreiche bestehende Tests liefern; Herkunft und Prüfgrenzen dokumentieren."
+    ],
+    "draft": "02-east-side-gallery.md"
+  },
+  {
+    "n": 3,
+    "slug": "oberbaumbruecke",
+    "title": "Oberbaumbrücke mit versetzten Durchfahrten integrieren",
+    "blocked": [
+      1
+    ],
+    "parent": 25,
+    "related": [
+      27,
+      28
+    ],
+    "labels": [
+      "grafik"
+    ],
+    "deliver": "Die detaillierte Oberbaumbrücke mit ihren Backsteintürmen und Arkaden wird im normalen Sightseeing-Ablauf zu einem korrekt durchfahrbaren Hindernis.",
+    "criteria": [
+      "Neuen Modellstand mit Spitzbögen, Türmen, Dachrippen und Terrakottabändern verwenden und dessen Look erhalten.",
+      "Gemeinsame Tor-Darstellung wiederverwenden; tatsächliche Lücken seitlich, in der Breite, im Sommer und bei Pickups korrekt abbilden.",
+      "Die in den Vorprüfungen verdeckten äußeren Bereiche der Folgelücke während der Annäherung sichtbar machen; kein Ausgleich über leichtere Abstände oder langsamere Geschwindigkeit.",
+      "Visuelle Gebäudetiefe erzeugt keine zusätzlichen unsichtbaren Kollisionsflächen. Durchfahrt, Kollision und Wertung entsprechen weiterhin dem vorhandenen Hindernis.",
+      "WebP-Export, Darstellung im echten Spiel auf Handygröße, gezielte Randfallprüfung, erfolgreiche bestehende Tests und aktualisierte Dokumentation liefern."
+    ],
+    "draft": "03-oberbaumbruecke.md"
+  },
+  {
+    "n": 4,
+    "slug": "reichstag",
+    "title": "Reichstag mit sichtbarer Kuppel und korrekten Durchfahrten integrieren",
+    "blocked": [
+      1
+    ],
+    "parent": 25,
+    "related": [
+      27,
+      28
+    ],
+    "labels": [
+      "grafik"
+    ],
+    "deliver": "Der neue Reichstag erscheint mit seiner erkennbaren Glaskuppel und Sandsteinfassade als Hindernis, dessen Durchfahrt der aktuellen Spiellücke folgt.",
+    "criteria": [
+      "Neuen Modellstand mit Glasfeldern, Rippen, Portikus und Fassadendetails verwenden; Look nicht auf den älteren Entwurf zurücksetzen.",
+      "Vorhandene gemeinsame Tor-Darstellung für seitliche, doppelte und verbreiterte Öffnungen verwenden; sichtbare Passage und Treffergrenzen decken sich.",
+      "Die große Fassade und Kuppel lassen eine rechtzeitige Orientierung zur nachfolgenden Lücke zu. Korrekturen an Darstellung oder Asset vornehmen, nicht am Balancing.",
+      "Das Modell verändert weder Geschwindigkeit noch Abstände, Wertung oder Trefferregeln. Die Durchfahrt bleibt als bewusste Spieladaption dokumentiert.",
+      "Optimierte Laufzeitgrafiken, Handyansichten während der Annäherung und beim Passieren, erfolgreiche Tests und dokumentierte Asset-Herkunft liefern."
+    ],
+    "draft": "04-reichstag.md"
+  },
+  {
+    "n": 5,
+    "slug": "rotes-rathaus",
+    "title": "Rotes Rathaus mit offenem Tor und freier Sicht im Spiel integrieren",
+    "blocked": [
+      1
+    ],
+    "parent": 25,
+    "related": [
+      27,
+      28
+    ],
+    "labels": [
+      "grafik"
+    ],
+    "deliver": "Das neue Rote Rathaus ersetzt ein Hindernis mit tatsächlich offener, passend versetzter Durchfahrt und lässt die nächste notwendige Lücke erkennbar.",
+    "criteria": [
+      "Den reparierten neuesten Modellstand mit offenem Torbogen, Uhrturm und Backsteinfassade verwenden. Der zuvor zugemauerte Render ist ausdrücklich überholt.",
+      "Gemeinsame Tor-Darstellung nutzen und seitliche, doppelte sowie verbreiterte Lücken visuell und bei Treffern korrekt abbilden.",
+      "Die bekannte Verdeckung nachfolgender Lücken durch die hohe Fassade im tatsächlichen Spiel lösen. Statische freie Strahlen im Blender-Modell reichen als Nachweis nicht aus.",
+      "Abstände, Geschwindigkeit, Schwierigkeitskurve, Wertung und Kollisionsregeln erhalten. Keine zusätzliche Gebäudetiefen-Kollision einführen.",
+      "Handyansichten für Annäherung, Durchfahrt und nächste Lücke, optimierte WebP-Grafiken, erfolgreiche Tests und ein klarer Nachweis der Sichtkorrektur liegen vor."
+    ],
+    "draft": "05-rotes-rathaus.md"
+  },
+  {
+    "n": 6,
+    "slug": "fernsehturm",
+    "title": "Neuen Fernsehturm als deutlich sichtbares Wahrzeichen am Rand integrieren",
+    "blocked": [],
+    "target": 47,
+    "parent": 42,
+    "related": [
+      25
+    ],
+    "labels": [
+      "grafik"
+    ],
+    "deliver": "Der neue, deutlich sichtbare Fernsehturm erscheint im bestehenden Jahreszeiten-Modus gelegentlich als räumlich eingebettetes Wahrzeichen am Streckenrand und bewegt sich mit der Spielperspektive mit.",
+    "criteria": [
+      "Die neue detaillierte Turmversion verwenden. Die frühere Vorgabe eines kleinen, nebligen Turms ist durch die aktuelle Nutzerentscheidung ersetzt.",
+      "Die in der freigegebenen Handy-Vorschau gewählte Sichtbarkeit als Ausgangspunkt nutzen und im echten Spiel prüfen; die Krone darf nicht wieder vollständig hinter Laub oder Nebel verschwinden.",
+      "Den Geltungsbereich des bestehenden Tickets #47 beibehalten: gelegentliche Randkulisse im normalen Jahreszeiten-Modus. Die Berlin-Tour darf denselben Turm wiederverwenden, darf aber nicht sein einziger Einsatzort werden.",
+      "Passende Position am Rand, Tiefensortierung, Bodenverankerung und jahreszeitliche Einbettung umsetzen, ohne Fahrbahn oder notwendige Sicht auf Durchfahrten zu verdecken.",
+      "Der Fernsehturm ist ausschließlich Kulisse: kein durchfahrbarer Turmfuß, kein Hindernis, keine Kollision, keine Punkte und keine veränderten Spawn-Abstände.",
+      "Vorhandene Darstellungs- und Asset-Helfer nutzen; WebP-Export, echte Handy-Spielansichten, erfolgreiche Tests und dokumentierte Ablösung der alten Turm-Vorgabe liefern."
+    ],
+    "draft": "06-fernsehturm.md"
+  },
+  {
+    "n": 7,
+    "slug": "boden",
+    "title": "Neuen Boden als tatsächlich scrollende Spielfläche integrieren",
+    "blocked": [],
+    "labels": [
+      "grafik"
+    ],
+    "deliver": "Die neue Bodenoptik erscheint während eines vollständigen Laufs auf der bewegten Strecke mit Erdstruktur, Kies und weichen Grasrändern.",
+    "criteria": [
+      "Die neuere freigegebene Bodenoptik übernehmen; das statische Galerie-Landschaftsbild dient als Vorlage, nicht als unbeweglicher Vollbild-Ersatz für den Untergrund.",
+      "Geeignete Laufzeitmaterialien in die vorhandene gekachelte und zwischengespeicherte Bodenprojektion integrieren. Geländeprofil und Verankerung von Hindernissen, Figuren und Pfützen erhalten.",
+      "Erde, Kies und Gras sowie die vorhandenen Jahreszeiten bleiben unterscheidbar; ihre spielerische Wirkung bleibt unverändert.",
+      "Wiederholungen, Übergänge und Nähe zur Kamera auf Handygröße kontrollieren. Kein sichtbares Schwimmen zwischen Boden und aufgesetzten Objekten.",
+      "Aufwendige Bildbearbeitung außerhalb der Spielschleife ausführen; optimierte WebP-Materialien, Aufnahmen aus einem bewegten Lauf und erfolgreiche bestehende Tests liefern."
+    ],
+    "draft": "07-boden.md"
+  },
+  {
+    "n": 8,
+    "slug": "storni-intro",
+    "title": "Freigegebene Storni-Flasche und fertiges Intro für Kalle und Tine integrieren",
+    "blocked": [],
+    "target": 24,
+    "parent": 22,
+    "related": [
+      23
+    ],
+    "labels": [
+      "grafik",
+      "gameplay"
+    ],
+    "deliver": "Kalle und Tine spielen beim Start das bereits vereinbarte kurze Intro mit der großen Storni-Flasche, treffen diese sichtbar und gehen ohne Sprung in die Rolle über.",
+    "criteria": [
+      "Bestätigte Flasche mit großer roter Schrift und kräftigem Orange übernehmen; sie liegt größer und vor der Figur. Kein neuer Flaschenentwurf.",
+      "Vorbereitete gemeinsame Intro-Zeitfolge und Atlas-Arbeit aus dem Figuren-Worktree wiederverwenden. Ablauf: drehen, zwei Schritte, Kontakt mit der Flasche, einrollen, nahtlos weiterspielen.",
+      "Das vereinbarte Intro dauert ungefähr 1,5 Sekunden und bleibt per Tipp überspringbar. Start, Überspringen, Wechsel der Figur und Wiederholung funktionieren.",
+      "Clip-Zeiten und Übergänge aus dem tatsächlich gewählten Figurenclip ableiten; keine Kalle-spezifische Bildanzahl auf andere Figuren übertragen.",
+      "Atlas-Anker, Figurengröße, Schatten und Übergang zur Spielkamera bleiben stabil. Vorhandene Roll-, Helm- und Crash-Zustände funktionieren weiter.",
+      "Aktuelle Exporthelfer und bestehende Laufzeitpipeline nutzen; erfolgreiche Ablauf-/Figurentests, echte Handyansichten und Herkunft der Grafiken dokumentieren."
+    ],
+    "draft": "08-storni-intro.md"
+  },
+  {
+    "n": 9,
+    "slug": "alaska-spielbar",
+    "title": "Neues Alaska-Modell als vollständig spielbare dritte Figur integrieren",
+    "blocked": [
+      8
+    ],
+    "target": 20,
+    "parent": 17,
+    "related": [
+      19,
+      21
+    ],
+    "labels": [
+      "grafik",
+      "gameplay"
+    ],
+    "deliver": "Alaska kann als dritte Figur gewählt und durch einen vollständigen Lauf einschließlich Intro, Rollen, Helm, Treffer und Neustart gespielt werden. Dabei bleibt ihr neuer Katzen-Look mit Regenbogenbrille erhalten.",
+    "criteria": [
+      "Den neuen TRELLIS-Körper mit separater Regenbogenbrille verwenden; erkennbare Rekonstruktionsfehler an Ohren, Fell und Schwanz für die Spielfigur korrigieren. Nicht auf den älteren Körper aus primitiven Formen zurückfallen.",
+      "Das vorbereitete Vierbeiner-Rig und die vorhandenen Posen an das neue Modell anpassen; stabile Verformungen für Pfoten, Kopf, Schwanz und Brille prüfen.",
+      "Auswahlansicht und alle benötigten Zustände exportieren: vierbeiniges Intro mit Flaschenkontakt und Einrollen, Rollschleife, Helm und benommene Crash-Pose. Körper und Brille bleiben über die Übergänge verbunden.",
+      "Das mit Ticket 08 integrierte Intro verwenden; Start, Überspringen, Figurenwechsel, Helmverlust und Neustart enden im richtigen Zustand und haben konsistente Anker.",
+      "Alaska als dritte wählbare Figur in die bestehende Oberfläche einbinden. Eine neue Rekord-Freischaltung wird nicht nebenbei erfunden; die separat geplante Freischaltfunktion bleibt in ihrem bestehenden Ticket.",
+      "WebP-Atlas und Laden nur der benötigten Figur verwenden. Größen-, Bild- und Speicherbudget prüfen; erfolgreiche Figurentests, Handyansichten und ein kompletter vorführbarer Lauf liegen vor."
+    ],
+    "draft": "09-alaska-spielbar.md"
+  },
+  {
+    "n": 10,
+    "slug": "gesamtintegration",
+    "title": "Vollständige neue Grafik im Spiel zusammenführen und prüfen",
+    "blocked": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9
+    ],
+    "labels": [
+      "grafik",
+      "perf"
+    ],
+    "deliver": "Alle fünf durchfahrbaren Bauwerke, der seitliche Fernsehturm, der neue Boden und alle drei Figuren funktionieren zusammen in einer vollständigen Spielversion. Dies ist die vollständige Integration, kein auf wenige Motive beschränkter Probelauf.",
+    "criteria": [
+      "Die neuen freigegebenen Modellstände und die tatsächlich benötigten uncommitteten Worktree-Arbeiten konsistent übernehmen. Unabhängige Daten-/Passkey-, Party-, Spritzen- oder Balancing-Arbeit nicht versehentlich mitziehen oder überschreiben.",
+      "Jedes Bauwerk im echten Spiel mit linken, mittleren, rechten, kleinen, doppelten und verbreiterten Öffnungen prüfen; Passieren, Treffer, Helm und Wertung stimmen mit den sichtbaren Grenzen überein.",
+      "Für gleiche Spielzustände bleiben Lückenerzeugung, Hindernisabstände, Geschwindigkeit und Schwierigkeitskurve unverändert. Die frühere immer mittige Durchfahrt ist nicht die neue Standardlösung.",
+      "Alle drei Figuren einschließlich Intro, Überspringen, Rollen, Helm, Crash und Neustart funktionieren mit den neuen Szenen. Die nächste Lücke bleibt während der Annäherung lesbar.",
+      "Auf 390 × 844 in Safari und einem weiteren Browser prüfen; Leistung mit 4-facher CPU-Drosselung messen, Bild-/Speicherbudget und bedarfsgerechtes Laden dokumentieren. Ziel sind 60 fps, keine dauerhaften Einbrüche unter 30 fps; echte Geräte nur als geprüft bezeichnen, wenn tatsächlich getestet.",
+      "Bestehende Tests und CI bestehen. Quellen, neue Nutzerentscheidungen, bewusst verbleibende Grenzen und durchgeführte Prüfungen sind dokumentiert; vollständige aktuelle HTML-Vorschau und reviewbare PR bereitstellen. Merge und Deployment nicht stillschweigend auslösen."
+    ],
+    "draft": "10-gesamtintegration.md"
+  },
+  {
+    "n": 11,
+    "slug": "bestenliste-token",
+    "title": "Bestenlisten-Einträge mit serverseitig geprüften Einmal-Tokens absichern",
+    "blocked": [],
+    "labels": [
+      "infra"
+    ],
+    "deferred": true,
+    "deliver": "Beim Eintragen eines Rekords holt die Spieloberfläche einen frischen Cloudflare-Turnstile-Token. Der Server speichert den Eintrag erst nach erfolgreicher Prüfung. Direkte Einträge ohne gültigen Token werden auch mit nachgeahmter Herkunftsangabe abgewiesen.",
+    "criteria": [
+      "Dieses Ticket ausschließlich für später planen. In der aktuellen Grafikarbeit weder Schutzcode noch neue Infrastruktur, Secrets oder Deployments umsetzen.",
+      "Turnstile erst am Eintragungsablauf einbinden; eine abgelaufene Prüfung erneuern und verständliche deutsche Fehler anzeigen. Spielen und öffentliches Lesen der Bestenliste bleiben ohne Prüfung möglich.",
+      "Jeden Schreibversuch serverseitig über Cloudflares Siteverify prüfen, einschließlich erwarteter Website und Aktion. Fehlende, ungültige, abgelaufene, wiederverwendete oder für eine andere Website/Aktion ausgestellte Tokens führen zu keinem Bestenlisten-Schreibvorgang.",
+      "Der öffentliche Website-Schlüssel darf im Frontend stehen. Der geheime Prüfschlüssel bleibt als serverseitiges Secret gespeichert; keine dauerhaften gemeinsamen Geheimcodes oder Signierschlüssel in Browsercode und keine Tokens in URLs oder Logs.",
+      "Vorhandene Typ-/Größen-/Werteprüfung, sichere Textdarstellung und Anfragelimits beibehalten. Bei nicht erreichbarer Prüfung nicht ungeschützt speichern; Wiederholen ermöglichen.",
+      "Einen normalen Eintrag und Ablehnung ohne Token, mit falschem Origin, nachgeahmtem erlaubtem Origin ohne Token, abgelaufenem Token, Replay und falscher Website/Aktion testen. Dafür lokale Tests bzw. offizielle Testschlüssel nutzen, keine künstlichen Rekorde in die produktive Liste schreiben.",
+      "Schutzgrenze ausdrücklich dokumentieren: Anti-Bot-Token verhindert weder jede Automatisierung noch beweist er den vom Browser behaupteten Punktestand. Ein Nutzer mit gültigem Token kann weiterhin einen manipulierten Score senden; verbindliche Laufprüfung wäre ein gesonderter Ausbau.",
+      "Keine Pflicht zu Profilen, Passkeys, D1 oder einem JWT-System als Voraussetzung hinzufügen. Das Ticket hat keine technische Abhängigkeit zur Grafik; es wird auf Nutzerwunsch erst danach bearbeitet. Bei späterer Umsetzung den Schutz bewusst abgestimmt serverseitig aktivieren und den dazu passenden Client bereitstellen."
+    ],
+    "draft": "11-bestenliste-token.md"
+  }
+]

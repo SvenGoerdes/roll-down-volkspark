@@ -2,6 +2,13 @@
 
 Open work and known weak spots. Remove an entry in the commit that fixes it.
 
+## Aktueller Integrationsplan (18. Oktober 2026)
+- [Session-Übergabe](handoff.md) und [elf konkrete Ticket-Entwürfe](plans/art-integration-2026-10-18/README.md) sind der aktuelle Plan. Die älteren Grafikabschnitte unten liefern historischen Kontext, nicht die Freigabe für einen Rückbau des neuen Looks.
+- Offene Integration: fünf detaillierte Gebäude mit dynamisch versetzten Durchfahrten; scrollender neuer Boden; bestätigte Storni-Flasche mit gemeinsamem Intro; neuer Alaska-Körper mit Rig/Animation; vollständige Spiel-/Sicht-/Performanceprüfung ohne veränderte Schwierigkeit. Der Fernsehturm ist gestrichen (#47 geschlossen).
+- Tickets auf GitHub: #28, #71–#74, #75, #24, #20, #76; #77 geparkt.
+- Lokale Art-Dateien und uncommittete Worktree-Arbeit sind noch keine integrierten Laufzeit-Assets. `.claude/` nicht bereinigen, bevor benötigte Quellen gesichert bzw. gezielt übernommen sind.
+- **Später, nicht in dieser Grafikarbeit:** ungeprüfte Bestenlisten-Schreibzugriffe absichern. Turnstile mit serverseitiger Prüfung ist ein noch nicht freigegebener Vorschlag. Anti-Bot-Tokens allein validieren keine erspielten Scores; weitergehende Laufprüfung ist nicht beauftragt. Siehe [Ticket 11](plans/art-integration-2026-10-18/11-bestenliste-token.md).
+
 ## Open questions for the user
 - Close issue #2 (Hendrik: slippery look, different ground)? Both parts shipped on 2026-10-12.
 
@@ -21,11 +28,11 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 ## Tech debt
 - **Mixed versions after a deploy:** GitHub Pages lets browsers cache every file for 10 minutes, so right after a deploy a new `index.html` can meet old CSS or JS (seen 2026-10-14: huge icons, old pickups). A crash is possible when new code imports something an old cached module lacks. Fix idea: a small build step that stamps a version into all file URLs, or a service worker that updates all files together.
 - The `icon` emoji fields in `SEASONS` and `SURFACES` (`js/config.js`) are no longer shown. Remove them once Codex's environment work (which edits the same lines) has landed.
-- Agent worktrees remain in `.claude/worktrees/` (ignored by git). They can be deleted.
+- Agent worktrees remain in `.claude/worktrees/` (ignored by git). Some now contain required uncommitted art/logic work; inspect and preserve it per [handoff.md](handoff.md) before any cleanup.
 - No browser test scripts in the repo; screenshots now use the desktop app's browser pane with `tools/serve.js`.
 
 ## Known limits (accepted)
-- **Scores can be faked.** The client reports them. Fine among friends; see ADR 0006.
+- **Scores can be faked.** The client reports them; this is the current technical limit documented in ADR 0006. The user now wants later hardening against unchecked direct submissions (plan above). Proposed anti-bot tokens still do not prove an honestly played score.
 - **The leaderboard can lose updates** when two people submit within about 60 s (KV read-modify-write, eventual consistency).
 - **Per-IP rate limits are per worker isolate**, so they are soft. The daily idea cap in KV is the real backstop.
 - The wrangler cache file with the Cloudflare account id is in git history (`e217f0a`). It holds no secret.
