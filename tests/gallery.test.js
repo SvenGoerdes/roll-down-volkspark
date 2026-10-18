@@ -26,13 +26,14 @@ function canvas() {
 
 test('the Berlin tour shows one landmark per season block, in order, around again', () => {
   const at = (n) => landmarkAt(n, TOUR_LANDMARKS, WALLS_PER_SEASON);
-  expect(TOUR_LANDMARKS).toEqual(['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge']);
+  expect(TOUR_LANDMARKS).toEqual(['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge', 'red-town-hall']);
   expect(at(0)).toBe('brandenburg-gate');
   expect(at(WALLS_PER_SEASON - 1)).toBe('brandenburg-gate');
   expect(at(WALLS_PER_SEASON)).toBe('east-side-gallery');
   expect(at(2 * WALLS_PER_SEASON - 1)).toBe('east-side-gallery');
   expect(at(2 * WALLS_PER_SEASON)).toBe('oberbaum-bridge');
-  expect(at(3 * WALLS_PER_SEASON)).toBe('brandenburg-gate');
+  expect(at(3 * WALLS_PER_SEASON)).toBe('red-town-hall');
+  expect(at(4 * WALLS_PER_SEASON)).toBe('brandenburg-gate');
   expect(landmarkAt(45, ['a', 'b', 'c'], 20)).toBe('c');
   expect(landmarkAt(60, ['a', 'b', 'c'], 20)).toBe('a');
 });

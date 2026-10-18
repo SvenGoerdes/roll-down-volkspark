@@ -2,6 +2,12 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: #74 – Rotes Rathaus in der Berlin-Tour
+- Auftrag (Nutzer, Ticket #74): Rotes Rathaus als fünftes Bauwerk, Sicht auf die Folgelücke in der Darstellung lösen, keine Sichtfenster, keine Nähte. Quelle: reparierte `rotes-rathaus-packed.blend` (Torbogen offen). → [ADR 0059](decisions/0059-rathaus-low-row-and-side-tower.md)
+- Neu: `render-rathaus-sprites.py` (Blender) und `build-rathaus-sprites.py` erzeugen `wing` (unterste Arkadenreihe, vier ganze Fensterachsen) und `tower` (Uhrturm mit offenem Torbogen); `js/render-rathaus.js` kachelt den Flügel über feste Spannen und setzt den Turm links außerhalb des Wegs. `TOUR_LANDMARKS` und `PLANT_BEHIND_LANDMARKS` um `red-town-hall` ergänzt.
+- Geprüft: 145 Bun-Tests grün; Chrome 390×844 DPR 2, Berlin-Tour ab Mauer 60 (Aufnahmen `.claude/review/74/shots/`): keine Nähte, Folgelücken lesbar. Echte Handys nicht geprüft.
+- Entschieden hat der Nutzer das Ziel, die Darstellung Claude Sonnet 5.5; gebaut durch Claude Sonnet 5.5. Baut auf PR #87 (Oberbaum) auf.
+
 ## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
 - Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
 - Neu: `export-alaska.py` (Auswahl, Roll, Roll mit Helm, Crash), `build-figure.py` (Atlas und `figure-sheets.js`-Block pro Figur); `export-intro.py` kennt Alaska und einen Figurenmaßstab; `intro.py` hat Katzenposen für den neuen Körper; `alaska.py` hat einen Helm. `assets/figures/alaska/` (469 KB). `FIGURES` erhält `alaska`.
