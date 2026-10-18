@@ -2,6 +2,12 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: Issue #77 – Bestenliste nur mit Turnstile-Token
+- Anlass: Jeder konnte per `curl` eine beliebige Zahl eintragen. Der Nutzer gab die Umsetzung frei, aber ohne Deploy, Secret oder echte Cloudflare-Ressourcen. → [ADR 0065](decisions/0065-turnstile-for-leaderboard-entries.md)
+- Neu: `worker/src/turnstile.js` (siteverify), Prüfung in `postScore` nur mit gesetztem `TURNSTILE_SECRET`; `js/turnstile.js` lädt das Widget erst beim Eintragen; CSP erlaubt `challenges.cloudflare.com`; `TURNSTILE_SITEKEY` in `config.js` (noch leer).
+- Geprüft: 139 Bun-Tests mit Cloudflare-Testschlüsseln und gemocktem `fetch`; lokal `wrangler dev` plus Chrome 390×844 mit Test-Sitekey: Eintragen klappt, zu frühes Absenden zeigt Hinweis, `curl` ohne Token gibt 400. Nicht geprüft: echtes Widget, Produktions-Worker, Handys.
+- Gebaut durch Claude Sonnet 5.5; entschieden hat der Nutzer.
+
 ## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
 - Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
 - Neu: `export-alaska.py` (Auswahl, Roll, Roll mit Helm, Crash), `build-figure.py` (Atlas und `figure-sheets.js`-Block pro Figur); `export-intro.py` kennt Alaska und einen Figurenmaßstab; `intro.py` hat Katzenposen für den neuen Körper; `alaska.py` hat einen Helm. `assets/figures/alaska/` (469 KB). `FIGURES` erhält `alaska`.

@@ -42,6 +42,8 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 
 - Alaska (#20): Speicherbudget der Runtime-WebPs liegt mit 2,44 MiB über dem 2-MiB-Ziel aus ADR 0031 (Alaska 0,45 MiB). Ziel neu festlegen oder Atlanten kürzen. Leistung unter CPU-Drossel und echte Handys für Alaska nicht geprüft.
 
+- Turnstile (#77): Rollout steht aus (Widget, Secret, Deploy, Sitekey, siehe operations.md). Danach prüfen, ob die Bestenliste auf echten Handys flüssig bleibt. Erspielten Score beweist es nicht; ein Lauf-Beweis wäre ein eigenes Ticket.
+
 ## Known limits (accepted)
 - **Scores can be faked.** The client reports them; this is the current technical limit documented in ADR 0006. The user now wants later hardening against unchecked direct submissions (plan above). Proposed anti-bot tokens still do not prove an honestly played score.
 - **The leaderboard can lose updates** when two people submit within about 60 s (KV read-modify-write, eventual consistency).

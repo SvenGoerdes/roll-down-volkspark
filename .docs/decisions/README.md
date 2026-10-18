@@ -33,3 +33,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0037](0037-integrate-reviewed-art-without-rebalancing.md) | Preserve new model look, shifted passages, full art integration without rebalancing | User (scope), Codex (handoff/ticket drafts) |
 | [0046](0046-alaska-trellis-body-clean-rig.md) | Alaska: TRELLIS-Körper neu vernetzt, Pivot-Rig mit Brust- und Hinterteil-Gelenk | User (Körper, Look), Sonnet 5.5 (Verfahren) |
 | [0047](0047-alaska-clips-and-third-figure.md) | Alaska als dritte Figur: Intro auf vier Pfoten, Clips, Atlas, fallende Brille | User (Ablauf, Brille), Sonnet 5.5 (Umsetzung) |
+| [0065](0065-turnstile-for-leaderboard-entries.md) | Turnstile-Token für Bestenlisten-Einträge, Worker prüft nur mit gesetztem Secret | User (Issue #77), Sonnet 5.5 (Umsetzung) |

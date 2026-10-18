@@ -1,4 +1,5 @@
 import { WORKER_URL } from './config.js';
+import { createTurnstile } from './turnstile.js';
 import { readName, writeName, netError, FETCH_TIMEOUT } from './name.js';
 
 const DONE = {
@@ -26,6 +27,7 @@ export function setupLeaderboard() {
   const list = document.getElementById('board-list');
   const entry = document.getElementById('board-entry');
   const send = entry.querySelector('button');
+  const turnstile = createTurnstile(document.getElementById('board-turnstile'));
   const offerBtn = document.getElementById('submit-score');
   let pending = null; // { score, season } of the run that can still be entered
   let mine = null; // { name, score, entries } of our last successful POST
@@ -70,6 +72,7 @@ export function setupLeaderboard() {
     if (pending) {
       form.elements.name.value = readName();
       send.textContent = `Eintragen · ${pending.score} Mauern`;
+      turnstile.show().catch((err) => message(err.message, 'err'));
     }
     load();
   }
@@ -87,10 +90,14 @@ export function setupLeaderboard() {
     e.preventDefault();
     const name = form.elements.name.value.trim();
     writeName(name);
+    if (turnstile.enabled && !turnstile.token()) {
+      message('Die Prüfung läuft noch – gleich nochmal drücken', 'err');
+      return;
+    }
     send.disabled = true;
     message('Wird gesendet …');
     try {
-      const data = await call('/scores', { name, ...pending });
+      const data = await call('/scores', { name, ...pending, token: turnstile.token() });
       if (data.status !== 'too_low') mine = { name, score: pending.score, entries: data.entries };
       pending = null;
       entry.hidden = true;
@@ -100,6 +107,7 @@ export function setupLeaderboard() {
     } catch (err) {
       message(netError(err), 'err');
     } finally {
+      turnstile.reset();
       send.disabled = false;
     }
   });

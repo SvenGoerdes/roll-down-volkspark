@@ -80,8 +80,11 @@ Die Originalquelle ist das freigegebene detaillierte Blender-Modell, nicht der a
 | `src/index.js` | Routing, CORS, origin allowlist, size/type checks, rate limits, daily idea cap |
 | `src/idea.js` | Validate an idea, build the GitHub issue (text in a code block, names stripped of markdown) |
 | `src/score.js` | Validate a score, merge it into the top 20, per-IP limiter |
+| `src/turnstile.js` | Check a Turnstile token with Cloudflare `siteverify` (only when `TURNSTILE_SECRET` is set) |
 | `wrangler.toml` | Worker name, repo var, KV binding |
 
 Limits: ideas 5 per hour per IP and 100 per day in total; scores 20 per hour per IP; bodies up to 4 KB; JSON only. Only `https://svengoerdes.github.io` may call it (extra dev origins via the `DEV_ORIGINS` env var, unset in production).
+
+Leaderboard entries need a Turnstile token once the secret is set ([ADR 0065](decisions/0065-turnstile-for-leaderboard-entries.md)). It stops curl and bots, not a faked score from the browser.
 
 The GitHub token is a Cloudflare secret, never in the repo or the browser. Details in [operations.md](operations.md).
