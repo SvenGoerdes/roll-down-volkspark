@@ -6,7 +6,7 @@ import { poseFor } from './figure.js';
 import { drawScenery, drawParticles, drawSpeedLines, drawGrade, drawFx } from './render-fx.js';
 import { drawIceSheen, drawSkidMarks, drawSpray } from './render-slip.js';
 import { sceneryAt } from './scenery.js';
-import { recordWall } from './scoring.js';
+import { recordGoal, recordWall } from './scoring.js';
 import { drawRecordMark } from './render-record.js';
 import { drawGate } from './render-gate.js';
 import { drawGallery } from './render-gallery.js';
@@ -37,7 +37,9 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
   const t = mode === 'intro' ? game.introT : game.time - game.crashAt;
   const pose = showPlayer ? poseFor({ mode, t, spin: game.player.spin, helmet: game.player.helmets > 0 }, figure) : null;
   const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1, pose };
-  look.record = state === 'playing' ? recordWall(game.walls, game.passed, game.best, PLAYER_Z) : null;
+  const goal = state === 'playing' ? recordGoal(game.passed, game.best, game.worldBest) : null;
+  look.record = goal ? recordWall(game.walls, game.passed, goal.target, PLAYER_Z) : null;
+  look.recordLabel = goal?.world ? 'Weltrekord' : 'Rekord';
   drawList.length = 0;
   const galleryZ = game.theme === 'berlin-tour'
     ? game.walls.filter((w) => landmarkAt(w.index, TOUR_LANDMARKS, WALLS_PER_SEASON) === 'east-side-gallery').map((w) => w.z) : [];
@@ -67,7 +69,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
           if (id === 'east-side-gallery') drawGallery(ctx, view, o, gaps, gateSprites[id]);
           else drawGate(ctx, view, o, gaps, wallSeason, gateSprites[id]);
         } else drawWall(ctx, view, o.z, gaps, wallSeason);
-        if (o === look.record) drawRecordMark(ctx, view, o);
+        if (o === look.record) drawRecordMark(ctx, view, o, look.recordLabel);
         break;
       }
       case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time, powerIcons[o.type]); break;

@@ -2,6 +2,12 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: Feinschliff #46 – Weltrekord neben dem eigenen Rekord
+- Aus der halben Arbeit vom 14.10. (nur reine Logik in `scoring.js`) wurde die ganze Anbindung: `leaderboard.js` holt die Top-Wertung leise beim Start und vor jeder Runde (`refreshWorld`, Fehler ändern nichts). Das Ziel ist der nähere von eigenem und Weltrekord (`recordGoal`). Das Schild heißt „Weltrekord“, wenn der Weltrekord das Ziel ist, sonst „Rekord“. Banner „Weltrekord!“ beim Überholen, Game-over-Text „Noch N Mauern bis zum Weltrekord“ (`overNote`).
+- Eine späte Antwort ändert das Ziel nur, solange noch keine Mauer geschafft ist (`applyWorldBest`), damit das Schild nicht mitten im Lauf springt.
+- Geprüft: 140 Tests grün (neu: Ziel, Hinweistext, späte Antwort, Banner); Chrome 390×844 mit gestellter Bestenliste, beide Schilder (`.claude/review/feinschliff/03-…`, `04-…`). Echter Worker nicht angesprochen.
+- Versuch vom 14.10. von GPT-6 Luna; Anbindung und Prüfung durch Claude Sonnet 5.5.
+
 ## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
 - Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
 - Neu: `export-alaska.py` (Auswahl, Roll, Roll mit Helm, Crash), `build-figure.py` (Atlas und `figure-sheets.js`-Block pro Figur); `export-intro.py` kennt Alaska und einen Figurenmaßstab; `intro.py` hat Katzenposen für den neuen Körper; `alaska.py` hat einen Helm. `assets/figures/alaska/` (469 KB). `FIGURES` erhält `alaska`.

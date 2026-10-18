@@ -61,11 +61,11 @@ export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
     hud.wind.textContent = dir > 0 ? 'Wind →' : dir < 0 ? '← Wind' : '';
     hud.wind.classList.toggle('warn', game.wind.warn > 0);
   }
-  function showOver(best, need, record, passed) {
+  function showOver(best, note, passed) {
     hud.final.textContent = passed;
     hud.best.textContent = best;
-    hud.overNote.textContent = record ? 'Neuer Rekord!' : need > 0 ? `Noch ${need} ${need === 1 ? 'Mauer' : 'Mauern'} bis zum Rekord` : '';
-    hud.overNote.className = record ? 'record' : '';
+    hud.overNote.textContent = note.text;
+    hud.overNote.className = note.record ? 'record' : '';
     setTimeout(() => hud.over.classList.add('show'), 500);
     hud.over.dataset.ready = '0';
     setTimeout(() => { hud.over.dataset.ready = '1'; }, 1100);
