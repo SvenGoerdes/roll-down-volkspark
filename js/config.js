@@ -39,8 +39,10 @@ export const GALLERY_PLANT_BEHIND = 12;
 // Landmarks whose closed wall spans stand among the bushes and get the same plant order.
 export const PLANT_BEHIND_LANDMARKS = ['east-side-gallery', 'oberbaum-bridge'];
 
-// Neighbouring Oberbruecke piers overlap this much so no seam shows between them.
-export const OBERBAUM_PIER_OVERLAP = 0.03;
+// The pier sprite is wider than its brick shaft (plinth). Tiles step by the shaft width, so shafts meet
+// and plinths overlap, and the first shaft starts INSET before the span edge: no light gap between tiles.
+export const OBERBAUM_PIER_STEP = 0.62;
+export const OBERBAUM_PIER_INSET = 0.055;
 
 // Oberbruecke towers stand this far from the middle, outside the corridor, so they never hide a following gap.
 export const OBERBAUM_TOWER_X = CORRIDOR / 2 + 1.2;

@@ -1,4 +1,4 @@
-import { WALL_H, PLAYER_Z, OBERBAUM_TOWER_X, OBERBAUM_PIER_OVERLAP as PIER_OVERLAP } from './config.js';
+import { WALL_H, PLAYER_Z, OBERBAUM_TOWER_X, OBERBAUM_PIER_STEP as PIER_STEP, OBERBAUM_PIER_INSET as PIER_INSET } from './config.js';
 import { project } from './view.js';
 import { wallAlpha } from './atmosphere.js';
 import { gateLayout } from './logic.js';
@@ -33,9 +33,9 @@ export function drawOberbaum(ctx, view, wall, gaps, art) {
 
   ctx.save();
   ctx.globalAlpha = wallAlpha(wall.z);
-  const pier = art.pier, step = pier.worldWidth - PIER_OVERLAP, towerLeft = art['tower-left'], towerRight = art['tower-right'];
+  const towerLeft = art['tower-left'], towerRight = art['tower-right'];
   for (const [a, b] of solidsFor(wall, gaps)) {
-    for (let x = a; x < b; x += step) clipped('pier', x, a, Math.min(b, x + pier.worldWidth), 0, p.sy);
+    for (let x = a - PIER_INSET; x < b; x += PIER_STEP) clipped('pier', x, a, b, 0, p.sy);
     for (const [part, item, left] of [['tower-left', towerLeft, -OBERBAUM_TOWER_X - towerLeft.worldWidth / 2],
       ['tower-right', towerRight, OBERBAUM_TOWER_X - towerRight.worldWidth / 2]]) {
       if (left + item.worldWidth > a && left < b) clipped(part, left, a, b, 0, p.sy);
