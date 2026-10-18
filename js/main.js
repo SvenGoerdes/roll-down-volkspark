@@ -17,6 +17,7 @@ import { setupThemeSelect } from './theme-select.js';
 import { loadGateSprites } from './gate-sprites.js';
 import { loadGallerySprites } from './gallery-sprites.js';
 import { loadOberbaumSprites } from './oberbaum-sprites.js';
+import { loadReichstagSprites } from './reichstag-sprites.js';
 import {
   primeGrade, warmUp,
 } from './render-fx.js';
@@ -64,9 +65,9 @@ const figureSheets = new Map();
 const newGame = () => ({ ...createGameState(readBest), theme: themeId });
 
 function gatesFor() {
-  gateLoad ??= Promise.all([loadGateSprites(loadImage), loadGallerySprites(loadImage), loadOberbaumSprites(loadImage)])
-    .then(([gate, gallery, oberbaum]) => {
-      gateSprites = { 'brandenburg-gate': gate, 'east-side-gallery': gallery, 'oberbaum-bridge': oberbaum };
+  gateLoad ??= Promise.all([loadGateSprites(loadImage), loadGallerySprites(loadImage), loadOberbaumSprites(loadImage), loadReichstagSprites(loadImage)])
+    .then(([gate, gallery, oberbaum, reichstag]) => {
+      gateSprites = { 'brandenburg-gate': gate, 'east-side-gallery': gallery, 'oberbaum-bridge': oberbaum, reichstag };
       return gateSprites;
     }).catch((err) => {
     gateLoad = null; // A failed optional theme load can be retried, never start with invisible gates.

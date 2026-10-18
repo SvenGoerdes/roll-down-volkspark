@@ -36,3 +36,14 @@ python3 tools/build-oberbaum-sprites.py
 ```
 
 Nur bei Auswahl der Berlin-Tour geladen. Zusammen etwa 138 KB WebP, 5,2 MB dekodiertes RGBA. Entscheidung: ADR 0053.
+
+# Reichstag
+
+Vier freigestellte Blender-Renders aus `reichstag.blend`: die Flügel `wing-left` und `wing-right`, die Säule `column` (mit Wandstück im Sockelmaß, kachelt ohne Fuge) und das Oberteil `top` mit Giebel und Kuppel. Quelle: `.claude/review/quellen/reichstag/` (lokal); Herkunft und Hashes in `reichstag-provenance.json`.
+
+```sh
+blender -b -P tools/blender/render-reichstag-sprites.py
+python3 tools/build-reichstag-sprites.py
+```
+
+Nur bei Auswahl der Berlin-Tour geladen. Zusammen 146 KB WebP, etwa 4,5 MiB dekodiert. Entscheidung: ADR 0056.

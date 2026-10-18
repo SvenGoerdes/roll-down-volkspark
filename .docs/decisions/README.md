@@ -37,3 +37,6 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0054](0054-oberbaum-towers-outside-corridor.md) | Oberbaum-Türme außerhalb des Wegs, Folgelücke lesbar | User (visibility), Sonnet 5.5 (placement) |
 | [0055](0055-plant-order-for-oberbaum.md) | Galerie-Pflanzenreihenfolge auch für die Brücke | User (plants stay), Sonnet 5.5 |
 | [0062](0062-volkspark-landmark-walls.md) | Bauwerke als jede 10. Mauer im Volkspark ab Herbst | User (Ticket #81), Sonnet 5.5 |
+| [0056](0056-reichstag-runtime-parts.md) | Reichstag aus vier Modellteilen, vierte Jahreszeit der Berlin-Tour | User (scope), Sonnet 5.5 (parts, renderer) |
+| [0057](0057-reichstag-gap-readability.md) | Reichstag: Durchfahrt folgt der Spiellücke, Folgelücke lesbar | User (no rebalancing), Sonnet 5.5 (placement) |
+| [0058](0058-plant-order-for-reichstag.md) | Galerie-Pflanzenreihenfolge auch für den Reichstag | User (plants stay), Sonnet 5.5 |

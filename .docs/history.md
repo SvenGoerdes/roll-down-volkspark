@@ -8,6 +8,10 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Lücken, Abstände, Treffer, Tempo unverändert; vor Mauer 41 ist der Volkspark pixelgleich (gleicher Zeichenpfad, leere Pflanzenliste).
 - `bun test tests`: 141 grün (zwei neue Tests). Spielbilder 390×844, DPR 2 unter `.claude/review/81/` (Mauer 41 und 51 Brücke, Mauer 42 Gabionen, Ladefehler-Fall). Vor Mauer 25 kein Sprite-Request. Echte Handys nicht geprüft.
 - Baut auf PR #87 auf. Gebaut von Claude Sonnet 5.5; entschieden hat der Nutzer.
+## 2026-10-18: #73 – Reichstag als viertes Bauwerk der Berlin-Tour (Winter)
+- Auftrag des Nutzers über den Orchestrator (Nachtmodus: selbst prüfen, PR öffnen, nicht mergen). Baut auf PR #87 (Oberbaum). Vier Teile aus `reichstag.blend` rendern: zwei Flügel, Säule mit Wandstück, Oberteil mit Kuppel. `render-reichstag.js` füllt feste Spannen, `top` überspannt die Lücke. → [ADR 0056](decisions/0056-reichstag-runtime-parts.md), [0057](decisions/0057-reichstag-gap-readability.md), [0058](decisions/0058-plant-order-for-reichstag.md)
+- Gebaut von Claude Sonnet 5.5: `tools/blender/render-reichstag-sprites.py`, `tools/build-reichstag-sprites.py`, `js/render-reichstag.js`, Laden in `main.js`, `TOUR_LANDMARKS` und `PLANT_BEHIND_LANDMARKS`. Treffer, Lücken, Abstände, Tempo, Wertung unverändert.
+- `bun test tests`: 144 grün, neue Tests in `tests/reichstag.test.js`. Spielbilder 390×844, DPR 2 unter `.claude/review/73/` (links, rechts, Mitte, doppelt, verbreitert; fern/mittel/nah). Echte Handys und 4×-CPU-Messung nicht geprüft.
 
 ## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
 - Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
