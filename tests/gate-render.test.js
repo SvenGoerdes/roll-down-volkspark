@@ -1,8 +1,8 @@
 import { test, expect } from 'bun:test';
-import { drawGate, gateSightWindows } from '../js/render-gate.js';
+import { drawGate } from '../js/render-gate.js';
 import { computeView, project } from '../js/view.js';
 import { gateLayout } from '../js/logic.js';
-import { WALL_H, PLAYER_Z, GATE_ART } from '../js/config.js';
+import { PLAYER_Z } from '../js/config.js';
 import { BRANDENBURG_GATE_ART } from '../js/gate-sprite-data.js';
 import { loadGateSprites } from '../js/gate-sprites.js';
 
@@ -43,21 +43,13 @@ test('all pillar/barrier clips stay inside true solids for shifted, double and w
   }
 });
 
-test('sight window follows the next shifted/widened passage without fading the whole gate', () => {
-  const next = { z: 25, gaps: [{ x: 1.4, w: 2 }] };
-  const [r] = gateSightWindows(view, next, 1.6), p = project(view, 1.4, next.z);
-  expect(r.x + r.w / 2).toBeCloseTo(p.sx);
-  expect(r.w).toBeCloseTo((3.2 + GATE_ART.revealMargin * 2) * p.s);
+test('gate is always drawn whole, with no see-through window into the next passage', () => {
   const ctx = canvas(), wall = { z: 5, gaps: [{ x: -1.5, w: 2 }] };
-  drawGate(ctx, view, wall, wall.gaps, {}, art, next, 1.6);
-  expect(ctx.calls.some((c) => c.alpha === GATE_ART.revealAlpha)).toBe(true);
-  for (const call of ctx.calls.filter((c) => c.alpha === GATE_ART.revealAlpha)) {
-    expect(call.clips[0].rects[0][1]).toBe(0);
-    expect(call.clips.at(-1).rects).toEqual([[r.x, r.y, r.w, r.h]]);
-  }
-  const low = ctx.calls.filter((c) => c.clips[0].rects[0][1] !== 0);
-  expect(low.every((c) => c.alpha === 1)).toBe(true);
-  expect(ctx.calls.some((c) => c.args[0] === 'roof' && c.alpha === 1)).toBe(true);
+  drawGate(ctx, view, wall, wall.gaps, {}, art);
+  expect(ctx.calls.some((c) => c.args[0] === 'roof')).toBe(true);
+  // One plain span clip per part and one shared alpha: nothing is cut out or faded.
+  expect(ctx.calls.every((c) => c.clips.length === 1 && c.clips[0].rule === undefined)).toBe(true);
+  expect(new Set(ctx.calls.map((c) => c.alpha)).size).toBe(1);
 });
 
 test('layout refreshes on both widening activation and expiry for the same wall', () => {
@@ -69,11 +61,6 @@ test('layout refreshes on both widening activation and expiry for the same wall'
   const initial = leftEdge(wall.gaps);
   expect(leftEdge([{ x: 0, w: 3.2 }])).not.toEqual(initial);
   expect(leftEdge(wall.gaps)).toEqual(initial);
-});
-
-test('touching sight-window margins merge so even-odd clipping cannot cancel their overlap', () => {
-  const next = { z: 25, gaps: [{ x: -1.05, w: 2 }, { x: 1.05, w: 2 }] };
-  expect(gateSightWindows(view, next)).toHaveLength(1);
 });
 
 test('no gate is drawn at/behind the single collision plane or without loaded art', () => {

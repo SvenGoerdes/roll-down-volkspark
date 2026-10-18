@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: Brandenburger Tor ohne Sichtfenster
+- Der Nutzer hat nach dem Merge von #28 gemeldet, dass beim Anfahren ein Stück von Tor und Säule fehlt. Ursache war das Sichtfenster aus ADR 0034, das hohe Teile vor der nächsten Durchfahrt halb durchsichtig zeichnete. Der Nutzer hat entschieden: Tor immer vollständig. → [ADR 0052](decisions/0052-gate-drawn-whole-without-sight-window.md).
+- `render-gate.js` zeichnet jedes Bauteil jetzt mit einem einfachen Spannen-Clip und gleicher Deckkraft; `revealAlpha`/`revealMargin` und der `nextWall`-Parameter sind entfallen. Tests: 123 grün; die zwei Fenster-Tests ersetzt ein Test, dass nichts ausgeschnitten oder abgeblendet wird. `tools/check-sightseeing.py` ohne JS-Fehler, Spielbilder bei 390×844 geprüft.
+- Entschieden vom Nutzer, gebaut von Claude Opus 5.5 (Hauptsession). Commit: dieser Commit.
+
 ## 2026-10-18: Issue #24 – bestätigte Storni, menschliches Intro zur Spielabnahme
 - Nutzerentscheidung: Hero-Flasche mit großer roter Schrift, kräftigem Orange und größer vor der Figur übernehmen; kein neuer Look, keine Spielregeländerung, Alaska separat in #20. ADR 0037 aus Doku-PR #78 gelesen. → [ADR 0031](decisions/0031-approved-storni-human-intro.md)
 - Uncommittete Figuren-Vorarbeit zuerst gelesen und auf `feat/storni-intro` weiterverwendet. Der bestätigte Storni-Builder ersetzt den früheren Entwurf; Kalle/Tine erhalten vorberechnete 1,5-s-WebP-Intros. Export richtet die Posen am Boden aus und übernimmt den letzten Frame aus dem vorhandenen Rollatlas. Alte Roll-/Helm-/Crash-/Auswahlgrafiken und das Gameplay bleiben unverändert.
