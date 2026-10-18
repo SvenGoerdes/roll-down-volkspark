@@ -55,10 +55,8 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
       case 'wall': {
         const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
         const wallSeason = SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)];
-        if (game.theme === 'berlin-tour' && gateSprites) {
-          const nextWall = game.walls.find((w) => w.z > o.z && !w.broken);
-          drawGate(ctx, view, o, gaps, wallSeason, gateSprites, nextWall, look.widen);
-        } else drawWall(ctx, view, o.z, gaps, wallSeason);
+        if (game.theme === 'berlin-tour' && gateSprites) drawGate(ctx, view, o, gaps, wallSeason, gateSprites);
+        else drawWall(ctx, view, o.z, gaps, wallSeason);
         if (o === look.record) drawRecordMark(ctx, view, o);
         break;
       }

@@ -19,8 +19,8 @@ export const WIND_WARN = 0.7; // seconds a gust is announced before it pushes
 
 export const WALLS_PER_SEASON = 20;
 
-// Visual-only gate layout and sight window; never used by collision or spawning.
-export const GATE_ART = { pierSpacing: 2.25, revealAlpha: 0.18, revealMargin: 0.2 };
+// Visual-only gate layout; never used by collision or spawning.
+export const GATE_ART = { pierSpacing: 2.25 };
 
 // Landmark opening styles are visual metadata; passage width stays in world units.
 export const SIGHTSEEING_LANDMARKS = [

@@ -1,6 +1,6 @@
 # 0034: Brandenburger Tor aus freigegebenen Modellteilen
 
-- **Status:** Implemented; Darstellung im Spiel wartet auf Nutzerfreigabe
+- **Status:** Implemented; Sichtfenster superseded by 0052
 - **Date:** 2026-10-18
 - **Decided by:** Nutzer (Issue #28 und ADR 0037); konkrete Sprite-Zerlegung GPT-6.1 Sol
 - **Built by:** GPT-6 Luna (Theme-Auswahl, Tor-Renderer, Tests); GPT-6.1 Sol (Blender-Export, Integration, Dokumentation)

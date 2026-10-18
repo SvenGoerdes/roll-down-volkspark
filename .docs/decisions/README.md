@@ -29,4 +29,5 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0024](0024-difficulty-curve-by-walls.md) | Difficulty by walls, eased curves, wind warning, tuned with a balance sim | User (too hard at 50), Opus 5.5 (curve) |
 | [0025](0025-perfect-streak-and-record-chase.md) | Perfekt/Knapp feedback, streak helmet, record sign, season progress | User (must grip), Opus 5.5 (rules) |
 | [0026](0026-opencode-panes-tickets-and-ci.md) | OpenCode panes run by Claude, GitHub epics, CI on PRs | User (orchestration, CI), Opus 5.5 (setup) |
+| [0052](0052-gate-drawn-whole-without-sight-window.md) | Gate always drawn whole, no see-through sight window | User (looked like a bug), Opus 5.5 (fix) |
 | [0037](0037-integrate-reviewed-art-without-rebalancing.md) | Preserve new model look, shifted passages, full art integration without rebalancing | User (scope), Codex (handoff/ticket drafts) |
