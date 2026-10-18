@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: #85 – harte senkrechte Kanten in nahen Baumreihen
+- Ursache: `forestSprite()` schnitt für Baum-Variante 1 die linke 10 % des gemalten Waldbildes ab (`inset`). Der Schnitt ging mitten durch das Laub und ließ eine harte senkrechte Kante, bei gespiegelten Pflanzen auf der anderen Seite. Bei nahen, großen Bäumen fiel das auf, in allen Jahreszeiten und Themen. Nicht aus der Galerie, schon vor #71 vorhanden.
+- Fix: das Bild wird nicht mehr beschnitten. Variante 1 wird stattdessen gespiegelt, damit die Bäume abwechslungsreich bleiben. Keine Änderung an Spawn, Abständen oder Spielregeln.
+- Vorher/Nachher bei 390×844, DPR 2, Volkspark und Berlin-Tour, vier Jahreszeiten, zwei Fahrstrecken unter `.claude/review/85/`. `bun test tests` 134 grün. Gebaut von Claude Sonnet 5.5. Echte Handys nicht geprüft. Grafikfreigabe des Nutzers steht aus.
+
 ## 2026-10-18: Brandenburger Tor ohne Sichtfenster
 - Der Nutzer hat nach dem Merge von #28 gemeldet, dass beim Anfahren ein Stück von Tor und Säule fehlt. Ursache war das Sichtfenster aus ADR 0034, das hohe Teile vor der nächsten Durchfahrt halb durchsichtig zeichnete. Der Nutzer hat entschieden: Tor immer vollständig. → [ADR 0052](decisions/0052-gate-drawn-whole-without-sight-window.md).
 - `render-gate.js` zeichnet jedes Bauteil jetzt mit einem einfachen Spannen-Clip und gleicher Deckkraft; `revealAlpha`/`revealMargin` und der `nextWall`-Parameter sind entfallen. Tests: 123 grün; die zwei Fenster-Tests ersetzt ein Test, dass nichts ausgeschnitten oder abgeblendet wird. `tools/check-sightseeing.py` ohne JS-Fehler, Spielbilder bei 390×844 geprüft.
