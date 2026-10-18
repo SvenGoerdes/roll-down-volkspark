@@ -1,4 +1,4 @@
-import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS, TOUR_LANDMARKS, GALLERY_PLANT_BEHIND } from './config.js';
+import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS, TOUR_LANDMARKS, GALLERY_PLANT_BEHIND, PLANT_BEHIND_LANDMARKS } from './config.js';
 import { seasonAhead, widened, seasonIndexAt, landmarkAt, plantDepth } from './logic.js';
 import { drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup } from './render.js';
 import { drawPlayer } from './render-player.js';
@@ -10,6 +10,7 @@ import { recordWall } from './scoring.js';
 import { drawRecordMark } from './render-record.js';
 import { drawGate } from './render-gate.js';
 import { drawGallery } from './render-gallery.js';
+import { drawOberbaum } from './render-oberbaum.js';
 
 const drawList = [];
 const byDepth = (a, b) => b.depth - a.depth;
@@ -40,7 +41,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
   look.record = state === 'playing' ? recordWall(game.walls, game.passed, game.best, PLAYER_Z) : null;
   drawList.length = 0;
   const galleryZ = game.theme === 'berlin-tour'
-    ? game.walls.filter((w) => landmarkAt(w.index, TOUR_LANDMARKS, WALLS_PER_SEASON) === 'east-side-gallery').map((w) => w.z) : [];
+    ? game.walls.filter((w) => PLANT_BEHIND_LANDMARKS.includes(landmarkAt(w.index, TOUR_LANDMARKS, WALLS_PER_SEASON))).map((w) => w.z) : [];
   for (const o of sceneryAt(game.travelled)) {
     o.layer = 'plant'; o.depth = plantDepth(o.z, galleryZ, GALLERY_PLANT_BEHIND); drawList.push(o);
   }
@@ -65,6 +66,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
         if (game.theme === 'berlin-tour' && gateSprites) {
           const id = landmarkAt(o.index, TOUR_LANDMARKS, WALLS_PER_SEASON);
           if (id === 'east-side-gallery') drawGallery(ctx, view, o, gaps, gateSprites[id]);
+          else if (id === 'oberbaum-bridge') drawOberbaum(ctx, view, o, gaps, gateSprites[id]);
           else drawGate(ctx, view, o, gaps, wallSeason, gateSprites[id]);
         } else drawWall(ctx, view, o.z, gaps, wallSeason);
         if (o === look.record) drawRecordMark(ctx, view, o);

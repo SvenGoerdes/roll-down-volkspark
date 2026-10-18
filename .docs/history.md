@@ -21,6 +21,11 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Fix: das Bild wird nicht mehr beschnitten. Variante 1 wird stattdessen gespiegelt, damit die Bäume abwechslungsreich bleiben. Keine Änderung an Spawn, Abständen oder Spielregeln.
 - Vorher/Nachher bei 390×844, DPR 2, Volkspark und Berlin-Tour, vier Jahreszeiten, zwei Fahrstrecken unter `.claude/review/85/`. `bun test tests` 134 grün. Gebaut von Claude Sonnet 5.5. Echte Handys nicht geprüft. Grafikfreigabe des Nutzers steht aus.
 
+## 2026-10-18: #72 – Oberbaumbrücke in der Berlin-Tour
+- Schritt 1 (Nutzer-Auftrag über den Orchestrator): vier Teile aus `oberbaum-bridge.blend` headless rendern, ohne Spielcode. Schritt 2 nach Merge von PR #84: Brücke als dritter Eintrag in `TOUR_LANDMARKS` (Herbst), `render-oberbaum.js` nach dem Muster von Tor und Galerie, kein Sichtfenster. → [ADR 0053](decisions/0053-oberbaum-bridge-runtime-parts.md), [0054](decisions/0054-oberbaum-towers-outside-corridor.md), [0055](decisions/0055-plant-order-for-oberbaum.md)
+- Gebaut von Claude Sonnet 5.5: `tools/blender/render-oberbaum-sprites.py`, `tools/build-oberbaum-sprites.py`, `js/render-oberbaum.js`, Laden in `main.js`, Pflanzenliste `PLANT_BEHIND_LANDMARKS`. Treffer, Lücken, Abstände, Tempo, Wertung unverändert.
+- `bun test tests`: 139 grün, neue Tests in `tests/oberbaum.test.js`. Spielbilder 390×844, DPR 2 unter `.claude/review/72/` (links, rechts, doppelt, verbreitert; fern/mittel/nah; Pickup; Durchfahrt und Crash im laufenden Spiel). Echte Handys und 4×-CPU-Messung nicht geprüft.
+
 ## 2026-10-18: Brandenburger Tor ohne Sichtfenster
 - Der Nutzer hat nach dem Merge von #28 gemeldet, dass beim Anfahren ein Stück von Tor und Säule fehlt. Ursache war das Sichtfenster aus ADR 0034, das hohe Teile vor der nächsten Durchfahrt halb durchsichtig zeichnete. Der Nutzer hat entschieden: Tor immer vollständig. → [ADR 0052](decisions/0052-gate-drawn-whole-without-sight-window.md).
 - `render-gate.js` zeichnet jedes Bauteil jetzt mit einem einfachen Spannen-Clip und gleicher Deckkraft; `revealAlpha`/`revealMargin` und der `nextWall`-Parameter sind entfallen. Tests: 123 grün; die zwei Fenster-Tests ersetzt ein Test, dass nichts ausgeschnitten oder abgeblendet wird. `tools/check-sightseeing.py` ohne JS-Fehler, Spielbilder bei 390×844 geprüft.

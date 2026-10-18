@@ -59,3 +59,4 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 ## Reminders
 - The GitHub token needs an expiry date (e.g. 90 days) plus a calendar reminder to rotate it.
 - Keep 2FA on for GitHub and Cloudflare.
+- Oberbaumbrücke: die Backstein-Pfeiler zeigen helle Nähte zwischen den Kacheln und wirken wie ein Zaun. Ein eigenes Wandstück im Modell würde das beheben (braucht Freigabe der Modelländerung).

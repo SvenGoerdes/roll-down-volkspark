@@ -32,10 +32,18 @@ export const SIGHTSEEING_LANDMARKS = [
 ];
 
 // Berlin tour: one landmark per WALLS_PER_SEASON walls, in this order, then around again.
-export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery'];
+export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge'];
 
 // Roadside plants this close in front of a gallery wall are drawn behind it, so no bush covers a mural.
 export const GALLERY_PLANT_BEHIND = 12;
+// Landmarks whose closed wall spans stand among the bushes and get the same plant order.
+export const PLANT_BEHIND_LANDMARKS = ['east-side-gallery', 'oberbaum-bridge'];
+
+// Neighbouring Oberbruecke piers overlap this much so no seam shows between them.
+export const OBERBAUM_PIER_OVERLAP = 0.03;
+
+// Oberbruecke towers stand this far from the middle, outside the corridor, so they never hide a following gap.
+export const OBERBAUM_TOWER_X = CORRIDOR / 2 + 1.2;
 
 export const SEASONS = [
   {
