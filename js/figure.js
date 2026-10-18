@@ -1,10 +1,11 @@
-// The two figures (ADR 0018): which sprite frame to show when, and drawing a frame from its sheet.
+// The figures (ADR 0018): which sprite frame to show when, and drawing a frame from its sheet.
 // Frames come from Blender renders packed by tools/build-sprites.py; see js/figure-sheets.js.
 import { SHEETS, PPU } from './figure-sheets.js';
 
 export const FIGURES = [
   { id: 'kalle', name: 'Kalle', tag: 'vom Kiez' },
   { id: 'tine', name: 'Tine', tag: 'Techno' },
+  { id: 'alaska', name: 'Alaska', tag: 'Brillenkatze' },
 ];
 export const DEFAULT_FIGURE = 'kalle';
 export const GAME_CLIPS = ['intro', 'roll', 'roll-helmet', 'dazed'];

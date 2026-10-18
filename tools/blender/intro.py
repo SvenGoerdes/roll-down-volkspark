@@ -20,8 +20,14 @@ TUCK_POSE = dict(bend=-45, nod=-25, sh_l=60, sh_r=60, shy_l=10, shy_r=10, el_l=-
                  hp_l=80, hp_r=80, kn_l=-110, kn_r=-110, pitch=-70, fwd=0.85, lift=0.3)
 BALL_HUMAN = dict(bend=-60, nod=-40, sh_l=35, sh_r=35, shy_l=-15, shy_r=-15, el_l=-65, el_r=-65,
                   hp_l=105, hp_r=105, kn_l=-150, kn_r=-150, pitch=-30, fwd=1.0, lift=0.45)
-BALL_ALASKA = dict(pitch=-12, lift=0.06, bend=-18, nod=-25, f_l=-48, f_r=-48, fk_l=-95, fk_r=-95,
-                   b_l=48, b_r=48, bk_l=95, bk_r=95, tail=68, tuck=1, fwd=0.75)
+BALL_ALASKA = dict(pitch=0, lift=0, fwd=.75, noglasses=1, curl=62, arch=68, bend=-62, nod=-25, tuck=.3,
+                   f_l=25, f_r=25, fk_l=-70, fk_r=-70, b_l=40, b_r=40, bk_l=-100, bk_r=-100)
+# Cat gait and fall; keys of tools/blender/alaska.py (f_/b_ shoulder and hip, fk_/bk_ elbow and knee, gl = glasses fall).
+CAT_STUMBLE = dict(pitch=-18, lift=.05, bend=-10, nod=15, f_l=50, f_r=60, fk_l=-30, fk_r=-30,
+                   b_l=-20, b_r=-20, bk_l=10, bk_r=10, tail=-10)
+CAT_FLAIL = dict(pitch=-35, lift=.08, bend=-20, curl=20, nod=-10, f_l=70, f_r=70, fk_l=-40, fk_r=-40,
+                 b_l=-30, b_r=-30, bk_l=10, bk_r=10, tail=-10)
+GLASSES_FALL = (23, 10)   # the glasses leave the nose after this frame and land 10 frames later
 
 
 def _mix(a, b, t):
@@ -42,27 +48,19 @@ def pose_at(figure, index):
         if i <= 17:
             phase = 4 * math.pi * (i - 6) / 11
             stride = math.sin(phase)
-            swing = max(0.0, math.cos(phase))
+            fwd_leg, back_leg = max(0.0, stride), max(0.0, -stride)   # diagonal pairs: front l with hind r
             p = dict(yaw=0, fwd=.05 + .27 * (i - 6) / 11,
-                     f_l=30 * stride, f_r=-30 * stride, b_l=-25 * stride, b_r=25 * stride,
-                     fk_l=24 * swing, fk_r=24 * (1 - swing),
-                     bk_l=18 * (1 - swing), bk_r=18 * swing, nod=5 * math.sin(phase),
-                     tail=-18 * math.sin(phase))
+                     f_l=28 * stride, f_r=-28 * stride, b_l=-25 * stride, b_r=25 * stride,
+                     fk_l=-40 * fwd_leg + 5 * back_leg, fk_r=-40 * back_leg + 5 * fwd_leg,
+                     bk_l=-40 * back_leg + 5 * fwd_leg, bk_r=-40 * fwd_leg + 5 * back_leg,
+                     nod=5 * math.sin(phase), tail=-18 * math.sin(phase))
         elif i <= 23:
-            t = (i - CONTACT) / 5
-            contact = pose_at(figure, CONTACT - 1)
-            stumble = dict(yaw=0, pitch=-20, lift=.07, f_l=70, f_r=70, fk_l=65, fk_r=65,
-                           b_l=-25, b_r=-25, bk_l=45, bk_r=45, nod=24, tail=-45)
-            p = _mix(contact, stumble, t)
-            p['fwd'] = .32 + .18 * t
+            p = _mix(pose_at(figure, CONTACT - 1), dict(CAT_STUMBLE, yaw=0), (i - CONTACT) / 5)
+            p['fwd'] = .32 + .18 * (i - CONTACT) / 5
         elif i < TUCK:
-            flail = dict(pitch=-20, lift=.07, f_l=70, f_r=70, fk_l=65, fk_r=65,
-                          b_l=-25, b_r=-25, bk_l=45, bk_r=45, tail=-45, nod=24)
-            tuck = dict(pitch=-35, lift=.07, f_l=58, f_r=58, fk_l=82, fk_r=82,
-                         b_l=35, b_r=35, bk_l=70, bk_r=70, tail=50, bend=-20, nod=-10, tuck=.6)
-            t = (i - 23) / 6
-            p = _mix(flail, tuck, t) if i <= 29 else _mix(tuck, BALL_ALASKA, (i - 29) / 6)
-            p['fwd'] = .50 + .25 * (i - 24) / 11
+            p = _mix(CAT_STUMBLE, CAT_FLAIL, (i - 23) / 6) if i <= 29 else _mix(CAT_FLAIL, BALL_ALASKA, (i - 29) / 6)
+            p.update(yaw=0, fwd=.50 + .25 * (i - 24) / 11, noglasses=0)
+            p['gl'] = min(1.0, (i - GLASSES_FALL[0]) / GLASSES_FALL[1]) if i > GLASSES_FALL[0] else 0
         else:
             p = dict(BALL_ALASKA)
     else:
@@ -112,8 +110,8 @@ def bottle_at(figure, index):
                 'visible': i <= 24}
     radius = .040 * BOTTLE_SCALE
     # The neck is in the next paw/foot's path; the bright body lies outside its silhouette.
-    x = .50 if cat else .41
-    y = .94 if cat else .66
+    x = .26 if cat else .41
+    y = 1.0 if cat else .66
     if i < CONTACT:
         loc = (x, y, radius)
         angle = math.radians(220)

@@ -17,4 +17,11 @@ export const SHEETS = {
     "roll-helmet": {"n": 32, "w": 132, "h": 220, "ax": 66.0, "ay": 110.0, "loop": true, "cols": 15},
     "dazed": {"n": 12, "w": 232, "h": 208, "ax": 116.0, "ay": -101.6, "loop": true, "head": [116, 33], "cols": 8},
   },
+  alaska: {
+    "select": {"n": 12, "w": 144, "h": 272, "ax": 72.0, "ay": 249.6, "loop": true, "cols": 12},
+    "intro": {"n": 30, "fps": 20, "contact": 15, "ppu": 192, "loop": false, "w": 316, "h": 388, "ax": 166.23463786732066, "ay": 224.0172220576893, "cols": 6},
+    "roll": {"n": 32, "w": 120, "h": 292, "ax": 60.0, "ay": 146.0, "loop": true, "cols": 8},
+    "roll-helmet": {"n": 32, "w": 120, "h": 292, "ax": 60.0, "ay": 146.0, "loop": true, "cols": 8},
+    "dazed": {"n": 12, "w": 212, "h": 312, "ax": 106.0, "ay": 156.0, "loop": true, "head": [137, 97], "cols": 4},
+  },
 };
