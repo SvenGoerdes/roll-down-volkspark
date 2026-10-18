@@ -55,6 +55,7 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - The new difficulty curve (ADR 0024) comes from a bot simulation. Playtest it on real phones: does the start feel too slow, is year two hard enough, is autumn still the hardest season but no wall?
 - Never tested on a real phone (only headless Chrome at iPhone size). Check iOS Safari above all.
 - On phones without a GPU canvas, a frame takes about 50–70 ms at 4x CPU throttling, measured in headless Chrome.
+- Balance (#45/#48): Floor 2,0 und Helm 5 % kommen aus dem Sim-Bot. Mit echten Spielern prüfen. Streak-Helm bleibt bis #64.
 
 ## Reminders
 - The GitHub token needs an expiry date (e.g. 90 days) plus a calendar reminder to rotate it.

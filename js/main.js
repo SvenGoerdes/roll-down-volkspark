@@ -1,8 +1,8 @@
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON, SPRING, ICE,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, WALLS_PER_SEASON, SPRING, ICE,
 } from './config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow,
+  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow, selectPowerup,
 } from './logic.js';
 import { loadSeasonBackgrounds } from './seasons.js';
 import { environmentPreview, preparePreview } from './environment-preview.js';
@@ -142,13 +142,8 @@ function spawnWall() {
   game.lastGapX = gaps[0].x;
   game.walls.push({ z: SPAWN_Z, gaps, index: game.spawned, snowy: s.id === 'winter' });
   const spacing = spacingAt(game.spawned + 1); // distance to the next wall
-  if (Math.random() < POWERUP_CHANCE && game.spawned > 1) {
-    const types = Object.keys(POWERUPS);
-    game.pickups.push({
-      z: SPAWN_Z + spacing / 2, type: types[(Math.random() * types.length) | 0],
-      x: (Math.random() - 0.5) * (CORRIDOR - 2),
-    });
-  }
+  const type = game.spawned > 1 ? selectPowerup(Math.random) : null;
+  if (type) game.pickups.push({ z: SPAWN_Z + spacing / 2, type, x: (Math.random() - 0.5) * (CORRIDOR - 2) });
   if (s.id === 'spring' && game.spawned > 2 && Math.random() < 0.6) {
     game.puddles.push({ z: SPAWN_Z + spacing * (0.3 + Math.random() * 0.4), x: (Math.random() - 0.5) * (CORRIDOR - 2), r: 0.9 + Math.random() * 0.6 });
   }
