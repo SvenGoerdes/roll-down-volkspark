@@ -18,6 +18,42 @@ export function star(ctx, x, y, r) {
 }
 
 const dots = new Map();
+const leafSprites = new Map();
+const leafSprite = (color) => leafSprites.get(color);
+
+function paintLeaf(color) {
+  const c = document.createElement('canvas');
+  c.width = 48;
+  c.height = 32;
+  const g = c.getContext('2d');
+  g.scale(2, 2);
+  g.fillStyle = color;
+  g.beginPath();
+  g.moveTo(2, 8);
+  g.quadraticCurveTo(5, 7, 7, 3);
+  g.quadraticCurveTo(9, 5, 11, 2);
+  g.quadraticCurveTo(12, 5, 15, 4);
+  g.quadraticCurveTo(16, 8, 21, 8);
+  g.quadraticCurveTo(17, 11, 15, 14);
+  g.quadraticCurveTo(12, 17, 8, 14);
+  g.quadraticCurveTo(5, 12, 2, 8);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = 'rgba(76, 42, 20, 0.72)';
+  g.lineWidth = 0.7;
+  g.beginPath();
+  g.moveTo(2.5, 8.2); g.lineTo(17.5, 8.2);
+  g.moveTo(7, 8); g.lineTo(7, 4.8);
+  g.moveTo(11, 8); g.lineTo(11.8, 4.2);
+  g.moveTo(14.5, 8); g.lineTo(16.5, 6);
+  g.stroke();
+  g.strokeStyle = 'rgba(255, 220, 151, 0.7)';
+  g.lineWidth = 0.45;
+  g.beginPath(); g.moveTo(3, 7.5); g.lineTo(17, 7.5); g.stroke();
+  leafSprites.set(color, c);
+  return c;
+}
+
 const dotFor = (hex) => {
   if (!dots.has(hex)) {
     const tint = /^#[0-9a-f]{6}$/i.test(hex) ? [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(',') : '255,255,255';
@@ -43,14 +79,15 @@ export function drawParticles(ctx, particles) {
       m.a * p.x + m.c * p.y + m.e, m.b * p.x + m.d * p.y + m.f,
     );
     const r = p.size * 1.2;
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
     if (p.leaf) {
-      ctx.moveTo(-r, 0);
-      ctx.quadraticCurveTo(0, -r * 0.75, r, 0);
-      ctx.quadraticCurveTo(0, r * 0.75, -r, 0);
-    } else ctx.ellipse(0, 0, r, r * 0.6, 0, 0, Math.PI * 2);
-    ctx.fill();
+      const sprite = leafSprite(p.color);
+      if (sprite) ctx.drawImage(sprite, -r, -r * 0.68, r * 2, r * 1.36);
+    } else {
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r, r * 0.6, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
   ctx.setTransform(m);
 }
@@ -58,6 +95,9 @@ export function drawParticles(ctx, particles) {
 // Build the small environment cache before the first moving frame.
 export function warmUp(seasons) {
   for (const s of seasons) {
+    if (s.id === 'autumn') for (const color of s.particle.colors) {
+      if (!leafSprites.has(color)) paintLeaf(color);
+    }
     for (const v of [0, 1, 2]) {
       forestSprite(s.id, 'bush', v);
       forestSprite(s.id, 'tree', v);
