@@ -1,5 +1,5 @@
 import { SURFACE_ORDER } from './config.js';
-import { surfaceArt } from './surface-art.js';
+import { groundArt, surfaceArt } from './surface-art.js';
 
 // Path textures, one per season and surface. A tile covers TILE_UNITS of world z
 // and the whole corridor width, so drawGround can map it row by row in perspective.
@@ -12,12 +12,12 @@ const rgba = ([r, g, b], a = 1) => `rgba(${r | 0},${g | 0},${b | 0},${a})`;
 const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
 const shade = (c, k) => c.map((v) => Math.max(0, Math.min(255, v * k)));
 
-function paintVerge(ctx, season, winter) {
-  if (!surfaceArt.verge) return;
+function paintVerge(ctx, art, season, winter) {
+  if (!art.verge) return;
   const layer = document.createElement('canvas');
   layer.width = TILE_W; layer.height = TILE_H;
   const lc = layer.getContext('2d');
-  lc.drawImage(surfaceArt.verge, 0, 0, TILE_W, TILE_H);
+  lc.drawImage(art.verge, 0, 0, TILE_W, TILE_H);
   lc.globalCompositeOperation = 'source-atop';
   lc.fillStyle = winter ? rgba(SNOW, 0.42) : rgba(season.grass, 0.2);
   lc.fillRect(0, 0, TILE_W, TILE_H);
@@ -48,19 +48,23 @@ function rngFor(seed) {
 const SNOW = [238, 243, 250];
 const LEAVES = ['#d9822b', '#c4561d', '#e8b33a', '#8f3b1b'];
 
-function paint(ctx, id, season, rnd) {
+// `berlin` selects the scrollable ground (#75): its own earth/verge art and marks that wrap at both tile edges.
+function paint(ctx, id, season, rnd, berlin) {
+  const art = berlin ? groundArt : surfaceArt;
   const winter = season.id === 'winter', autumn = season.id === 'autumn';
-  // Repeat any mark crossing either horizontal tile edge.
-  const put = (y, topExtent, bottomExtent, fn) => {
+  // A mark crossing the bottom edge repeats at the top. Berlin ground (#75) passes
+  // `wrap` = [above, below] extents so marks cross either edge; Volkspark stays as before.
+  const put = (y, h, fn, wrap) => {
+    const [above, below] = berlin && wrap ? wrap : [0, h];
     fn(y);
-    if (y - topExtent < 0) fn(y + TILE_H);
-    if (y + bottomExtent > TILE_H) fn(y - TILE_H);
+    if (y - above < 0) fn(y + TILE_H);
+    if (y + below > TILE_H) fn(y - TILE_H);
   };
   const speck = (n, size, color) => {
     for (let i = 0; i < n; i++) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, w = size * (0.5 + rnd()), h = w * (0.6 + rnd() * 0.6);
       ctx.fillStyle = color(i);
-      put(y, 0, h, (yy) => ctx.fillRect(x, yy, w, h));
+      put(y, h, (yy) => ctx.fillRect(x, yy, w, h));
     }
   };
   const blob = (n, rx, ry, color) => {
@@ -68,7 +72,7 @@ function paint(ctx, id, season, rnd) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, k = 0.6 + rnd() * 0.8, rot = rnd() * 3;
       ctx.fillStyle = color(i);
       const extent = Math.max(rx, ry) * k + 1;
-      put(y, extent, extent, (yy) => { ctx.beginPath(); ctx.ellipse(x, yy, rx * k, ry * k, rot, 0, 7); ctx.fill(); });
+      put(y, ry * k, (yy) => { ctx.beginPath(); ctx.ellipse(x, yy, rx * k, ry * k, rot, 0, 7); ctx.fill(); }, [extent, extent]);
     }
   };
   const leaves = (n) => blob(n, 5, 2.6, () => LEAVES[(rnd() * LEAVES.length) | 0]);
@@ -76,9 +80,9 @@ function paint(ctx, id, season, rnd) {
   if (id === 'dirt') {
     const base = winter ? mix(SNOW, season.path, 0.35) : shade(season.path, 0.95);
     ctx.fillStyle = rgba(base); ctx.fillRect(0, 0, TILE_W, TILE_H);
-    if (surfaceArt.earth) {
-      ctx.drawImage(surfaceArt.earth, 0, 0, TILE_W, TILE_H);
-      paintVerge(ctx, season, winter);
+    if (art.earth) {
+      ctx.drawImage(art.earth, 0, 0, TILE_W, TILE_H);
+      paintVerge(ctx, art, season, winter);
       ctx.fillStyle = winter ? rgba(SNOW, 0.9) : rgba(season.path, 0.13);
       ctx.fillRect(0, 0, TILE_W, TILE_H);
     }
@@ -93,14 +97,14 @@ function paint(ctx, id, season, rnd) {
       for (let y = 0; y <= TILE_H; y += 8) ctx.lineTo(edge(y, -1), y);
       for (let y = TILE_H; y >= 0; y -= 8) ctx.lineTo(edge(y, 1), y);
       ctx.closePath(); ctx.fill();
-      if (surfaceArt.earth) {
+      if (art.earth) {
         ctx.save(); ctx.clip(); ctx.globalAlpha = 0.52;
-        ctx.drawImage(surfaceArt.earth, 0, 0, TILE_W, TILE_H);
+        ctx.drawImage(art.earth, 0, 0, TILE_W, TILE_H);
         ctx.restore();
       }
     }
-    else if (!surfaceArt.earth) blob(40, 15, 6, () => rgba(shade(season.path, 0.8), 0.3));
-    if (!surfaceArt.earth) {
+    else if (!art.earth) blob(40, 15, 6, () => rgba(shade(season.path, 0.8), 0.3));
+    if (!art.earth) {
       speck(260, 2.2, () => rgba(shade(base, 0.72 + rnd() * 0.5), 0.55));
       blob(60, 3, 1.8, () => rgba(shade(base, 0.6), 0.6));
     }
@@ -109,36 +113,36 @@ function paint(ctx, id, season, rnd) {
   } else if (id === 'gravel') {
     const base = winter ? [150, 152, 158] : mix([146, 142, 136], season.path, 0.15);
     ctx.fillStyle = rgba(base); ctx.fillRect(0, 0, TILE_W, TILE_H);
-    if (surfaceArt.earth) {
-      ctx.drawImage(surfaceArt.earth, 0, 0, TILE_W, TILE_H);
+    if (art.earth) {
+      ctx.drawImage(art.earth, 0, 0, TILE_W, TILE_H);
       ctx.fillStyle = rgba(base, winter ? 0.65 : 0.38);
       ctx.fillRect(0, 0, TILE_W, TILE_H);
     }
-    paintVerge(ctx, season, winter);
-    for (let i = 0; i < (surfaceArt.earth ? 220 : 550); i++) {
+    paintVerge(ctx, art, season, winter);
+    for (let i = 0; i < (art.earth ? 220 : 550); i++) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, r = 2 + rnd() * 4.2, g = 0.62 + rnd() * 0.7, rot = rnd() * 3;
       const col = shade(mix([150, 146, 140], [176, 160, 140], rnd()), g);
-      put(y, r * 2, r * 2, (yy) => {
+      put(y, r, (yy) => {
         ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(x + 0.8, yy + 1.2, r, r * 0.8, 0, 0, 7); ctx.fill();
         ctx.fillStyle = rgba(col); ctx.beginPath(); ctx.ellipse(x, yy, r, r * 0.8, rot, 0, 7); ctx.fill();
         ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fillRect(x - r * 0.4, yy - r * 0.5, r * 0.7, r * 0.3);
         if (winter && i % 3 === 0) { ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(x - r * 0.7, yy - r * 0.8, r * 1.4, r * 0.5); }
-      });
+      }, [r * 2, r * 2]);
     }
     if (autumn) leaves(30);
   } else {
     const base = winter ? mix(SNOW, [190, 210, 200], 0.3) : shade(season.grass, 1.05);
     ctx.fillStyle = rgba(base); ctx.fillRect(0, 0, TILE_W, TILE_H);
-    if (surfaceArt.earth) {
+    if (art.earth) {
       ctx.save(); ctx.globalAlpha = winter ? 0.12 : 0.3;
-      ctx.drawImage(surfaceArt.earth, 0, 0, TILE_W, TILE_H); ctx.restore();
+      ctx.drawImage(art.earth, 0, 0, TILE_W, TILE_H); ctx.restore();
     }
     blob(50, 24, 10, () => rgba(shade(base, 0.8 + rnd() * 0.4), 0.4));
     for (let i = 0; i < 900; i++) {
       const x = rnd() * TILE_W, y = rnd() * TILE_H, h = 4 + rnd() * 7, lean = (rnd() - 0.5) * 3;
       const col = winter ? mix([150, 175, 170], [225, 235, 240], rnd()) : shade(season.grass, 0.6 + rnd() * 0.8);
       ctx.strokeStyle = rgba(col, 0.85); ctx.lineWidth = 1.3;
-      put(y, h + 1, 1, (yy) => { ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + lean, yy - h); ctx.stroke(); });
+      put(y, h, (yy) => { ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + lean, yy - h); ctx.stroke(); }, [h + 1, 1]);
     }
     if (season.id === 'spring') blob(70, 2.2, 2.2, (i) => (i % 3 ? '#fff6f8' : '#ffd84a'));
     if (autumn) leaves(50);
@@ -157,10 +161,10 @@ function shadeEdges(ctx, season) {
 
 }
 
-function buildTile(season, si, k, id) {
+function buildTile(season, si, k, id, berlin) {
   const c = document.createElement('canvas');
   c.width = TILE_W; c.height = TILE_H;
-  paint(c.getContext('2d'), id, season, rngFor(1000 * si + k + 7));
+  paint(c.getContext('2d'), id, season, rngFor(1000 * si + k + 7), berlin);
   shadeEdges(c.getContext('2d'), season);
   // smaller copies keep far rows from aliasing into streaks
   const mips = [c];
@@ -178,14 +182,14 @@ function buildTile(season, si, k, id) {
 // Tiles fill in as they are built: `tiles[seasonId][surfaceId]` may still be missing,
 // drawGround then falls back to flat colors. The first season is ready on return,
 // the others follow one tile per frame.
-export function buildGroundTiles(seasons, first = 0) {
+export function buildGroundTiles(seasons, first = 0, berlin = false) {
   const tiles = {};
   const jobs = [];
   seasons.forEach((season, si) => {
     tiles[season.id] = {};
     SURFACE_ORDER.forEach((id, k) => jobs.push({ season, si, k, id }));
   });
-  const run = ({ season, si, k, id }) => { tiles[season.id][id] = buildTile(season, si, k, id); };
+  const run = ({ season, si, k, id }) => { tiles[season.id][id] = buildTile(season, si, k, id, berlin); };
   jobs.filter((j) => j.si === first).forEach(run);
   const rest = jobs.filter((j) => j.si !== first);
   const next = () => {

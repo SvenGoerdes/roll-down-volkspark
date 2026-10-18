@@ -2,8 +2,8 @@
 
 - **Status:** Accepted (technische Umsetzung; Spielansicht wartet auf Grafikfreigabe)
 - **Date:** 2026-10-18
-- **Decided by:** Nutzer (Vorlage, Umfang und unveränderte Spielregeln, Issue #75 / ADR 0037 im Doku-PR #78); GPT-6.1 Sol (Materialableitung)
-- **Built by:** GPT-6 Luna (Offline-Tool, Materiallader und Tile-Aufbau), GPT-6.1 Sol (Integration und Prüfung)
+- **Decided by:** Nutzer (Vorlage, Umfang und unveränderte Spielregeln, Issue #75 / ADR 0037 im Doku-PR #78; am 18.10.2026 im Issue-Kommentar: beide Böden bleiben, Berlin-Tour bekommt den neuen); GPT-6.1 Sol (Materialableitung)
+- **Built by:** GPT-6 Luna (Offline-Tool, Materiallader und Tile-Aufbau), GPT-6.1 Sol (Integration und Prüfung); Claude Sonnet 5.5 (Theme-Trennung nach Rebase auf #28)
 - **Commits:** dieser Änderungsstand auf `feat/boden-scroll`
 
 ## Context
@@ -21,7 +21,7 @@ Grasrand. Perspektivischer Horizont, Bäume und die Gesamtlandschaft werden nich
 übernommen. Überlappende Enden werden entlang der Fahrtrichtung weich zu einer
 Periode verbunden; die Studie wird nicht ein zweites Mal perspektivisch projiziert.
 
-Der vorhandene Materiallader lädt die beiden Quellen statt der alten Erdtextur.
+Ein eigener Lader (`loadGroundArt`) lädt die beiden Quellen für die Berlin-Tour.
 Grasränder werden beim Tile-Aufbau weich maskiert und mit Jahreszeitenfarben
 abgestimmt. Kies, Grashalme, Herbstlaub und Schnee bleiben vorberechnete Details.
 Auch Details über der oberen Kachelgrenze werden zyklisch auf die Unterkante
@@ -37,6 +37,20 @@ Es gibt keine zusätzlichen Zeichenaufrufe, Masken, Bildbearbeitung oder
 Material-Erzeugung im laufenden Ground-Renderer.
 Eine isolierte Canvas-Probe über 32 Kachelphasen bei DPR 1/1,5/2 bestätigt,
 dass die vorher sichtbare Hintergrund-Leckage an diesen Übergängen entfällt.
+
+## Nur für die Berlin-Tour
+
+Der Nutzer will beide Böden. Volkspark behält den alten Boden pixelgleich zu `main`
+(12 Saison-/Oberflächenansichten bei 390×844/DPR 2 byte-identisch verglichen).
+Der neue Boden gilt nur im Thema „Berlin-Tour“ (#28, `game.theme`):
+
+- `surfaceArt` (alte `earth-painted.webp`, Gabione) lädt wie bisher beim Start.
+  `groundArt` (`ground-earth/verge.webp`, 84 KB) lädt erst bei der ersten Wahl der Berlin-Tour.
+- `buildGroundTiles(seasons, first, berlin)` baut dann einen zweiten Kachelsatz
+  (~12 MiB Pixelcache) in `groundTiles['berlin-tour']`. Wer nur Volkspark spielt, zahlt nichts.
+- Kachelrand-Wrap der Details und Nahtüberlappung im Renderer (`seamOverlap`) gelten nur dort;
+  der Volkspark-Pfad bleibt der alte Code.
+- `renderScene` wählt den Satz nach `game.theme`; fehlt er noch, zeichnet es den Volkspark-Boden.
 
 ## Alternatives
 

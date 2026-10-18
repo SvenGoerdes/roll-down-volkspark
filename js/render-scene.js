@@ -22,7 +22,9 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
     ctx.translate((Math.random() - 0.5) * m, (Math.random() - 0.5) * m);
   }
   drawBackground(ctx, view, backgrounds[s.id], prev && backgrounds[prev.id], game.seasonFade, game.player.x);
-  drawGround(ctx, view, s, game.travelled, game.surfaceAt, groundTiles);
+  // Berlin-Tour has its own scrolling ground; Volkspark keeps the old one (#75).
+  const berlinGround = game.theme === 'berlin-tour' && groundTiles?.['berlin-tour'];
+  drawGround(ctx, view, s, game.travelled, game.surfaceAt, berlinGround || groundTiles?.volkspark, berlinGround ? 1 : 0);
   drawHorizon(ctx, view, s, prev, game.seasonFade, game.player.x);
   if (s.id === 'winter') drawIceSheen(ctx, view, game.travelled, game.seasonFade);
   drawSkidMarks(ctx, view, game.skids, s.id === 'winter');

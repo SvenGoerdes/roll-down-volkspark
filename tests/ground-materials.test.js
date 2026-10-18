@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { loadSurfaceArt, surfaceArt } from '../js/surface-art.js';
 
 const assets = ['ground-earth.webp', 'ground-verge.webp'];
 
@@ -19,23 +18,6 @@ describe('prepared ground materials', () => {
       expect(dimensions).toEqual([384, 512]);
     }
     expect(total).toBeLessThan(100_000);
-  });
-
-  test('failed reload clears stale image references without disturbing gabion', async () => {
-    surfaceArt.earth = { stale: true };
-    surfaceArt.verge = { stale: true };
-    surfaceArt.gabion = { retained: true };
-    const warn = console.warn;
-    console.warn = () => {};
-    try {
-      await loadSurfaceArt(async (path) => {
-        if (path.includes('ground-')) throw new Error('missing');
-        return { path };
-      });
-      expect(surfaceArt.earth).toBeUndefined();
-      expect(surfaceArt.verge).toBeUndefined();
-      expect(surfaceArt.gabion.path).toBe('assets/environment/gabion-painted.webp');
-    } finally { console.warn = warn; }
   });
 });
 

@@ -21,7 +21,7 @@ test('overlaps only the first destination slice at a wrapped tile split', () => 
     W: 100, H: 1, horizonY: 0, F: 1, cx: 50,
     // z=12 gives no fog; source z 7..12 crosses the tile boundary at 8.
     groundRows: [0, 12, 0, 7],
-  }, season, 0, () => ({ id: 'dirt' }), { test: { dirt: [tile, tile, tile, tile, tile] } });
+  }, season, 0, () => ({ id: 'dirt' }), { test: { dirt: [tile, tile, tile, tile, tile] } }, 1);
 
   const slices = calls.filter((call) => call[0] === tile);
   expect(slices).toHaveLength(2);
