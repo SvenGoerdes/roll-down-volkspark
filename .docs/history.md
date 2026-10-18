@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: #15 – Performance-Check als Skript
+- Neu: `tools/perf-check.mjs` (Playwright, installiertes Chrome, 390×844 DPR 2, 4×-CPU-Drossel). Spielt Volkspark und Berlin-Tour je einige Sekunden mit Bot, gibt Frame-Abstand (Median, p95, max) und Update+Render-Zeit aus. Eigener Bun-Server, Worker blockiert. Doku in `operations.md`. Kein ADR nötig, keine neue Abhängigkeit im Repo.
+- Messlauf 5 s: Frame-Abstand 16,7 ms (Median und p95) in beiden Themen; Update+Render Median 2,2 / 2,6 ms, p95 5,5 / 7,3 ms (Volkspark / Berlin-Tour). Mac-Chrome mit Drossel, kein echtes Handy.
+- Gebaut von Claude Sonnet 5.5; beauftragt vom Nutzer.
+
 ## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
 - Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
 - Neu: `export-alaska.py` (Auswahl, Roll, Roll mit Helm, Crash), `build-figure.py` (Atlas und `figure-sheets.js`-Block pro Figur); `export-intro.py` kennt Alaska und einen Figurenmaßstab; `intro.py` hat Katzenposen für den neuen Körper; `alaska.py` hat einen Helm. `assets/figures/alaska/` (469 KB). `FIGURES` erhält `alaska`.
