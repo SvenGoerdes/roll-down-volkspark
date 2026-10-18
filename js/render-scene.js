@@ -1,5 +1,5 @@
-import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS, TOUR_LANDMARKS, GALLERY_PLANT_CLEAR } from './config.js';
-import { seasonAhead, widened, seasonIndexAt, landmarkAt, plantHidden } from './logic.js';
+import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS, TOUR_LANDMARKS, GALLERY_PLANT_BEHIND } from './config.js';
+import { seasonAhead, widened, seasonIndexAt, landmarkAt, plantDepth } from './logic.js';
 import { drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup } from './render.js';
 import { drawPlayer } from './render-player.js';
 import { poseFor } from './figure.js';
@@ -42,8 +42,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
   const galleryZ = game.theme === 'berlin-tour'
     ? game.walls.filter((w) => landmarkAt(w.index, TOUR_LANDMARKS, WALLS_PER_SEASON) === 'east-side-gallery').map((w) => w.z) : [];
   for (const o of sceneryAt(game.travelled)) {
-    if (plantHidden(o.z, galleryZ, GALLERY_PLANT_CLEAR)) continue;
-    o.layer = 'plant'; o.depth = o.z; drawList.push(o);
+    o.layer = 'plant'; o.depth = plantDepth(o.z, galleryZ, GALLERY_PLANT_BEHIND); drawList.push(o);
   }
   for (const o of game.puddles) { o.layer = 'puddle'; o.depth = o.z + 0.01; drawList.push(o); }
   for (const o of game.walls) { o.layer = 'wall'; o.depth = o.z; drawList.push(o); }

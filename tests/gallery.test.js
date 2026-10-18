@@ -1,7 +1,7 @@
 import { test, expect } from 'bun:test';
 import { createHash } from 'node:crypto';
 import { WALL_EXT, WALLS_PER_SEASON, TOUR_LANDMARKS, PLAYER_Z } from '../js/config.js';
-import { landmarkAt, galleryTiles, gateLayout, plantHidden } from '../js/logic.js';
+import { landmarkAt, galleryTiles, gateLayout, plantDepth } from '../js/logic.js';
 import { computeView, project } from '../js/view.js';
 import { drawGallery, GALLERY_BAYS } from '../js/render-gallery.js';
 import { EAST_SIDE_GALLERY_ART, GALLERY_PITCH } from '../js/gallery-sprite-data.js';
@@ -102,13 +102,16 @@ test('gallery WebPs and anchors match their provenance within the optional-art b
   expect(decoded).toBeLessThan(3 * 1024 * 1024);
 });
 
-test('plants right in front of a gallery wall are hidden, others stay', () => {
+test('plants right in front of a gallery wall are drawn behind it, others keep their depth', () => {
   const walls = [30, 60];
-  expect(plantHidden(29, walls, 12)).toBe(true);
-  expect(plantHidden(18, walls, 12)).toBe(true);
-  expect(plantHidden(17.9, walls, 12)).toBe(false);
-  expect(plantHidden(30, walls, 12)).toBe(false); // level with or behind the wall
-  expect(plantHidden(31, walls, 12)).toBe(false);
-  expect(plantHidden(40, walls, 12)).toBe(false);
-  expect(plantHidden(10, [], 12)).toBe(false);
+  expect(plantDepth(29, walls, 12)).toBeGreaterThan(30);
+  expect(plantDepth(18, walls, 12)).toBeGreaterThan(30);
+  expect(plantDepth(17.9, walls, 12)).toBe(17.9);
+  expect(plantDepth(30, walls, 12)).toBe(30); // level with or behind the wall
+  expect(plantDepth(31, walls, 12)).toBe(31);
+  expect(plantDepth(40, walls, 12)).toBe(40);
+  expect(plantDepth(10, [], 12)).toBe(10);
+  // Moved plants keep their relative order: farther plant, larger depth, drawn first.
+  expect(plantDepth(25, walls, 12)).toBeGreaterThan(plantDepth(20, walls, 12));
+  expect(plantDepth(20, walls, 12)).toBeGreaterThan(30);
 });

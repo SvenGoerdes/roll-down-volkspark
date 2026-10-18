@@ -34,8 +34,8 @@ export const SIGHTSEEING_LANDMARKS = [
 // Berlin tour: one landmark per WALLS_PER_SEASON walls, in this order, then around again.
 export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery'];
 
-// Roadside plants this close in front of a gallery wall are not drawn, so none stands before a mural.
-export const GALLERY_PLANT_CLEAR = 12;
+// Roadside plants this close in front of a gallery wall are drawn behind it, so no bush covers a mural.
+export const GALLERY_PLANT_BEHIND = 12;
 
 export const SEASONS = [
   {

@@ -9,6 +9,8 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - Lokale Art-Dateien und uncommittete Worktree-Arbeit sind noch keine integrierten Laufzeit-Assets. `.claude/` nicht bereinigen, bevor benötigte Quellen gesichert bzw. gezielt übernommen sind.
 - **Später, nicht in dieser Grafikarbeit:** ungeprüfte Bestenlisten-Schreibzugriffe absichern. Turnstile mit serverseitiger Prüfung ist ein noch nicht freigegebener Vorschlag. Anti-Bot-Tokens allein validieren keine erspielten Scores; weitergehende Laufprüfung ist nicht beauftragt. Siehe [Ticket 11](plans/art-integration-2026-10-18/11-bestenliste-token.md).
 
+- Sehr nahe Bäume (z unter etwa 3) zeigen am Bildrand harte senkrechte Kanten, auch im Volkspark und am Tor (aus dem Wald-Sprite, nicht aus der Galerie). In echten Läufen nur kurz am Rand sichtbar; später prüfen.
+
 ## Open questions for the user
 - Close issue #2 (Hendrik: slippery look, different ground)? Both parts shipped on 2026-10-12.
 
