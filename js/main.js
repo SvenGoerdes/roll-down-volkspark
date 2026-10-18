@@ -312,7 +312,7 @@ function step(dt) {
   else if (state === 'start') { game.time += dt; game.travelled += dt * 6; updateParticles(dt); }
   else if (state === 'intro') {
     game.introT += dt; // game.time stays 0: the intro is not play time
-    const at = introAt(game.introT);
+    const at = introAt(game.introT, figure);
     game.travelled += dt * speedAt(0) * at.trip * at.trip; // the world speeds up as you trip
     updateParticles(dt);
     if (at.done) beginPlay();

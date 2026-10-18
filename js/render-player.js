@@ -29,19 +29,18 @@ export function drawPlayer(ctx, view, player, time, speed, figure, pose) {
   const ground = project(view, player.x, PLAYER_Z);
   const { sx, sy, s } = project(view, player.x, PLAYER_Z, PLAYER_R + hop);
   const r = PLAYER_R * s;
-  const k = spriteScale(s);
-  // Clips hang on the ball centre, but standing he is a step nearer the camera and would sit too low:
-  // put his feet on the ball's ground spot and let him slide into the ball as he trips. Lying, he is centred there.
+  const k = spriteScale(s, sheet);
+  // Intro and roll anchors already sit on the ball centre; only dazed needs a visual offset.
   let dy = 0;
   if (pose.clip === 'dazed') dy = ground.sy - r * 0.2 - sy - (sheet.h / 2 - sheet.ay) * k;
-  else if (!rolling) dy = (ground.sy - sy - (figure.idle.h - figure.idle.ay - 6) * k) * (1 - (pose.trip || 0));
 
   ctx.globalAlpha = 0.6 - hop * 1.5;
   ctx.drawImage(softDot('0,0,0'), ground.sx - r * 1.15, ground.sy - r * 0.32, r * 2.3, r * 0.64);
   ctx.globalAlpha = 1;
 
   // squash on every touchdown, stretch when swerving
-  const squash = rolling ? (1 - hop / hopMax) ** 6 * 0.11 : 0;
+  const introSquash = pose.clip === 'intro' ? clamp(((pose.trip || 0) - 0.8) / 0.2, 0, 1) * 0.11 : 0;
+  const squash = rolling ? (1 - hop / hopMax) ** 6 * 0.11 : introSquash;
   const swerve = rolling ? clamp(Math.abs(player.vx) * 0.008, 0, 0.08) : 0;
   const blur = rolling ? clamp((speed - 17) / 13, 0, 1) : 0;
   const lean = rolling ? -clamp(player.vx * 0.05, -0.4, 0.4) * (player.slip || 0) : 0;

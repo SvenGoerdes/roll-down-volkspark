@@ -5,18 +5,14 @@ export const PPU = 160; // sprite pixels per figure unit (a figure is ~1.8 units
 export const SHEETS = {
   kalle: {
     "select": {"n": 12, "w": 124, "h": 300, "ax": 62.0, "ay": 89.6, "loop": true, "cols": 12},
-    "idle": {"n": 12, "w": 172, "h": 288, "ax": 86.0, "ay": -28.4, "loop": true, "cols": 11},
-    "turn": {"n": 12, "w": 172, "h": 316, "ax": 86.0, "ay": -9.5, "loop": false, "cols": 11},
-    "trip": {"n": 24, "w": 204, "h": 412, "ax": 102.0, "ay": 87.1, "loop": false, "cols": 10},
+    "intro": {"n": 30, "fps": 20, "contact": 15, "ppu": 192, "loop": false, "w": 310, "h": 368, "cols": 6, "ax": 225.63525009155273, "ay": 260.763041973114},
     "roll": {"n": 32, "w": 140, "h": 228, "ax": 70.0, "ay": 114.0, "loop": true, "cols": 14},
     "roll-helmet": {"n": 32, "w": 140, "h": 228, "ax": 70.0, "ay": 114.0, "loop": true, "cols": 14},
     "dazed": {"n": 12, "w": 260, "h": 220, "ax": 130.0, "ay": -90.1, "loop": true, "head": [130, 43], "cols": 7},
   },
   tine: {
     "select": {"n": 12, "w": 116, "h": 292, "ax": 58.0, "ay": 82.1, "loop": true, "cols": 12},
-    "idle": {"n": 12, "w": 172, "h": 276, "ax": 86.0, "ay": -33.9, "loop": true, "cols": 11},
-    "turn": {"n": 12, "w": 172, "h": 292, "ax": 86.0, "ay": -29.2, "loop": false, "cols": 11},
-    "trip": {"n": 24, "w": 184, "h": 404, "ax": 92.0, "ay": 79.7, "loop": false, "cols": 11},
+    "intro": {"n": 30, "fps": 20, "contact": 15, "ppu": 192, "loop": false, "w": 305, "h": 355, "cols": 6, "ax": 225.93463897705078, "ay": 249.18781757354736},
     "roll": {"n": 32, "w": 132, "h": 220, "ax": 66.0, "ay": 110.0, "loop": true, "cols": 15},
     "roll-helmet": {"n": 32, "w": 132, "h": 220, "ax": 66.0, "ay": 110.0, "loop": true, "cols": 15},
     "dazed": {"n": 12, "w": 232, "h": 208, "ax": 116.0, "ay": -101.6, "loop": true, "head": [116, 33], "cols": 8},

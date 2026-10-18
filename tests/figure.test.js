@@ -1,7 +1,7 @@
 import { test, expect } from 'bun:test';
 import { SHEETS, PPU } from '../js/figure-sheets.js';
 import {
-  FIGURES, DEFAULT_FIGURE, GAME_CLIPS, INTRO, INTRO_T, DAZED_FPS,
+  FIGURES, DEFAULT_FIGURE, GAME_CLIPS, DAZED_FPS,
   frameIndex, rollFrame, introAt, pickFigure, poseFor, spriteScale, FIG_UNIT, loadFigure, drawFrame,
 } from '../js/figure.js';
 
@@ -32,31 +32,29 @@ test('roll frame stays in range for negative and large spins', () => {
   }
 });
 
-test('intro starts on idle and turns after the idle hold', () => {
-  expect(introAt(0).clip).toBe('idle');
-  expect(introAt(INTRO.idle + 0.001)).toEqual({ clip: 'turn', frame: 0, trip: 0, done: false });
+test('intro timing uses the selected clip metadata, including boundaries and negative time', () => {
+  const a = { intro: { n: 5, fps: 10, contact: 2 } };
+  const b = { intro: { n: 9, fps: 20, contact: 4 } };
+  expect(introAt(0.2, a)).toEqual({ clip: 'intro', frame: 2, trip: 0, done: false });
+  expect(introAt(-1, a)).toEqual({ clip: 'intro', frame: 0, trip: 0, done: false });
+  expect(introAt(0.4, a)).toEqual({ clip: 'intro', frame: 4, trip: 1, done: false });
+  expect(introAt(0.5, a)).toEqual({ clip: 'intro', frame: 4, trip: 1, done: true });
+  expect(introAt(0.2, b).frame).toBe(4);
+  expect(introAt(0.2, b).trip).toBe(0);
+  expect(introAt(0.25, b).trip).toBeCloseTo(0.25);
+  expect(introAt(0.45, b).done).toBe(true);
+  expect(introAt(0.45, a).done).toBe(false);
 });
 
-test('intro ends in the trip, done and fully tipped', () => {
-  // INTRO_T rounds a hair short of the trip's end, so look just past it
-  const end = introAt(INTRO_T + 1e-9);
-  expect(end.clip).toBe('trip');
-  expect(end.done).toBe(true);
-  expect(end.trip).toBe(1);
-  expect(end.frame).toBe(SHEETS.kalle.trip.n - 1);
-});
-
-test('intro trip progress rises and frames stay inside each clip', () => {
-  let last = -1;
-  for (let t = 0; t <= INTRO_T + 1; t += 0.01) {
-    const { clip, frame, trip } = introAt(t);
-    expect(frame).toBeGreaterThanOrEqual(0);
-    expect(frame).toBeLessThan(SHEETS.kalle[clip].n);
-    if (clip !== 'trip') continue;
-    expect(trip).toBeGreaterThanOrEqual(last);
-    last = trip;
+test('human intro metadata describes a complete short contact-to-roll clip', () => {
+  for (const { id } of FIGURES) {
+    const clip = SHEETS[id].intro;
+    expect(clip.n / clip.fps).toBeCloseTo(1.5);
+    expect(clip.contact).toBeGreaterThan(0);
+    expect(clip.contact).toBeLessThan(clip.n - 1);
+    expect(introAt(clip.n / clip.fps, SHEETS[id])).toEqual({ clip: 'intro', frame: clip.n - 1, trip: 1, done: true });
+    expect(clip.ppu).toBeGreaterThanOrEqual(192);
   }
-  expect(last).toBe(1);
 });
 
 test('pickFigure keeps known ids and falls back to the default', () => {
@@ -66,10 +64,9 @@ test('pickFigure keeps known ids and falls back to the default', () => {
   }
 });
 
-test('poseFor intro follows introAt', () => {
-  expect(poseFor({ mode: 'intro', t: 0 }, SHEETS.kalle)).toEqual({ clip: 'idle', frame: 0, trip: 0 });
-  const mid = introAt(INTRO_T - 0.5);
-  expect(poseFor({ mode: 'intro', t: INTRO_T - 0.5 }, SHEETS.kalle)).toEqual({ clip: mid.clip, frame: mid.frame, trip: mid.trip });
+test('poseFor intro uses the selected intro sheet', () => {
+  const sheets = { intro: { n: 5, fps: 10, contact: 2 } };
+  expect(poseFor({ mode: 'intro', t: 0.3 }, sheets)).toEqual({ clip: 'intro', frame: 3, trip: 0.5 });
 });
 
 test('poseFor roll picks the helmet clip when wearing one', () => {
@@ -99,9 +96,11 @@ test('poseFor dazed loops the stars', () => {
 
 test('sprite scale is 1 at the figure size', () => {
   expect(spriteScale(PPU / FIG_UNIT)).toBeCloseTo(1);
+  expect(spriteScale(PPU / FIG_UNIT, { ppu: PPU / 2 })).toBeCloseTo(2);
 });
 
 test('every figure has all game clips and the select clip', () => {
+  expect(GAME_CLIPS).toEqual(['intro', 'roll', 'roll-helmet', 'dazed']);
   for (const { id } of FIGURES) {
     for (const clip of [...GAME_CLIPS, 'select']) {
       expect(SHEETS[id][clip]).toBeDefined();
@@ -140,14 +139,6 @@ test('dazed has a two-number head position', () => {
   }
 });
 
-test('intro clips have the same frame counts for every figure', () => {
-  for (const { id } of FIGURES) {
-    for (const clip of ['idle', 'turn', 'trip']) {
-      expect(SHEETS[id][clip].n).toBe(SHEETS.kalle[clip].n);
-    }
-  }
-});
-
 test('loadFigure loads every game clip with its sheet meta', async () => {
   const sheets = await loadFigure('kalle', async (src) => ({ src }));
   expect(Object.keys(sheets).sort()).toEqual([...GAME_CLIPS].sort());
@@ -174,12 +165,12 @@ test('loadFigure rejects when one clip fails to load', async () => {
 test('loadFigure decodes each image and still resolves when decode rejects', async () => {
   let decoded = 0;
   const loadImage = async () => ({ decode: () => { decoded++; return Promise.resolve(); } });
-  await loadFigure('kalle', loadImage, ['idle', 'turn']);
+  await loadFigure('kalle', loadImage, ['intro', 'roll']);
   expect(decoded).toBe(2);
 
   const failing = async () => ({ decode: () => Promise.reject(new Error('no decode')) });
-  const sheets = await loadFigure('kalle', failing, ['idle']);
-  expect(sheets.idle.img).toBeDefined();
+  const sheets = await loadFigure('kalle', failing, ['intro']);
+  expect(sheets.intro.img).toBeDefined();
 });
 
 test('drawFrame crops the frame from the sheet and centres it on the anchor', () => {
