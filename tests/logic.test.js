@@ -1,8 +1,8 @@
 import { test, expect } from 'bun:test';
-import { CORRIDOR, WALL_EXT, SEASONS, WALLS_PER_SEASON, WIND_WARN } from '../js/config.js';
+import { CORRIDOR, WALL_EXT, SEASONS, WALLS_PER_SEASON, WIND_WARN, GAP_WIDTH, POWERUP_CHANCES } from '../js/config.js';
 import {
   speedAt, gapWidthAt, intervalAt, spacingAt, seasonRelief, shiftAt, windAt, stepWind, windArrow, seasonIndexAt, makeGaps, widened,
-  passesWall, solidSegments, slipAmount, skidStrength, createSurfaceTrack, stripSource, addHelmet, seasonAhead,
+  passesWall, solidSegments, slipAmount, skidStrength, createSurfaceTrack, stripSource, addHelmet, seasonAhead, selectPowerup,
 } from '../js/logic.js';
 
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
@@ -22,10 +22,29 @@ test('seasonRelief: breather at the first walls of a season only', () => {
   expect(seasonRelief(19)).toBe(0);
 });
 
-test('gaps start wide, ease to 1.8, and widen again in a breather', () => {
+test('gaps start wide, ease to their late floor, and widen again in a breather', () => {
   expect(gapWidthAt(0)).toBeCloseTo(3.7);
-  expect(gapWidthAt(10_005)).toBeCloseTo(1.8);
+  expect(gapWidthAt(10_005)).toBeCloseTo(GAP_WIDTH.floor);
   expect(gapWidthAt(20)).toBeGreaterThan(gapWidthAt(19));
+});
+
+test('normal pickup selection uses per-type chances and may select none', () => {
+  expect(selectPowerup(() => 0)).toBe('helmet');
+  expect(selectPowerup(() => 0.04)).toBe('helmet');
+  expect(selectPowerup(() => 0.05)).toBe('slowmo');
+  expect(selectPowerup(() => 0.16)).toBe('widen');
+  expect(selectPowerup(() => 0.250001)).toBeNull();
+  expect(POWERUP_CHANCES).toEqual({ helmet: 0.05, slowmo: 0.1, widen: 0.1 });
+});
+
+test('gap floor leaves player clearance in every season at late wall counts', () => {
+  for (const n of [500, 10_000]) {
+    for (const season of SEASONS) {
+      const width = gapWidthAt(n) * season.gapMul;
+      expect(width).toBeGreaterThanOrEqual(GAP_WIDTH.floor * season.gapMul);
+      expect(width - 2 * 0.7).toBeGreaterThan(0.5);
+    }
+  }
 });
 
 test('intervals start at 1.35s, ease to 0.45s', () => {
@@ -118,7 +137,7 @@ test('windArrow: shows from the warning on, through the push, until the force is
 });
 
 test('no sudden jump inside a season, the breather steps up by a bounded amount', () => {
-  for (let n = 0; n <= 300; n++) {
+  for (let n = 0; n <= 10_000; n++) {
     const newSeason = n % WALLS_PER_SEASON === WALLS_PER_SEASON - 1; // the step into a new season
     expect(Math.abs(gapWidthAt(n + 1) - gapWidthAt(n))).toBeLessThanOrEqual(newSeason ? 0.6 : 0.15);
     expect(Math.abs(intervalAt(n + 1) - intervalAt(n))).toBeLessThanOrEqual(newSeason ? 0.2 : 0.05);

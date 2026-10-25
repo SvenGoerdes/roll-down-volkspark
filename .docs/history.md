@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: Feinschliff #45/#48 – Lücken-Untergrenze und Helm-Häufigkeit
+- Nachtmodus-Auftrag des Orchestrators: die halbe Arbeit vom 14.10. (Branch `feat/gameplay-polish`) auf `origin/main` neu aufsetzen. Hier die Balance-Teile: Lücken-Untergrenze 1,8 → 2,0 (#45), Helm-Pickup 10 % → 5 % (#48), beides messbar mit `tools/balance-sim.js`. Der Versuch mit 2,2 wurde verworfen (Median 127 → 185).
+- `selectPowerup` und `POWERUP_CHANCES` ersetzen `POWERUP_CHANCE`; `main.js` ruft dieselbe Funktion wie die Simulation. Die Sim zählt Helme getrennt und startet jede Runde mit eigenem Zufallswert. Auswirkung 1000 Sim-Runden: Median 127 → 125, p90 180 → 219. Details im PR.
+- Gebaut durch Claude Sonnet 5.5 (Versuch GPT-6 Luna); Zahlen offen bis der Nutzer sie sichtet (ADR 0027).
+
 ## 2026-10-18: Issue #77 – Bestenliste nur mit Turnstile-Token
 - Anlass: Jeder konnte per `curl` eine beliebige Zahl eintragen. Der Nutzer gab die Umsetzung frei, aber ohne Deploy, Secret oder echte Cloudflare-Ressourcen. → [ADR 0065](decisions/0065-turnstile-for-leaderboard-entries.md)
 - Neu: `worker/src/turnstile.js` (siteverify), Prüfung in `postScore` nur mit gesetztem `TURNSTILE_SECRET`; `js/turnstile.js` lädt das Widget erst beim Eintragen; CSP erlaubt `challenges.cloudflare.com`; `TURNSTILE_SITEKEY` in `config.js` (noch leer).

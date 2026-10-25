@@ -1,4 +1,4 @@
-import { CORRIDOR, WALL_EXT, SURFACE_FIRST, SURFACE_LEN, SURFACE_ORDER, WALLS_PER_SEASON, SEASONS, WIND_WARN } from './config.js';
+import { CORRIDOR, WALL_EXT, SURFACE_FIRST, SURFACE_LEN, SURFACE_ORDER, WALLS_PER_SEASON, SEASONS, WIND_WARN, GAP_WIDTH, POWERUP_CHANCES } from './config.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -18,7 +18,17 @@ export const speedAt = (n) => ease(16, 28, n, 60);
 // Seconds before wall n (from wall n-1) at the base speed.
 export const intervalAt = (n) => Math.max(0.45, ease(1.2, 0.65, n, 35) - 0.002 * afterYear(n)) + 0.15 * seasonRelief(n);
 
-export const gapWidthAt = (n) => Math.max(1.8, ease(3.2, 1.95, n, 35) - 0.003 * afterYear(n)) + 0.5 * seasonRelief(n);
+export const gapWidthAt = (n) => Math.max(GAP_WIDTH.floor, ease(GAP_WIDTH.start, GAP_WIDTH.target, n, GAP_WIDTH.tau) - GAP_WIDTH.lateTightening * afterYear(n)) + GAP_WIDTH.relief * seasonRelief(n);
+
+// Select one normal pickup from the configured per-type chances.
+export function selectPowerup(rng, chances = POWERUP_CHANCES) {
+  let roll = rng();
+  for (const [type, chance] of Object.entries(chances)) {
+    if (roll < chance) return type;
+    roll -= chance;
+  }
+  return null;
+}
 
 // Distance from wall n-1 to wall n, so they come intervalAt(n) seconds apart.
 export const spacingAt = (n) => intervalAt(n) * speedAt(n);
