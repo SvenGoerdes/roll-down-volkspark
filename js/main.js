@@ -63,7 +63,7 @@ let figureId = readFigure(), figure = null, picker, loadingFigure = false;
 let themeId = 'volkspark', gateSprites, gateLoad, groundLoad;
 const figureSheets = new Map();
 
-const newGame = () => ({ ...createGameState(readBest), theme: themeId });
+const newGame = () => ({ ...createGameState(readBest, board?.world()), theme: themeId });
 
 function gatesFor() {
   gateLoad ??= Promise.all([loadGateSprites(loadImage), loadGallerySprites(loadImage), loadOberbaumSprites(loadImage), loadReichstagSprites(loadImage), loadRathausSprites(loadImage)])

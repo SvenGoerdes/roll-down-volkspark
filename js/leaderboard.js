@@ -1,4 +1,5 @@
 import { WORKER_URL } from './config.js';
+import { validWorldBest } from './scoring.js';
 import { createTurnstile } from './turnstile.js';
 import { readName, writeName, netError, FETCH_TIMEOUT } from './name.js';
 
@@ -19,7 +20,7 @@ async function call(path, body) {
 }
 
 // Wires the leaderboard button, the game-over "eintragen" button and the list sheet.
-// Returns { offer(score, season) }: main.js calls it after a crash, and with null on a new run.
+// Returns { offer(score, season), world(), refreshWorld() }: main.js calls offer after a crash, and with null on a new run.
 export function setupLeaderboard() {
   const root = document.getElementById('board');
   const form = document.getElementById('board-form');
@@ -30,6 +31,7 @@ export function setupLeaderboard() {
   const turnstile = createTurnstile(document.getElementById('board-turnstile'));
   const offerBtn = document.getElementById('submit-score');
   let pending = null; // { score, season } of the run that can still be entered
+  let worldBest = null; // top score of the board, null while unknown or offline
   let mine = null; // { name, score, entries } of our last successful POST
 
   // Entries come from other people: only textContent, never innerHTML.
@@ -112,7 +114,19 @@ export function setupLeaderboard() {
     }
   });
 
+  // Quiet: a failing board must never disturb a run, the old value stays.
+  async function refreshWorld() {
+    try {
+      const { entries } = await call('/leaderboard');
+      worldBest = validWorldBest(Math.max(0, ...entries.map((e) => e.score))) ?? worldBest;
+    } catch { /* offline: no world goal */ }
+    return worldBest;
+  }
+  refreshWorld();
+
   return {
+    world: () => worldBest,
+    refreshWorld,
     offer(score, season) {
       pending = score > 0 ? { score, season } : null;
       offerBtn.hidden = !pending;
