@@ -22,6 +22,30 @@ export function nextStreak(streak, kind, need = STREAK_NEED) {
 // Walls still to pass to beat the record. 0 when there is no record or it is already beaten.
 export const wallsToRecord = (passed, best) => (best > 0 && passed <= best ? best - passed + 1 : 0);
 
+// The world record is the top leaderboard score. Anything else (offline, junk) means no world goal.
+export const validWorldBest = (score) => Number.isInteger(score) && score > 0 && score <= 10000 ? score : null;
+
+// A late leaderboard response may change only the current run's unstarted goal.
+export const applyWorldBest = (passed, score) => passed === 0 ? validWorldBest(score) : null;
+
+// The nearer of the own and the world record still to beat: { target (score to beat), walls, own, world }, or null.
+export function recordGoal(passed, best, worldBest) {
+  const own = wallsToRecord(passed, best);
+  const world = wallsToRecord(passed, worldBest);
+  if (!own && !world) return null;
+  const walls = Math.min(own || Infinity, world || Infinity);
+  return { target: passed + walls - 1, walls, own: own === walls, world: world === walls };
+}
+
+// Text under the game-over score: which record fell, or how far the nearest one is.
+export function overNote(passed, best, worldBest) {
+  if (worldBest > 0 && passed > worldBest) return { text: 'Neuer Weltrekord!', record: true };
+  if (best > 0 && passed > best) return { text: 'Neuer Rekord!', record: true };
+  const goal = recordGoal(passed, best, worldBest);
+  if (!goal) return { text: '', record: false };
+  return { text: `Noch ${goal.walls} ${goal.walls === 1 ? 'Mauer' : 'Mauern'} bis zum ${goal.world ? 'Weltrekord' : 'Rekord'}`, record: false };
+}
+
 // The wall whose pass would beat the record, or null. Only walls still ahead of the ball count.
 export function recordWall(walls, passed, best, playerZ) {
   if (best <= 0 || best < passed) return null;

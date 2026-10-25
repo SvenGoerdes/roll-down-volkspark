@@ -1,5 +1,5 @@
 import { MAX_HELMETS, POWERUPS } from './config.js';
-import { STREAK_NEED, nextStreak, wallsToRecord } from './scoring.js';
+import { STREAK_NEED, nextStreak, applyWorldBest, overNote } from './scoring.js';
 import { addHelmet } from './logic.js';
 import { burstSparkles, burstStones } from './fx.js';
 
@@ -9,9 +9,18 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
     setState('playing');
     showBanner(season().name, season().hint);
   }
+  // The world record may arrive after the run began: it counts only while no wall is passed yet.
+  function loadWorld() {
+    const game = getGame();
+    getBoard().refreshWorld().then((score) => {
+      const world = applyWorldBest(game.passed, score);
+      if (world) game.worldBest = world;
+    });
+  }
   function beginIntro() {
     setGame(newGame());
     getBoard().offer(null);
+    loadWorld();
     hud.start.classList.remove('show');
     hud.over.classList.remove('show');
     setState('intro');
@@ -41,6 +50,7 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
   function start() {
     setGame(newGame());
     getBoard().offer(null);
+    loadWorld();
     hud.start.classList.remove('show');
     hud.over.classList.remove('show');
     beginPlay();
@@ -81,10 +91,13 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
       navigator.vibrate?.(30);
     }
     // last, so the record wins the banner over a season or streak on the same wall
-    if (!game.recordShown && game.best > 0 && game.passed > game.best) {
-      game.recordShown = true;
+    const world = !game.worldShown && game.worldBest > 0 && game.passed > game.worldBest;
+    const own = !game.recordShown && game.best > 0 && game.passed > game.best;
+    if (world || own) {
+      if (world) game.worldShown = true;
+      if (own) game.recordShown = true;
       burstSparkles(game.fx, at.sx, at.sy, at.s / 45);
-      showBanner('Neuer Rekord!', `Mehr als ${game.best} Mauern`);
+      showBanner(world ? 'Weltrekord!' : 'Neuer Rekord!', `Mehr als ${world ? game.worldBest : game.best} Mauern`);
       navigator.vibrate?.([40, 40, 40]);
     }
   }
@@ -110,8 +123,7 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
     const best = Math.max(readBest(), game.passed);
     writeBest(best);
     getBoard().offer(game.passed, season().name);
-    const need = wallsToRecord(game.passed, game.best);
-    showOver(best, need, game.best > 0 && game.passed > game.best, game.passed);
+    showOver(best, overNote(game.passed, game.best, game.worldBest), game.passed);
   }
   return { beginIntro, beginPlay, choose, start, collect, onPass, crash };
 }

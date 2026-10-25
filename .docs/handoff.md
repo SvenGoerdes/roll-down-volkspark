@@ -1,10 +1,21 @@
 # Übergabe: neue Grafik und Implementierungs-Tickets
 
-Stand: **18. Oktober 2026**. Für eine neue Session zuerst dieses Dokument, die [Engineering-Prinzipien](engineering-principles.md) und den [Ticketplan](plans/art-integration-2026-10-18/README.md) lesen. Nicht erneut mit einer grundsätzlichen Stilbefragung anfangen.
+Stand: **25. Oktober 2026**. Für eine neue Session zuerst dieses Dokument, die [Engineering-Prinzipien](engineering-principles.md) und den [Ticketplan](plans/art-integration-2026-10-18/README.md) lesen. Nicht erneut mit einer grundsätzlichen Stilbefragung anfangen.
 
 ## Stand und nächster Schritt
 
-### Stand 18.10.2026, Nacht (zuerst lesen)
+### Stand 25.10.2026: offene PRs auf Nutzerwunsch zusammengeführt
+
+Der Nutzer hat ausdrücklich alle offenen PRs zum Merge freigegeben. Die Feature-PRs **#87, #89, #90, #91, #92, #93, #94, #95, #96 und #97** sind jetzt in `main`. PR **#98** liefert diesen aktualisierten Übergabestand. #97 enthielt bereits #87/#89/#91/#92; ein normaler Merge mit erhaltener Historie hat die vier enthaltenen PRs ebenfalls als gemergt übernommen.
+
+- Alle fünf Bauwerke sind in der Berlin-Tour; im Volkspark erscheinen Bauwerke ab Mauer 41 nach der konfigurierten Folge. Fernsehturm bleibt gestrichen. Boden, Storni und Alaska waren vorher bereits integriert.
+- Performance-Werkzeug, gezacktes Herbstlaub und Weltrekord-Anzeige sind übernommen. Das Balance-Update #94 setzt die späte Mindestlücke auf 2,0 und die normale Helmchance auf 5 Prozent; das sind eigenständige, in dieser Merge-Freigabe enthaltene Änderungen, keine Nebenwirkung der Grafik.
+- **Turnstile ist nur vorbereitet, nicht aktiviert:** der Sitekey bleibt leer. Keine Cloudflare-Ressource angelegt, kein Secret gesetzt und keinen Worker deployt. Aktivierung ausschließlich bewusst nach den Schritten in `operations.md`; ein gültiger Token beweist weiterhin keinen ehrlich erspielten Score.
+- Konflikte in Historie/ADR-Index sowie zwischen Pickup-Auswahl und Bauwerk-Vorladen und zwischen Weltrekord- und Token-Importen wurden unter Erhalt beider Funktionen aufgelöst. Aktualisierte PRs jeweils erst nach grüner CI gemergt.
+- Abschließender gemeinsamer Stand: **168 Tests grün**, Browser-Bundle mit 47 Modulen erfolgreich. 1.000 Balance-Simulationsrunden: Median 125, p90 219 Mauern; zwei Runden am Limit 400. Neue echte Geräte-/Safari-/FPS-Prüfung wurde bei diesem Merge nicht durchgeführt; die älteren Messungen unten bleiben als solche datiert.
+- Die Arbeiten liegen auf `main`; frühere Tabellen mit offenen PRs und unintegrierten Modellen sind historische Zustände. Für neue Arbeit aktuelle GitHub-Issues/PRs abfragen. Insbesondere aktiviert ein gemergter Token-PR allein noch keinen Schutz im produktiven Worker.
+
+### Historischer Stand 18.10.2026, Nacht
 
 **Live auf main:** Brandenburger Tor und Auswahl Berlin-Tour (#28), Storni und Intro (#24), Tor ohne Sichtfenster (ADR 0052), Boden: Volkspark alt, Berlin-Tour neu (#75), East Side Gallery (#71), Baumkanten-Fix (#85), Alaska als dritte Figur (#20). Fernsehturm gestrichen (#47).
 

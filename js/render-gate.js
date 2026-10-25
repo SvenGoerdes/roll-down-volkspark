@@ -53,17 +53,4 @@ export function drawGate(ctx, view, wall, gaps, season, art) {
     }
   }
   clipped('roof', 0, -halfRoof, halfRoof, 0, cutoff);
-
-  // Separate centre tracks show the single-gap radius rule even when portals overlap.
-  if (layout.passages.length > 1) {
-    ctx.save(); ctx.globalAlpha = alpha; ctx.strokeStyle = '#ffe7ae';
-    ctx.lineWidth = Math.max(1, p.s * 0.025);
-    for (const gap of layout.passages) {
-      const x = view.cx + gap.x * p.s, half = gap.w * p.s / 2;
-      ctx.beginPath(); ctx.moveTo(x - half, p.sy); ctx.lineTo(x + half, p.sy);
-      ctx.moveTo(x - half, p.sy - WALL_H * p.s); ctx.lineTo(x - half, p.sy);
-      ctx.moveTo(x + half, p.sy - WALL_H * p.s); ctx.lineTo(x + half, p.sy); ctx.stroke();
-    }
-    ctx.restore();
-  }
 }

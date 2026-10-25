@@ -9,6 +9,10 @@ GITHUB_REPO = "SvenGoerdes/roll-down-volkspark"
 # Secret, not in this file: GITHUB_TOKEN (fine-grained token, only this repo, Issues: read & write)
 # bunx wrangler secret put GITHUB_TOKEN
 
+# Secret, not in this file: TURNSTILE_SECRET (Cloudflare Turnstile widget secret).
+# Set: leaderboard entries need a valid token. Unset: no check (see .docs/operations.md).
+# bunx wrangler secret put TURNSTILE_SECRET
+
 # Leaderboard storage. Create once, then paste the printed id below:
 # npx wrangler kv namespace create LEADERBOARD
 [[kv_namespaces]]

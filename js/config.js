@@ -19,6 +19,9 @@ export const WIND_WARN = 0.7; // seconds a gust is announced before it pushes
 
 export const WALLS_PER_SEASON = 20;
 
+// Difficulty curve: the gap eases toward a wider late-run floor without changing its opening width.
+export const GAP_WIDTH = { start: 3.2, target: 1.95, floor: 2.0, tau: 35, lateTightening: 0.003, relief: 0.5 };
+
 // Visual-only gate layout; never used by collision or spawning.
 export const GATE_ART = { pierSpacing: 2.25 };
 
@@ -32,10 +35,33 @@ export const SIGHTSEEING_LANDMARKS = [
 ];
 
 // Berlin tour: one landmark per WALLS_PER_SEASON walls, in this order, then around again.
-export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery'];
+export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge', 'reichstag', 'red-town-hall'];
+
+// Volkspark: from this wall index (autumn, wall 41) every Nth wall is the landmark of the season instead of the gabion wall.
+export const VOLKSPARK_LANDMARK_FROM = 40;
+export const VOLKSPARK_LANDMARK_EVERY = 10;
+// Landmark sprites load once this many walls are passed, well before the first landmark wall comes into view.
+export const VOLKSPARK_LANDMARK_PRELOAD = 25;
 
 // Roadside plants this close in front of a gallery wall are drawn behind it, so no bush covers a mural.
 export const GALLERY_PLANT_BEHIND = 12;
+// Landmarks whose closed wall spans stand among the bushes and get the same plant order, so no bush cuts a pillar or mural.
+export const PLANT_BEHIND_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge', 'reichstag', 'red-town-hall'];
+
+// The pier sprite is wider than its brick shaft (plinth). Tiles step by the shaft width, so shafts meet
+// and plinths overlap, and the first shaft starts INSET before the span edge: no light gap between tiles.
+export const OBERBAUM_PIER_STEP = 0.62;
+export const OBERBAUM_PIER_INSET = 0.055;
+
+// Oberbruecke towers stand this far from the middle, outside the corridor, so they never hide a following gap.
+export const OBERBAUM_TOWER_X = CORRIDOR / 2 + 1.2;
+
+// Reichstag columns fill closed spans inside the portico (|x| <= REICHSTAG_PORTICO), one every STEP; the wing facades stand outside it.
+// The column sprite is slightly wider than its step, so neighbouring plinths overlap and the wall slice behind them has no seam.
+export const REICHSTAG_PORTICO = 4.44;
+export const REICHSTAG_COLUMN_STEP = 0.82;
+// The Rathaus clocktower's inner edge stands this far from the middle (left side), outside the corridor.
+export const RATHAUS_TOWER_INNER = CORRIDOR / 2 + 1.2;
 
 export const SEASONS = [
   {
@@ -97,7 +123,10 @@ export const POWERUPS = {
   widen: { id: 'widen', img: 'assets/powerups/widen.webp', icon: '↔️', name: 'Breite Lücken', hint: 'Lücken größer', duration: 7, color: '#1f9d55', glow: '80,220,140' },
 };
 export const MAX_HELMETS = 3;
-export const POWERUP_CHANCE = 0.3;
+// Per-wall chance for each pickup type; the combined chance is 25%.
+export const POWERUP_CHANCES = { helmet: 0.05, slowmo: 0.1, widen: 0.1 };
 
 // Cloudflare Worker: ideas → GitHub issues, shared leaderboard (see worker/)
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
+// Public Turnstile sitekey for leaderboard entries. Empty = no widget (the worker then must not have the secret).
+export const TURNSTILE_SITEKEY = '';

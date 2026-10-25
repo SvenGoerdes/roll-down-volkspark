@@ -1,4 +1,6 @@
 import { WORKER_URL } from './config.js';
+import { validWorldBest } from './scoring.js';
+import { createTurnstile } from './turnstile.js';
 import { readName, writeName, netError, FETCH_TIMEOUT } from './name.js';
 
 const DONE = {
@@ -18,7 +20,7 @@ async function call(path, body) {
 }
 
 // Wires the leaderboard button, the game-over "eintragen" button and the list sheet.
-// Returns { offer(score, season) }: main.js calls it after a crash, and with null on a new run.
+// Returns { offer(score, season), world(), refreshWorld() }: main.js calls offer after a crash, and with null on a new run.
 export function setupLeaderboard() {
   const root = document.getElementById('board');
   const form = document.getElementById('board-form');
@@ -26,8 +28,10 @@ export function setupLeaderboard() {
   const list = document.getElementById('board-list');
   const entry = document.getElementById('board-entry');
   const send = entry.querySelector('button');
+  const turnstile = createTurnstile(document.getElementById('board-turnstile'));
   const offerBtn = document.getElementById('submit-score');
   let pending = null; // { score, season } of the run that can still be entered
+  let worldBest = null; // top score of the board, null while unknown or offline
   let mine = null; // { name, score, entries } of our last successful POST
 
   // Entries come from other people: only textContent, never innerHTML.
@@ -70,6 +74,7 @@ export function setupLeaderboard() {
     if (pending) {
       form.elements.name.value = readName();
       send.textContent = `Eintragen · ${pending.score} Mauern`;
+      turnstile.show().catch((err) => message(err.message, 'err'));
     }
     load();
   }
@@ -87,10 +92,14 @@ export function setupLeaderboard() {
     e.preventDefault();
     const name = form.elements.name.value.trim();
     writeName(name);
+    if (turnstile.enabled && !turnstile.token()) {
+      message('Die Prüfung läuft noch – gleich nochmal drücken', 'err');
+      return;
+    }
     send.disabled = true;
     message('Wird gesendet …');
     try {
-      const data = await call('/scores', { name, ...pending });
+      const data = await call('/scores', { name, ...pending, token: turnstile.token() });
       if (data.status !== 'too_low') mine = { name, score: pending.score, entries: data.entries };
       pending = null;
       entry.hidden = true;
@@ -100,11 +109,24 @@ export function setupLeaderboard() {
     } catch (err) {
       message(netError(err), 'err');
     } finally {
+      turnstile.reset();
       send.disabled = false;
     }
   });
 
+  // Quiet: a failing board must never disturb a run, the old value stays.
+  async function refreshWorld() {
+    try {
+      const { entries } = await call('/leaderboard');
+      worldBest = validWorldBest(Math.max(0, ...entries.map((e) => e.score))) ?? worldBest;
+    } catch { /* offline: no world goal */ }
+    return worldBest;
+  }
+  refreshWorld();
+
   return {
+    world: () => worldBest,
+    refreshWorld,
     offer(score, season) {
       pending = score > 0 ? { score, season } : null;
       offerBtn.hidden = !pending;

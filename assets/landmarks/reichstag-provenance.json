@@ -1,0 +1,60 @@
+{
+  "source": ".claude/review/quellen/reichstag/reichstag.blend",
+  "sourceSha256": "79187a1b669259ec991fc7d1a395b8a3a5fdd3fc8d1681468f2aab7e138cf4f9",
+  "scriptSha256": "78c8af4928543ff446418b82bb4148e7a1624ba4c340af0d5f388d15cf87145e",
+  "parts": {
+    "wing-left": {
+      "width": 485,
+      "height": 897,
+      "worldWidth": 6.055000572204591,
+      "worldHeight": 11.198629924262924,
+      "left": -9.870000495910645,
+      "bottom": -1.1765151166915893,
+      "objects": 319,
+      "pngSha256": "01e0028368e28e40bcdc0f514bded14e9b33e1f34e97a4b1f96ae14fe02ff403",
+      "src": "assets/landmarks/reichstag-wing-left.webp",
+      "bytes": 56138,
+      "webpSha256": "711daddae457f73b36c28d6fc4335d8b9c4e65868f5be178412751176cb232f9"
+    },
+    "wing-right": {
+      "width": 485,
+      "height": 897,
+      "worldWidth": 6.055000572204591,
+      "worldHeight": 11.198629924262924,
+      "left": 3.8149999237060546,
+      "bottom": -1.1765151166915893,
+      "objects": 319,
+      "pngSha256": "a79486db115732371d96796ebcd54c74ec5a85ae4899237c330f1768a9a3220b",
+      "src": "assets/landmarks/reichstag-wing-right.webp",
+      "bytes": 50760,
+      "webpSha256": "6440120ce4f4f819b8c51268f6da8dfc3b599c60754e29a3c50ce56fb00a7af3"
+    },
+    "column": {
+      "width": 71,
+      "height": 546,
+      "worldWidth": 0.8800001335144039,
+      "worldHeight": 6.767324970406542,
+      "left": -3.6400001144409178,
+      "bottom": -1.1834738025069236,
+      "objects": 19,
+      "pngSha256": "7b36886742782621c4d84a5699c4ce1484b287aed952d5afe827263ca4a5a1ce",
+      "src": "assets/landmarks/reichstag-column.webp",
+      "bytes": 6006,
+      "webpSha256": "bb4ee0c7c23f76e7ea7810ebdd3a900b6be5a867006e849e3529c81618b25469"
+    },
+    "top": {
+      "width": 772,
+      "height": 358,
+      "worldWidth": 9.640179080346268,
+      "worldHeight": 4.47044573933156,
+      "left": -4.826333179473877,
+      "bottom": 5.348491348056713,
+      "objects": 607,
+      "pngSha256": "8d31d3ea5cc4702d5100097723a3693c686d3587d7b0b6d7b6261f6b58c4630f",
+      "src": "assets/landmarks/reichstag-top.webp",
+      "bytes": 32896,
+      "webpSha256": "d22fb1d1f63a567b6711704805f48952821d454d262fef7a832b59a870ac2f8c"
+    }
+  },
+  "packerSha256": "87f283fe208caef33b89d3aedae2fe74f0f6f06eb3d51c02d7b13cf4831ad97e"
+}

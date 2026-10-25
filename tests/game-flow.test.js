@@ -10,7 +10,7 @@ function fixture(overrides = {}) {
   const calls = [];
   let game = originalGame;
   let state = 'playing';
-  let board = { offer: (...args) => calls.push(['offer', ...args]) };
+  let board = { offer: (...args) => calls.push(['offer', ...args]), refreshWorld: async () => null };
   const tap = { textContent: '', focus() {} };
   const hud = {
     start: { classList: { remove() {}, add() {}, contains: () => false }, querySelector: () => tap },
@@ -58,6 +58,36 @@ test('flow pass uses current game for streak reward and record', () => {
   expect(calls.some(([kind, text]) => kind === 'banner' && text === 'Neuer Rekord!')).toBe(true);
 });
 
+test('flow: passing the world record wins the banner, own record follows later', () => {
+  const { game, calls, flow } = fixture();
+  game.worldBest = 6;
+  flow.onPass('good');
+  expect(game.worldShown).toBe(true);
+  expect(game.recordShown).toBe(true);
+  expect(calls.filter(([kind, text]) => kind === 'banner' && text === 'Weltrekord!')).toHaveLength(1);
+  expect(calls.some(([kind, text]) => kind === 'banner' && text === 'Neuer Rekord!')).toBe(false);
+});
+
+test('flow: a world record answer counts only before the first wall', async () => {
+  const fresh = fixture();
+  fresh.setBoard({ offer() {}, refreshWorld: async () => 40 });
+  fresh.flow.start();
+  const first = fresh.getGame();
+  first.passed = 0;
+  await Promise.resolve(); await Promise.resolve();
+  expect(first.worldBest).toBe(40);
+
+  const late = fixture();
+  let answer;
+  late.setBoard({ offer() {}, refreshWorld: () => new Promise((resolve) => { answer = resolve; }) });
+  late.flow.start();
+  const second = late.getGame();
+  second.passed = 3;
+  answer(40);
+  await Promise.resolve(); await Promise.resolve();
+  expect(second.worldBest).toBeUndefined();
+});
+
 test('flow pickup and fatal crash update the current game and leaderboard', () => {
   const { game, calls, flow, getState } = fixture();
   flow.collect('helmet');
@@ -75,7 +105,7 @@ test('flow pickup and fatal crash update the current game and leaderboard', () =
 test('flow uses the latest board and completes figure selection into intro', async () => {
   const { calls, flow, setState, setBoard, getState, tap } = fixture();
   setState('start');
-  const latest = { offer: (...args) => calls.push(['latest board', ...args]) };
+  const latest = { offer: (...args) => calls.push(['latest board', ...args]), refreshWorld: async () => null };
   setBoard(latest);
   const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
   Object.defineProperty(globalThis, 'document', { configurable: true, value: { activeElement: { blur() {} } } });

@@ -2,9 +2,9 @@
 
 Roll Down Volkspark is a browser game for phones. A kid tumbles down the hill in Volkspark Friedrichshain (Berlin) and has to roll through the gaps in gabion walls. Live at https://svengoerdes.github.io/roll-down-volkspark/.
 
-## Aktueller Wiedereinstieg: 18. Oktober 2026
+## Aktueller Wiedereinstieg: 25. Oktober 2026
 
-Für die Fortsetzung in einer neuen Session zuerst [handoff.md](handoff.md) lesen. Dort stehen die aktuellen Nutzerentscheidungen, lokalen Blender-/Bildquellen, Worktree-Vorarbeiten und die [elf Tickets](plans/art-integration-2026-10-18/README.md). Die Tickets sind auf GitHub veröffentlicht (#28, #47, #24, #20, #71–#77) und werden in herdr-Panes bearbeitet. Bestenlisten-Schutz ist nur für später geplant.
+Für die Fortsetzung in einer neuen Session zuerst [handoff.md](handoff.md) lesen. Dort stehen die aktuellen Nutzerentscheidungen, lokalen Blender-/Bildquellen, Worktree-Vorarbeiten und die [elf Tickets](plans/art-integration-2026-10-18/README.md). Die neuen Grafik-/Feinschliff-Features und das Performance-Werkzeug sind in `main` übernommen (PRs #87, #89–#97). PR #98 dokumentiert den Merge-Abschluss. Turnstile ist im Code vorbereitet, aber ohne Sitekey/Secret weiterhin nicht aktiviert; es gab keinen Worker-Deploy.
 
 | File | What's in it |
 |---|---|
