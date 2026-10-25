@@ -90,6 +90,21 @@ npx wrangler deploy
 npx wrangler tail --format pretty   # live logs, e.g. GitHub API errors
 ```
 
+### Turnstile für die Bestenliste einschalten (ADR 0065)
+
+Der Code ist fertig. Ohne Secret prüft der Worker nichts, ohne Sitekey zeigt das Spiel kein Widget: beides darf in beliebiger Reihenfolge live gehen. Schritte, in dieser Reihenfolge:
+
+1. **Widget anlegen:** Cloudflare Dashboard → Turnstile → Add widget. Hostname `svengoerdes.github.io`, Modus „Managed“. Du bekommst einen Sitekey (öffentlich) und ein Secret (geheim).
+2. **Secret setzen** (im eigenen Terminal, nie im Chat): `cd worker && npx wrangler secret put TURNSTILE_SECRET`.
+3. **Worker deployen:** `cd worker && npx wrangler deploy`. Ab jetzt lehnt `POST /scores` Einträge ohne Token ab, **auch vom alten Frontend**. Deshalb Schritt 4 gleich danach.
+4. **Sitekey eintragen:** `TURNSTILE_SITEKEY` in `js/config.js`, PR, CI grün, Merge.
+
+Zwischen Schritt 3 und 4 können Spieler nicht eintragen (Fehlermeldung „Bitte bestätige zuerst, dass du kein Bot bist“). Wer das vermeiden will, macht Schritt 4 vor 2 und 3: das Widget erscheint, der Worker ignoriert das Token noch.
+
+Der Worker prüft zusätzlich, dass Cloudflare als Website `svengoerdes.github.io` und als Aktion `score` meldet (das Widget setzt `action: 'score'`). Sonst 403, kein Eintrag. Beim Widget in Schritt 1 genau diesen Hostnamen eintragen.
+
+Lokal testen: `worker/.dev.vars` (nicht committen) mit `TURNSTILE_SECRET=1x0000000000000000000000000000000AA` und `DEV_ORIGINS=http://127.0.0.1:<Port>`, dann `npx wrangler dev`; im Frontend lokal Sitekey `1x00000000000000000000AA`. Cloudflares Testschlüssel melden Hostname `example.com` und keine Aktion: lokal `TURNSTILE_HOSTNAME=example.com` und `TURNSTILE_ACTION=` (leer) in `.dev.vars` setzen, in Produktion nie. Cloudflares Testschlüssel: Secret `1x…AA` = immer gültig, `2x…AA` = immer ungültig. Abschalten: `npx wrangler secret delete TURNSTILE_SECRET`.
+
 ## Infrastructure
 
 | Thing | Value |
@@ -108,6 +123,7 @@ npx wrangler tail --format pretty   # live logs, e.g. GitHub API errors
 | `TRIPO_API_KEY` | User's `~/.zshrc` only | Tripo 3D API (separate wallet from the Tripo web studio). Never in the repo. |
 | `GEMINI_API_KEY` | User's `~/.zshrc` only | Nano Banana via Google, billing on. Never in the repo. |
 | `OPENROUTER_API_KEY` | User's `~/.zshrc` only | Image generation, credit limit $5. Never in the repo. |
+| `TURNSTILE_SECRET` | Cloudflare worker secret | Turnstile-Widget-Secret. Noch nicht gesetzt (Rollout offen). |
 | `GITHUB_TOKEN` | Cloudflare worker secret | Fine-grained PAT, only this repo, **Issues: read and write** (+ Metadata read). Nothing else. |
 
 Set or rotate it in your own terminal, never in a chat:

@@ -2,6 +2,12 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: Issue #77 – Bestenliste nur mit Turnstile-Token
+- Anlass: Jeder konnte per `curl` eine beliebige Zahl eintragen. Der Nutzer gab die Umsetzung frei, aber ohne Deploy, Secret oder echte Cloudflare-Ressourcen. → [ADR 0065](decisions/0065-turnstile-for-leaderboard-entries.md)
+- Neu: `worker/src/turnstile.js` (siteverify), Prüfung in `postScore` nur mit gesetztem `TURNSTILE_SECRET`; `js/turnstile.js` lädt das Widget erst beim Eintragen; CSP erlaubt `challenges.cloudflare.com`; `TURNSTILE_SITEKEY` in `config.js` (noch leer).
+- Geprüft: 139 Bun-Tests mit Cloudflare-Testschlüsseln und gemocktem `fetch`; lokal `wrangler dev` plus Chrome 390×844 mit Test-Sitekey: Eintragen klappt, zu frühes Absenden zeigt Hinweis, `curl` ohne Token gibt 400. Nicht geprüft: echtes Widget, Produktions-Worker, Handys.
+- Gebaut durch Claude Sonnet 5.5; entschieden hat der Nutzer.
+
 ## 2026-10-18: #15 – Performance-Check als Skript
 - Neu: `tools/perf-check.mjs` (Playwright, installiertes Chrome, 390×844 DPR 2, 4×-CPU-Drossel). Spielt Volkspark und Berlin-Tour je einige Sekunden mit Bot, gibt Frame-Abstand (Median, p95, max) und Update+Render-Zeit aus. Eigener Bun-Server, Worker blockiert. Doku in `operations.md`. Kein ADR nötig, keine neue Abhängigkeit im Repo.
 - Messlauf 5 s: Frame-Abstand 16,7 ms (Median und p95) in beiden Themen; Update+Render Median 2,2 / 2,6 ms, p95 5,5 / 7,3 ms (Volkspark / Berlin-Tour). Mac-Chrome mit Drossel, kein echtes Handy.
