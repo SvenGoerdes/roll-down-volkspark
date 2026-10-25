@@ -88,3 +88,7 @@ Limits: ideas 5 per hour per IP and 100 per day in total; scores 20 per hour per
 Leaderboard entries need a Turnstile token once the secret is set ([ADR 0065](decisions/0065-turnstile-for-leaderboard-entries.md)). It stops curl and bots, not a faked score from the browser.
 
 The GitHub token is a Cloudflare secret, never in the repo or the browser. Details in [operations.md](operations.md).
+**Oberbaumbrücke (#72, ADR 0053–0055).** `render-oberbaum.js` kachelt den Pfeiler über feste Spannen, setzt die Türme bei `OBERBAUM_TOWER_X` außerhalb des Wegs und den Bogen über Mauerhöhe. `PLANT_BEHIND_LANDMARKS` gibt Galerie und Brücke die Pflanzenreihenfolge. Herkunft: `assets/landmarks/oberbaum-provenance.json`.
+
+**Reichstag (#73, ADR 0056–0058).** `render-reichstag.js` zeichnet die Flügel auf feste Spannen, füllt den Portikusbereich (`REICHSTAG_PORTICO`) mit Säulen im Abstand `REICHSTAG_COLUMN_STEP` und hängt Giebel mit Kuppel über Mauerhöhe. `TOUR_LANDMARKS` hat vier Einträge, der Reichstag steht im Winter. Herkunft: `assets/landmarks/reichstag-provenance.json`.
+

@@ -18,6 +18,14 @@ Visual checks so far used headless Chrome over the DevTools protocol (Python + `
 
 Sightseeing #28 now has a reproducible local check (macOS Chrome, Python `websocket-client` and Pillow): `python3 tools/check-sightseeing.py --port 8765`. Use the actual local server port (8773 in the sightseeing worktree). It writes numbered real-game screenshots, three sprite close-ups, failure/retry checks and a 4×-CPU render measurement under `.claude/review/28/`. The browser uses its own temporary profile and blocks production worker requests; no leaderboard writes. Game-loop stepping is controlled, while deferred art/tile preparation still runs normally. This does not replace real-device testing.
 
+## Performance check (#15)
+
+```sh
+bun tools/perf-check.mjs [--seconds 8] [--skip 36] [--port 8791] [--url http://host/]
+```
+
+Starts its own static server, opens the game in macOS Chrome at 390×844, DPR 2, CPU 4× slower, and plays Volkspark and Berlin-Tour for a few seconds each (a bot steers through the gaps and keeps the helmets full). It prints frame gap (median, p95, max) from real `requestAnimationFrame` and the cost of the game's own `step()` (update + render) in ms. `--skip` starts that many walls in, so Volkspark shows its landmark walls (#81). Playwright installs itself on first run under bun; there is no `package.json`. The production worker is blocked, no scores are written. Frame gap is capped near 16.7 ms by the display, so watch p95 and the update+render cost: on a 60 Hz screen, a cost near 16 ms under the 4× throttle means dropped frames. The throttle is a rough stand-in for a mid-range phone; it does not replace a real device. No CI use.
+
 ## Generate images
 
 ```sh
