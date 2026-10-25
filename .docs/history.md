@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: #15 – Performance-Check als Skript
+- Neu: `tools/perf-check.mjs` (Playwright, installiertes Chrome, 390×844 DPR 2, 4×-CPU-Drossel). Spielt Volkspark und Berlin-Tour je einige Sekunden mit Bot, gibt Frame-Abstand (Median, p95, max) und Update+Render-Zeit aus. Eigener Bun-Server, Worker blockiert. Doku in `operations.md`. Kein ADR nötig, keine neue Abhängigkeit im Repo.
+- Messlauf 5 s: Frame-Abstand 16,7 ms (Median und p95) in beiden Themen; Update+Render Median 2,2 / 2,6 ms, p95 5,5 / 7,3 ms (Volkspark / Berlin-Tour). Mac-Chrome mit Drossel, kein echtes Handy.
+- Gebaut von Claude Sonnet 5.5; beauftragt vom Nutzer.
+
 ## 2026-10-18: #76 – Gesamtprüfung der neuen Grafik
 - Sammel-Branch `feat/gesamtpruefung`: #87 (Oberbaum), #89 (Volkspark-Bauwerke), #92 (Reichstag), #91 (Rathaus) zusammengeführt; Konflikte in Config, Laden, Szene, Tests und Doku gelöst. → [ADR 0074](decisions/0074-combined-integration-branch.md), [0075](decisions/0075-five-landmark-order.md), [0076](decisions/0076-all-landmarks-loaded-together.md)
 - Gebaut von Claude Sonnet 5.5 (Auftrag des Nutzers). Ein Fix: Der Test der Volkspark-Bauwerke erwartete die Liste mit drei Einträgen und folgt jetzt der Liste mit fünf.
