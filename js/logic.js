@@ -67,6 +67,10 @@ export const seasonIndexAt = (n, perSeason, count) => Math.floor(n / perSeason) 
 // Which landmark wall n shows in the Berlin tour: one per season-length block, in order, cycling.
 export const landmarkAt = (n, order, perSeason) => order[Math.floor(n / perSeason) % order.length];
 
+// Landmark on wall n in the Volkspark theme: every `every`th wall from `from` on shows the tour's landmark of that season, else null.
+export const volksparkLandmarkAt = (n, from, every, order, perSeason) =>
+  n >= from && (n - from) % every === 0 ? landmarkAt(n, order, perSeason) : null;
+
 // Draw depth for a roadside plant: just behind the nearest of these walls it would otherwise stand in front of, else its own z.
 // Plants and walls scroll together, so the order never flips for a plant that is already in view.
 export function plantDepth(z, wallZs, span) {

@@ -1,0 +1,34 @@
+{
+  "source": ".claude/review/quellen/red-town-hall/rotes-rathaus-packed.blend",
+  "sourceSha256": "9d4b4add536475b16b26b00c368a0a85a48936919c173c8810f3573864ceb9db",
+  "scriptSha256": "7e43bedcb859a0fa81db2a133f08fb769cd2e518ad5802c084416da955dfc80d",
+  "parts": {
+    "wing": {
+      "width": 395,
+      "height": 313,
+      "worldWidth": 3.0799999999999996,
+      "worldHeight": 2.4406075949367083,
+      "left": 3.305,
+      "bottom": -0.4854576134681702,
+      "objects": 149,
+      "pngSha256": "ed5a07bd7ccd52a4a376abd0491b11a1d37621e1c0751f4d8032a8a8de8d0f38",
+      "src": "assets/landmarks/rathaus-wing.webp",
+      "bytes": 11744,
+      "webpSha256": "53fe78fe74f6af59924519c10d78afecd7e7044dcb42fbc3f2ca35b9c08812d2"
+    },
+    "tower": {
+      "width": 522,
+      "height": 1424,
+      "worldWidth": 5.430000095367432,
+      "worldHeight": 14.81287382337782,
+      "left": -2.715000047683716,
+      "bottom": -0.6883825504779816,
+      "objects": 705,
+      "pngSha256": "2b8220e7846ccf058519752a9312dab299e47415be9b8819b343f9d3ff8f9c31",
+      "src": "assets/landmarks/rathaus-tower.webp",
+      "bytes": 70936,
+      "webpSha256": "8765785d48763a183f105d1ffe4def0bc8f7e2bb28b1800731e7d040c72e20e9"
+    }
+  },
+  "packerSha256": "25aa16731d730756014506ad0c5f3dcca1d1a968005cf4478fd9a936e2fe6dc3"
+}

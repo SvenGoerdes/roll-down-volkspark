@@ -35,10 +35,33 @@ export const SIGHTSEEING_LANDMARKS = [
 ];
 
 // Berlin tour: one landmark per WALLS_PER_SEASON walls, in this order, then around again.
-export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery'];
+export const TOUR_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge', 'reichstag', 'red-town-hall'];
+
+// Volkspark: from this wall index (autumn, wall 41) every Nth wall is the landmark of the season instead of the gabion wall.
+export const VOLKSPARK_LANDMARK_FROM = 40;
+export const VOLKSPARK_LANDMARK_EVERY = 10;
+// Landmark sprites load once this many walls are passed, well before the first landmark wall comes into view.
+export const VOLKSPARK_LANDMARK_PRELOAD = 25;
 
 // Roadside plants this close in front of a gallery wall are drawn behind it, so no bush covers a mural.
 export const GALLERY_PLANT_BEHIND = 12;
+// Landmarks whose closed wall spans stand among the bushes and get the same plant order, so no bush cuts a pillar or mural.
+export const PLANT_BEHIND_LANDMARKS = ['brandenburg-gate', 'east-side-gallery', 'oberbaum-bridge', 'reichstag', 'red-town-hall'];
+
+// The pier sprite is wider than its brick shaft (plinth). Tiles step by the shaft width, so shafts meet
+// and plinths overlap, and the first shaft starts INSET before the span edge: no light gap between tiles.
+export const OBERBAUM_PIER_STEP = 0.62;
+export const OBERBAUM_PIER_INSET = 0.055;
+
+// Oberbruecke towers stand this far from the middle, outside the corridor, so they never hide a following gap.
+export const OBERBAUM_TOWER_X = CORRIDOR / 2 + 1.2;
+
+// Reichstag columns fill closed spans inside the portico (|x| <= REICHSTAG_PORTICO), one every STEP; the wing facades stand outside it.
+// The column sprite is slightly wider than its step, so neighbouring plinths overlap and the wall slice behind them has no seam.
+export const REICHSTAG_PORTICO = 4.44;
+export const REICHSTAG_COLUMN_STEP = 0.82;
+// The Rathaus clocktower's inner edge stands this far from the middle (left side), outside the corridor.
+export const RATHAUS_TOWER_INNER = CORRIDOR / 2 + 1.2;
 
 export const SEASONS = [
   {
@@ -105,3 +128,5 @@ export const POWERUP_CHANCES = { helmet: 0.05, slowmo: 0.1, widen: 0.1 };
 
 // Cloudflare Worker: ideas → GitHub issues, shared leaderboard (see worker/)
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
+// Public Turnstile sitekey for leaderboard entries. Empty = no widget (the worker then must not have the secret).
+export const TURNSTILE_SITEKEY = '';

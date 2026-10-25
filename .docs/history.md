@@ -7,6 +7,53 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - `selectPowerup` und `POWERUP_CHANCES` ersetzen `POWERUP_CHANCE`; `main.js` ruft dieselbe Funktion wie die Simulation. Die Sim zählt Helme getrennt und startet jede Runde mit eigenem Zufallswert. Auswirkung 1000 Sim-Runden: Median 127 → 125, p90 180 → 219. Details im PR.
 - Gebaut durch Claude Sonnet 5.5 (Versuch GPT-6 Luna); Zahlen offen bis der Nutzer sie sichtet (ADR 0027).
 
+## 2026-10-18: Issue #77 – Bestenliste nur mit Turnstile-Token
+- Anlass: Jeder konnte per `curl` eine beliebige Zahl eintragen. Der Nutzer gab die Umsetzung frei, aber ohne Deploy, Secret oder echte Cloudflare-Ressourcen. → [ADR 0065](decisions/0065-turnstile-for-leaderboard-entries.md)
+- Neu: `worker/src/turnstile.js` (siteverify), Prüfung in `postScore` nur mit gesetztem `TURNSTILE_SECRET`; `js/turnstile.js` lädt das Widget erst beim Eintragen; CSP erlaubt `challenges.cloudflare.com`; `TURNSTILE_SITEKEY` in `config.js` (noch leer).
+- Geprüft: 139 Bun-Tests mit Cloudflare-Testschlüsseln und gemocktem `fetch`; lokal `wrangler dev` plus Chrome 390×844 mit Test-Sitekey: Eintragen klappt, zu frühes Absenden zeigt Hinweis, `curl` ohne Token gibt 400. Nicht geprüft: echtes Widget, Produktions-Worker, Handys.
+- Gebaut durch Claude Sonnet 5.5; entschieden hat der Nutzer.
+
+## 2026-10-18: #15 – Performance-Check als Skript
+- Neu: `tools/perf-check.mjs` (Playwright, installiertes Chrome, 390×844 DPR 2, 4×-CPU-Drossel). Spielt Volkspark und Berlin-Tour je einige Sekunden mit Bot, gibt Frame-Abstand (Median, p95, max) und Update+Render-Zeit aus. Eigener Bun-Server, Worker blockiert. Doku in `operations.md`. Kein ADR nötig, keine neue Abhängigkeit im Repo.
+- Messlauf 5 s: Frame-Abstand 16,7 ms (Median und p95) in beiden Themen; Update+Render Median 2,2 / 2,6 ms, p95 5,5 / 7,3 ms (Volkspark / Berlin-Tour). Mac-Chrome mit Drossel, kein echtes Handy.
+- Gebaut von Claude Sonnet 5.5; beauftragt vom Nutzer.
+
+## 2026-10-18: #76 – Gesamtprüfung der neuen Grafik
+- Sammel-Branch `feat/gesamtpruefung`: #87 (Oberbaum), #89 (Volkspark-Bauwerke), #92 (Reichstag), #91 (Rathaus) zusammengeführt; Konflikte in Config, Laden, Szene, Tests und Doku gelöst. → [ADR 0074](decisions/0074-combined-integration-branch.md), [0075](decisions/0075-five-landmark-order.md), [0076](decisions/0076-all-landmarks-loaded-together.md)
+- Gebaut von Claude Sonnet 5.5 (Auftrag des Nutzers). Ein Fix: Der Test der Volkspark-Bauwerke erwartete die Liste mit drei Einträgen und folgt jetzt der Liste mit fünf.
+- Prüfung (Chrome 390×844, DPR 2; Bilder `.claude/review/76/`):
+
+| Prüfung | Ergebnis |
+|---|---|
+| `bun test tests` | 153 grün |
+| Berlin-Tour: Tor, Galerie, Brücke, Reichstag, Rathaus (`01`–`06`) | je mit Lücke und Folgelücke lesbar; keine Nähte, kein heller Rahmen; Büsche hinter den Bauwerken |
+| Volkspark ab Mauer 41 (`07`–`10`) | Bauwerke an Mauer 40, 50, 60, 80 wie in ADR 0075 |
+| Boden beider Modi | Volkspark alter Boden, Berlin-Tour neuer (in `04`, `05` und `09`) |
+| Intro Kalle, Tine, Alaska (`12-uebersicht-figuren.png`) | Intro, Rollen und Sprung ins Spiel laufen; keine Konsolenfehler |
+| 4× CPU: Bildabstand Median | 16,7 ms in beiden Modi bei allen fünf Bauwerken |
+| 4× CPU: Ausreißer | max 50 ms, Update+Rendern p95 bis 37 ms bei Mauer 45 und 65 |
+| Speicher aller Bauwerke | 20,8 MiB dekodiert, 510 KB WebP |
+
+- Kirschblüten im Winter: **Testartefakt, kein Fehler.** Die Bilder sprangen per `setSeason` direkt in den Winter, die schon fallenden Blüten blieben. Im echten Lauf ab Mauer 65 hat der Winter 0 Blüten (Winter-Bild `04`).
+- Bildsprung im Test: Jahreszeitenwechsel mitten im Bild zeigt für kurze Zeit den Himmel der alten Jahreszeit (Bild `09`); ebenfalls Folge des Sprungs, nicht untersucht.
+- Nicht geprüft: Safari, echte Geräte, 4×-Drossel auf Geräten. Alle Treffer, Helm und Wertung unberührt (Tests).
+
+## 2026-10-18: #81 – Bauwerke im Volkspark-Modus ab Herbst
+- Auftrag des Nutzers über den Orchestrator: ab Mauer 41 jede 10. Mauer ein Bauwerk statt der Gabionen-Mauer, dasselbe Bauwerk wie die Berlin-Tour in dieser Jahreszeit (`landmarkAt`). → [ADR 0062](decisions/0062-volkspark-landmark-walls.md)
+- Neu: `VOLKSPARK_LANDMARK_FROM` (40), `_EVERY` (10), `_PRELOAD` (25) in `config.js`, reine Funktion `volksparkLandmarkAt` in `logic.js`, `landmarkFor` in `render-scene.js` (gilt für beide Themen, auch für `PLANT_BEHIND_LANDMARKS`). `main.js` lädt die Sprites einmal bei 25 passierten Mauern; Fehler wird nicht wiederholt, die Gabionen-Mauer bleibt.
+- Lücken, Abstände, Treffer, Tempo unverändert; vor Mauer 41 ist der Volkspark pixelgleich (gleicher Zeichenpfad, leere Pflanzenliste).
+- `bun test tests`: 141 grün (zwei neue Tests). Spielbilder 390×844, DPR 2 unter `.claude/review/81/` (Mauer 41 und 51 Brücke, Mauer 42 Gabionen, Ladefehler-Fall). Vor Mauer 25 kein Sprite-Request. Echte Handys nicht geprüft.
+- Baut auf PR #87 auf. Gebaut von Claude Sonnet 5.5; entschieden hat der Nutzer.
+## 2026-10-18: #73 – Reichstag als viertes Bauwerk der Berlin-Tour (Winter)
+- Auftrag des Nutzers über den Orchestrator (Nachtmodus: selbst prüfen, PR öffnen, nicht mergen). Baut auf PR #87 (Oberbaum). Vier Teile aus `reichstag.blend` rendern: zwei Flügel, Säule mit Wandstück, Oberteil mit Kuppel. `render-reichstag.js` füllt feste Spannen, `top` überspannt die Lücke. → [ADR 0056](decisions/0056-reichstag-runtime-parts.md), [0057](decisions/0057-reichstag-gap-readability.md), [0058](decisions/0058-plant-order-for-reichstag.md)
+- Gebaut von Claude Sonnet 5.5: `tools/blender/render-reichstag-sprites.py`, `tools/build-reichstag-sprites.py`, `js/render-reichstag.js`, Laden in `main.js`, `TOUR_LANDMARKS` und `PLANT_BEHIND_LANDMARKS`. Treffer, Lücken, Abstände, Tempo, Wertung unverändert.
+- `bun test tests`: 144 grün, neue Tests in `tests/reichstag.test.js`. Spielbilder 390×844, DPR 2 unter `.claude/review/73/` (links, rechts, Mitte, doppelt, verbreitert; fern/mittel/nah). Echte Handys und 4×-CPU-Messung nicht geprüft.
+## 2026-10-18: #74 – Rotes Rathaus in der Berlin-Tour
+- Auftrag (Nutzer, Ticket #74): Rotes Rathaus als fünftes Bauwerk, Sicht auf die Folgelücke in der Darstellung lösen, keine Sichtfenster, keine Nähte. Quelle: reparierte `rotes-rathaus-packed.blend` (Torbogen offen). → [ADR 0059](decisions/0059-rathaus-low-row-and-side-tower.md)
+- Neu: `render-rathaus-sprites.py` (Blender) und `build-rathaus-sprites.py` erzeugen `wing` (unterste Arkadenreihe, vier ganze Fensterachsen) und `tower` (Uhrturm mit offenem Torbogen); `js/render-rathaus.js` kachelt den Flügel über feste Spannen und setzt den Turm links außerhalb des Wegs. `TOUR_LANDMARKS` und `PLANT_BEHIND_LANDMARKS` um `red-town-hall` ergänzt.
+- Geprüft: 145 Bun-Tests grün; Chrome 390×844 DPR 2, Berlin-Tour ab Mauer 60 (Aufnahmen `.claude/review/74/shots/`): keine Nähte, Folgelücken lesbar. Echte Handys nicht geprüft.
+- Entschieden hat der Nutzer das Ziel, die Darstellung Claude Sonnet 5.5; gebaut durch Claude Sonnet 5.5. Baut auf PR #87 (Oberbaum) auf.
+
 ## 2026-10-18: Issue #20 – Alaska Stufe 2: Clips, Atlas, dritte Figur
 - Nutzer gab Stufe 1 v2 frei („weiter“, Fell bleibt). Stufe 2: Intro auf vier Pfoten im Ablauf von #24, die Brille fällt sichtbar beim Übergang zur Rolle, Roll ohne Brille, Helm, Crash, Atlas, Einbau in die Auswahl ohne Freischaltregel. → [ADR 0047](decisions/0047-alaska-clips-and-third-figure.md)
 - Neu: `export-alaska.py` (Auswahl, Roll, Roll mit Helm, Crash), `build-figure.py` (Atlas und `figure-sheets.js`-Block pro Figur); `export-intro.py` kennt Alaska und einen Figurenmaßstab; `intro.py` hat Katzenposen für den neuen Körper; `alaska.py` hat einen Helm. `assets/figures/alaska/` (469 KB). `FIGURES` erhält `alaska`.
@@ -25,6 +72,14 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Ursache: `forestSprite()` schnitt für Baum-Variante 1 die linke 10 % des gemalten Waldbildes ab (`inset`). Der Schnitt ging mitten durch das Laub und ließ eine harte senkrechte Kante, bei gespiegelten Pflanzen auf der anderen Seite. Bei nahen, großen Bäumen fiel das auf, in allen Jahreszeiten und Themen. Nicht aus der Galerie, schon vor #71 vorhanden.
 - Fix: das Bild wird nicht mehr beschnitten. Variante 1 wird stattdessen gespiegelt, damit die Bäume abwechslungsreich bleiben. Keine Änderung an Spawn, Abständen oder Spielregeln.
 - Vorher/Nachher bei 390×844, DPR 2, Volkspark und Berlin-Tour, vier Jahreszeiten, zwei Fahrstrecken unter `.claude/review/85/`. `bun test tests` 134 grün. Gebaut von Claude Sonnet 5.5. Echte Handys nicht geprüft. Grafikfreigabe des Nutzers steht aus.
+
+## 2026-10-18: #72 – Oberbaumbrücke in der Berlin-Tour
+- Schritt 1 (Nutzer-Auftrag über den Orchestrator): vier Teile aus `oberbaum-bridge.blend` headless rendern, ohne Spielcode. Schritt 2 nach Merge von PR #84: Brücke als dritter Eintrag in `TOUR_LANDMARKS` (Herbst), `render-oberbaum.js` nach dem Muster von Tor und Galerie, kein Sichtfenster. → [ADR 0053](decisions/0053-oberbaum-bridge-runtime-parts.md), [0054](decisions/0054-oberbaum-towers-outside-corridor.md), [0055](decisions/0055-plant-order-for-oberbaum.md)
+- Gebaut von Claude Sonnet 5.5: `tools/blender/render-oberbaum-sprites.py`, `tools/build-oberbaum-sprites.py`, `js/render-oberbaum.js`, Laden in `main.js`, Pflanzenliste `PLANT_BEHIND_LANDMARKS`. Treffer, Lücken, Abstände, Tempo, Wertung unverändert.
+- `bun test tests`: 139 grün, neue Tests in `tests/oberbaum.test.js`. Spielbilder 390×844, DPR 2 unter `.claude/review/72/` (links, rechts, doppelt, verbreitert; fern/mittel/nah; Pickup; Durchfahrt und Crash im laufenden Spiel). Echte Handys und 4×-CPU-Messung nicht geprüft.
+- Nutzer-Rückmeldung: helle Lücken zwischen den Mauerstücken gefallen nicht. Ursache: der Pfeiler-Sprite ist breiter als sein Schaft. Fix: Kacheln rücken um die Schaftbreite vor (`OBERBAUM_PIER_STEP`/`_INSET`), Lücken und Treffer unverändert. Neue Bilder unter `.claude/review/72/v2/`. Gebaut von Claude Sonnet 5.5.
+
+- Zusatz-Fixes am Tor (Nutzer): die hellen Mittellinien bei mehreren Lücken (`#ffe7ae`) sah der Nutzer als Bug-Rahmen, sie sind aus `render-gate.js` entfernt; Galerie und Brücke zeichnen keine solchen Linien. `brandenburg-gate` steht jetzt auch in `PLANT_BEHIND_LANDMARKS`, damit kein naher Busch eine Säule abschneidet. Bilder unter `.claude/review/72/tor/`. Gebaut von Claude Sonnet 5.5.
 
 ## 2026-10-18: Brandenburger Tor ohne Sichtfenster
 - Der Nutzer hat nach dem Merge von #28 gemeldet, dass beim Anfahren ein Stück von Tor und Säule fehlt. Ursache war das Sichtfenster aus ADR 0034, das hohe Teile vor der nächsten Durchfahrt halb durchsichtig zeichnete. Der Nutzer hat entschieden: Tor immer vollständig. → [ADR 0052](decisions/0052-gate-drawn-whole-without-sight-window.md).
