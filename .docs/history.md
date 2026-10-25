@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-18: Feinschliff #44 – Herbstlaub statt Blütenblatt-Form
+- Die Herbst-Partikel waren schon als Laub gedacht, zeichneten sich aber als glatte Spindel und lasen sich wie Kirschblütenblätter. Jetzt malt `render-fx.js` pro Herbstfarbe einmal ein gezacktes Blatt mit Adern in ein kleines Canvas (`warmUp`), `drawParticles` stempelt es mit `drawImage`. Im Frame-Loop entsteht nichts Neues.
+- Geprüft: Chrome 390×844 DPR 2, Herbst vorher/nachher (`.claude/review/feinschliff/`), keine Konsolenfehler. 134 Tests grün (die Zeichnung selbst hat keinen Test).
+- Versuch vom 14.10. von GPT-6 Luna, neu aufgesetzt und geprüft durch Claude Sonnet 5.5.
+
 ## 2026-10-18: Feinschliff #45/#48 – Lücken-Untergrenze und Helm-Häufigkeit
 - Nachtmodus-Auftrag des Orchestrators: die halbe Arbeit vom 14.10. (Branch `feat/gameplay-polish`) auf `origin/main` neu aufsetzen. Hier die Balance-Teile: Lücken-Untergrenze 1,8 → 2,0 (#45), Helm-Pickup 10 % → 5 % (#48), beides messbar mit `tools/balance-sim.js`. Der Versuch mit 2,2 wurde verworfen (Median 127 → 185).
 - `selectPowerup` und `POWERUP_CHANCES` ersetzen `POWERUP_CHANCE`; `main.js` ruft dieselbe Funktion wie die Simulation. Die Sim zählt Helme getrennt und startet jede Runde mit eigenem Zufallswert. Auswirkung 1000 Sim-Runden: Median 127 → 125, p90 180 → 219. Details im PR.
