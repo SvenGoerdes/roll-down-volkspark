@@ -42,6 +42,8 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 
 - Alaska (#20): Speicherbudget der Runtime-WebPs liegt mit 2,44 MiB über dem 2-MiB-Ziel aus ADR 0031 (Alaska 0,45 MiB). Ziel neu festlegen oder Atlanten kürzen. Leistung unter CPU-Drossel und echte Handys für Alaska nicht geprüft.
 
+- Turnstile (#77): Rollout steht aus (Widget, Secret, Deploy, Sitekey, siehe operations.md). Danach prüfen, ob die Bestenliste auf echten Handys flüssig bleibt. Erspielten Score beweist es nicht; ein Lauf-Beweis wäre ein eigenes Ticket.
+
 ## Known limits (accepted)
 - **Scores can be faked.** The client reports them; this is the current technical limit documented in ADR 0006. The user now wants later hardening against unchecked direct submissions (plan above). Proposed anti-bot tokens still do not prove an honestly played score.
 - **The leaderboard can lose updates** when two people submit within about 60 s (KV read-modify-write, eventual consistency).
@@ -55,7 +57,10 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - The new difficulty curve (ADR 0024) comes from a bot simulation. Playtest it on real phones: does the start feel too slow, is year two hard enough, is autumn still the hardest season but no wall?
 - Never tested on a real phone (only headless Chrome at iPhone size). Check iOS Safari above all.
 - On phones without a GPU canvas, a frame takes about 50–70 ms at 4x CPU throttling, measured in headless Chrome.
+- Balance (#45/#48): Floor 2,0 und Helm 5 % kommen aus dem Sim-Bot. Mit echten Spielern prüfen. Streak-Helm bleibt bis #64.
 
 ## Reminders
 - The GitHub token needs an expiry date (e.g. 90 days) plus a calendar reminder to rotate it.
 - Keep 2FA on for GitHub and Cloudflare.
+
+- **Reichstag #73:** Die Berlin-Tour lädt jetzt Tor, Galerie, Brücke und Reichstag zusammen (etwa 17 MiB dekodiert RGBA). Speicher auf echten Handys und Safari messen, bei Bedarf je Jahreszeit nachladen. Das Gebäude endet bei |x| ≈ 9,9; bis `WALL_EXT` bleibt frei.

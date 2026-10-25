@@ -4,3 +4,4 @@ node_modules/
 .wrangler/
 .claude/
 __pycache__/
+.dev.vars

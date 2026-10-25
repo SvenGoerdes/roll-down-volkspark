@@ -1,8 +1,8 @@
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, POWERUP_CHANCE, WALLS_PER_SEASON, SPRING, ICE,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, WALLS_PER_SEASON, SPRING, ICE, VOLKSPARK_LANDMARK_PRELOAD,
 } from './config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow,
+  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow, selectPowerup,
 } from './logic.js';
 import { loadSeasonBackgrounds } from './seasons.js';
 import { environmentPreview, preparePreview } from './environment-preview.js';
@@ -16,6 +16,9 @@ import { readFigure, saveFigure, setupFigureSelect } from './figure-select.js';
 import { setupThemeSelect } from './theme-select.js';
 import { loadGateSprites } from './gate-sprites.js';
 import { loadGallerySprites } from './gallery-sprites.js';
+import { loadOberbaumSprites } from './oberbaum-sprites.js';
+import { loadReichstagSprites } from './reichstag-sprites.js';
+import { loadRathausSprites } from './rathaus-sprites.js';
 import {
   primeGrade, warmUp,
 } from './render-fx.js';
@@ -63,12 +66,23 @@ const figureSheets = new Map();
 const newGame = () => ({ ...createGameState(readBest, board?.world()), theme: themeId });
 
 function gatesFor() {
-  gateLoad ??= Promise.all([loadGateSprites(loadImage), loadGallerySprites(loadImage)])
-    .then(([gate, gallery]) => { gateSprites = { 'brandenburg-gate': gate, 'east-side-gallery': gallery }; return gateSprites; }).catch((err) => {
+  gateLoad ??= Promise.all([loadGateSprites(loadImage), loadGallerySprites(loadImage), loadOberbaumSprites(loadImage), loadReichstagSprites(loadImage), loadRathausSprites(loadImage)])
+    .then(([gate, gallery, oberbaum, reichstag, rathaus]) => {
+      gateSprites = { 'brandenburg-gate': gate, 'east-side-gallery': gallery, 'oberbaum-bridge': oberbaum, reichstag, 'red-town-hall': rathaus };
+      return gateSprites;
+    }).catch((err) => {
     gateLoad = null; // A failed optional theme load can be retried, never start with invisible gates.
     throw err;
   });
   return gateLoad;
+}
+
+// Volkspark loads the landmark sprites late, once. A failed load is not retried: the gabion walls stay.
+let landmarksTried = false;
+function preloadLandmarks() {
+  if (landmarksTried || themeId !== 'volkspark' || game.passed < VOLKSPARK_LANDMARK_PRELOAD) return;
+  landmarksTried = true;
+  gatesFor().catch(() => {});
 }
 
 // The Berlin-Tour ground loads and builds on first choice; Volkspark never pays for it.
@@ -142,13 +156,8 @@ function spawnWall() {
   game.lastGapX = gaps[0].x;
   game.walls.push({ z: SPAWN_Z, gaps, index: game.spawned, snowy: s.id === 'winter' });
   const spacing = spacingAt(game.spawned + 1); // distance to the next wall
-  if (Math.random() < POWERUP_CHANCE && game.spawned > 1) {
-    const types = Object.keys(POWERUPS);
-    game.pickups.push({
-      z: SPAWN_Z + spacing / 2, type: types[(Math.random() * types.length) | 0],
-      x: (Math.random() - 0.5) * (CORRIDOR - 2),
-    });
-  }
+  const type = game.spawned > 1 ? selectPowerup(Math.random) : null;
+  if (type) game.pickups.push({ z: SPAWN_Z + spacing / 2, type, x: (Math.random() - 0.5) * (CORRIDOR - 2) });
   if (s.id === 'spring' && game.spawned > 2 && Math.random() < 0.6) {
     game.puddles.push({ z: SPAWN_Z + spacing * (0.3 + Math.random() * 0.4), x: (Math.random() - 0.5) * (CORRIDOR - 2), r: 0.9 + Math.random() * 0.6 });
   }
@@ -281,6 +290,7 @@ function update(dt) {
       const gaps = w.gaps.map((g) => widened(g, widenFactor));
       if (passesWall(p.x, PLAYER_R * 0.75, gaps)) {
         game.passed++;
+        preloadLandmarks();
         setSeason(seasonIndexAt(game.passed, WALLS_PER_SEASON, SEASONS.length));
         onPass(judgePass(p.x, PLAYER_R * 0.75, gaps));
       } else {
