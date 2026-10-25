@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-25: Alle offenen PRs nach Nutzerfreigabe zusammengeführt
+- Grafik-Sammel-PR #97 mit enthaltenen PRs #87/#89/#91/#92 unter Erhalt ihrer Commit-Historie gemergt. Danach #90 (Performance-Werkzeug), #93 (optionale Token-Prüfung), #94 (Balance), #95 (Herbstlaub), #96 (Weltrekord); dieser Dokumentations-PR #98 hält den Abschluss fest.
+- Fünf nach dem ersten Merge entstandene Konfliktstände aufgelöst. Historien und ADR-Einträge erhalten; `main.js` behält das Bauwerk-Vorladen mit der neuen Pickup-Auswahl, die Bestenliste beide Funktionen für Weltrekord und Token. Keine Branches erzwungen überschrieben, keine Schutzregeln umgangen.
+- Prüfungen am gemeinsamen Stand: 168 Bun-Tests grün, Browser-Bundle mit 47 Modulen erfolgreich; jede aktualisierte Feature-PR-CI vor Merge grün. Balance-Simulation mit 1.000 Runden bestätigt Median 125 und p90 219, zwei Runden am Sim-Limit 400.
+- Turnstile-Sitekey bleibt leer; kein Secret, keine neue Cloudflare-Ressource und kein Worker-Deploy. Schutz ist vorbereitet, nicht aktiviert. Keine zusätzliche Prüfung auf echten Geräten, keine neue Safari-/FPS-Messung in dieser Merge-Session.
+- Beauftragt und Merge aller offenen PRs freigegeben vom Nutzer am 25.10.2026; Prüfung, Konfliktauflösung und Integration durch Codex. Die ursprünglichen Feature-Autoren und Prüfungen stehen in den Einträgen vom 18.10. Commit: dieser PR #98.
+
 ## 2026-10-18: Feinschliff #46 – Weltrekord neben dem eigenen Rekord
 - Aus der halben Arbeit vom 14.10. (nur reine Logik in `scoring.js`) wurde die ganze Anbindung: `leaderboard.js` holt die Top-Wertung leise beim Start und vor jeder Runde (`refreshWorld`, Fehler ändern nichts). Das Ziel ist der nähere von eigenem und Weltrekord (`recordGoal`). Das Schild heißt „Weltrekord“, wenn der Weltrekord das Ziel ist, sonst „Rekord“. Banner „Weltrekord!“ beim Überholen, Game-over-Text „Noch N Mauern bis zum Weltrekord“ (`overNote`).
 - Eine späte Antwort ändert das Ziel nur, solange noch keine Mauer geschafft ist (`applyWorldBest`), damit das Schild nicht mitten im Lauf springt.
