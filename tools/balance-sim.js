@@ -4,10 +4,10 @@
 // The bot was tuned so that on the old curve (ADR 0024) it got stuck around wall 50 like our testers.
 // Spring, ice and wind come from js/config.js and js/logic.js; the rest of the steering copies js/main.js, keep both in step.
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, WALLS_PER_SEASON, POWERUP_CHANCE, MAX_HELMETS, POWERUPS, SURFACES, SPRING, ICE,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, WALLS_PER_SEASON, MAX_HELMETS, POWERUPS, SURFACES, SPRING, ICE,
 } from '../js/config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, windAt, addHelmet, stepWind, createSurfaceTrack,
+  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, windAt, addHelmet, stepWind, createSurfaceTrack, selectPowerup,
 } from '../js/logic.js';
 import { judgePass, nextStreak } from '../js/scoring.js';
 
@@ -37,7 +37,7 @@ function aimSigma(d, T, speed) {
 }
 
 function run(rng) {
-  const g = { time: 0, dist: 0, passed: 0, streak: 0, perfects: 0, spawned: 0, nextSpawnIn: 0, nextKick: 0, lastGapX: 0, pace: speedAt(0) };
+  const g = { time: 0, dist: 0, passed: 0, streak: 0, perfects: 0, spawned: 0, nextSpawnIn: 0, nextKick: 0, lastGapX: 0, pace: speedAt(0), eligibleWalls: 0, pickupSpawned: 0, helmetSpawned: 0, slowmoSpawned: 0, widenSpawned: 0, pickupCollected: 0, normalHelmetSpawned: 0, normalHelmetCollected: 0, normalHelmetGranted: 0, normalHelmetWaste: 0, streakHelmetGranted: 0, streakHelmetWaste: 0 };
   const track = createSurfaceTrack(rng);
   const walls = [], pickups = [], puddles = [];
   const p = { x: 0, vx: 0, target: 0, slippery: 0, helmets: 0 };
@@ -52,9 +52,13 @@ function run(rng) {
     g.lastGapX = gaps[0].x;
     walls.push({ z: SPAWN_Z, gaps });
     const spacing = spacingAt(n + 1); // distance to the next wall
-    if (rng() < POWERUP_CHANCE && n > 1) {
-      const types = Object.keys(POWERUPS);
-      pickups.push({ z: SPAWN_Z + spacing / 2, type: types[(rng() * types.length) | 0], x: (rng() - 0.5) * (CORRIDOR - 2) });
+    if (n > 1) g.eligibleWalls++;
+    const type = n > 1 ? selectPowerup(rng) : null;
+    if (type) {
+      pickups.push({ z: SPAWN_Z + spacing / 2, type, x: (rng() - 0.5) * (CORRIDOR - 2) });
+      g.pickupSpawned++;
+      g[`${type}Spawned`]++;
+      if (type === 'helmet') g.normalHelmetSpawned++;
     }
     if (s.id === 'spring' && n > 2 && rng() < 0.6) {
       puddles.push({ z: SPAWN_Z + spacing * (0.3 + rng() * 0.4), x: (rng() - 0.5) * (CORRIDOR - 2), r: 0.9 + rng() * 0.6 });
@@ -122,16 +126,24 @@ function run(rng) {
         if (kind === 'perfect') g.perfects++;
         const st = nextStreak(g.streak, kind);
         g.streak = st.streak;
-        if (st.reward && !NO_STREAK) p.helmets = addHelmet(p.helmets, MAX_HELMETS);
+        if (st.reward && !NO_STREAK) {
+          if (p.helmets < MAX_HELMETS) { p.helmets = addHelmet(p.helmets, MAX_HELMETS); g.streakHelmetGranted++; }
+          else g.streakHelmetWaste++;
+        }
       } else if (p.helmets > 0) { p.helmets--; g.streak = 0; w.broken = true; }
-      else return { score: g.passed, season: seasonIndexAt(g.passed, WALLS_PER_SEASON, SEASONS.length), time: g.time, perfects: g.perfects };
+      else return result();
     }
     for (const it of pickups) {
       const before = it.z;
       it.z -= dz;
       if (it.taken || before <= PLAYER_Z || it.z > PLAYER_Z || Math.abs(it.x - p.x) >= 1) continue;
       it.taken = true;
-      if (it.type === 'helmet') p.helmets = addHelmet(p.helmets, MAX_HELMETS);
+      g.pickupCollected++;
+      if (it.type === 'helmet') {
+        g.normalHelmetCollected++;
+        if (p.helmets < MAX_HELMETS) { p.helmets = addHelmet(p.helmets, MAX_HELMETS); g.normalHelmetGranted++; }
+        else g.normalHelmetWaste++;
+      }
       else eff[it.type] = POWERUPS[it.type].duration;
     }
     for (const pd of puddles) {
@@ -143,12 +155,17 @@ function run(rng) {
       for (let i = list.length - 1; i >= 0; i--) if (list[i].z < 0.6 || list[i].broken || list[i].taken) list.splice(i, 1);
     }
   }
-  return { score: g.passed, season: -1, time: g.time, perfects: g.perfects };
+  return result();
+
+  function result() {
+    return { score: g.passed, season: g.passed >= MAX_WALLS ? -1 : seasonIndexAt(g.passed, WALLS_PER_SEASON, SEASONS.length), time: g.time, perfects: g.perfects,
+      eligibleWalls: g.eligibleWalls, pickupSpawned: g.pickupSpawned, helmetSpawned: g.helmetSpawned, slowmoSpawned: g.slowmoSpawned, widenSpawned: g.widenSpawned, pickupCollected: g.pickupCollected, normalHelmetSpawned: g.normalHelmetSpawned, normalHelmetCollected: g.normalHelmetCollected,
+      normalHelmetGranted: g.normalHelmetGranted, normalHelmetWaste: g.normalHelmetWaste, streakHelmetGranted: g.streakHelmetGranted, streakHelmetWaste: g.streakHelmetWaste };
+  }
 }
 
 const runs = Number(process.argv.find((a) => /^\d+$/.test(a))) || 600;
-const rng = mulberry(1);
-const res = Array.from({ length: runs }, () => run(rng));
+const res = Array.from({ length: runs }, (_, i) => run(mulberry(i + 1)));
 const sc = res.map((r) => r.score).sort((a, b) => a - b);
 const q = (f) => sc[Math.min(runs - 1, Math.floor(f * runs))];
 const share = SEASONS.map((s, i) => `${s.name} ${Math.round((res.filter((r) => r.season === i).length / runs) * 100)} %`);
@@ -159,7 +176,16 @@ for (let b = 0; b < MAX_WALLS; b += 10) {
   rates.push(`${b}: ${((sc.filter((v) => v >= b && v < b + 10).length / reached / 10) * 100).toFixed(1)}`);
 }
 console.log(`${runs} Runden · Median ${q(0.5)} · 25 % ${q(0.25)} · 75 % ${q(0.75)} · 90 % ${q(0.9)} · 98 % ${q(0.98)} Mauern`);
+console.log(`${res.filter((r) => r.score === MAX_WALLS).length} Runden erreichten das Sim-Limit von ${MAX_WALLS} Mauern (zensiert)`);
 console.log(`Runde dauert im Schnitt ${Math.round(res.reduce((a, r) => a + r.time, 0) / runs)} s`);
 console.log(`Crashes nach Jahreszeit: ${share.join(' · ')}`);
 console.log(`Crash-Chance pro Mauer in % (ab Mauer): ${rates.join(' · ')}`);
 console.log(`Perfekt: ${Math.round((res.reduce((a, r) => a + r.perfects, 0) / res.reduce((a, r) => a + r.score, 0)) * 100)} % der Mauern`);
+const sum = (key) => res.reduce((total, r) => total + r[key], 0);
+const perRun = (key) => (sum(key) / runs).toFixed(1);
+console.log(`Normale Pickups je Runde: ${perRun('pickupSpawned')} gespawnt, ${perRun('pickupCollected')} eingesammelt`);
+const eligible = sum('eligibleWalls');
+console.log(`Pickup-Häufigkeit je 100 berechtigte Mauern (${eligible}): Helm ${(sum('helmetSpawned') / eligible * 100).toFixed(2)}, Zeitlupe ${(sum('slowmoSpawned') / eligible * 100).toFixed(2)}, breite Lücken ${(sum('widenSpawned') / eligible * 100).toFixed(2)}`);
+console.log(`Normale Helme je 100 berechtigte Mauern: ${(sum('normalHelmetGranted') / eligible * 100).toFixed(2)} vergeben, ${(sum('normalHelmetWaste') / eligible * 100).toFixed(2)} verfallen`);
+console.log(`Normale Helme je Runde: ${perRun('normalHelmetSpawned')} gespawnt, ${perRun('normalHelmetCollected')} eingesammelt, ${perRun('normalHelmetGranted')} vergeben, ${perRun('normalHelmetWaste')} am Limit verfallen`);
+console.log(`Streak-Helme je Runde: ${perRun('streakHelmetGranted')} vergeben, ${perRun('streakHelmetWaste')} am Limit verfallen`);

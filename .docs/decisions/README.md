@@ -33,3 +33,17 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0037](0037-integrate-reviewed-art-without-rebalancing.md) | Preserve new model look, shifted passages, full art integration without rebalancing | User (scope), Codex (handoff/ticket drafts) |
 | [0046](0046-alaska-trellis-body-clean-rig.md) | Alaska: TRELLIS-Körper neu vernetzt, Pivot-Rig mit Brust- und Hinterteil-Gelenk | User (Körper, Look), Sonnet 5.5 (Verfahren) |
 | [0047](0047-alaska-clips-and-third-figure.md) | Alaska als dritte Figur: Intro auf vier Pfoten, Clips, Atlas, fallende Brille | User (Ablauf, Brille), Sonnet 5.5 (Umsetzung) |
+| [0027](0027-late-gap-floor-and-fewer-helmets.md) | Late gap floor 2.0, helmet chance halved | User (tickets #45, #48), Sonnet 5.5 (numbers) |
+
+| [0065](0065-turnstile-for-leaderboard-entries.md) | Turnstile-Token für Bestenlisten-Einträge, Worker prüft nur mit gesetztem Secret | User (Issue #77), Sonnet 5.5 (Umsetzung) |
+
+| [0053](0053-oberbaum-bridge-runtime-parts.md) | Oberbaumbrücke aus vier Modellteilen, dritte Jahreszeit der Berlin-Tour | User (scope), Sonnet 5.5 (parts, renderer) |
+| [0054](0054-oberbaum-towers-outside-corridor.md) | Oberbaum-Türme außerhalb des Wegs, Folgelücke lesbar | User (visibility), Sonnet 5.5 (placement) |
+| [0055](0055-plant-order-for-oberbaum.md) | Galerie-Pflanzenreihenfolge auch für die Brücke | User (plants stay), Sonnet 5.5 |
+| [0062](0062-volkspark-landmark-walls.md) | Bauwerke als jede 10. Mauer im Volkspark ab Herbst | User (Ticket #81), Sonnet 5.5 |
+| [0056](0056-reichstag-runtime-parts.md) | Reichstag aus vier Modellteilen, vierte Jahreszeit der Berlin-Tour | User (scope), Sonnet 5.5 (parts, renderer) |
+| [0057](0057-reichstag-gap-readability.md) | Reichstag: Durchfahrt folgt der Spiellücke, Folgelücke lesbar | User (no rebalancing), Sonnet 5.5 (placement) |
+| [0058](0058-plant-order-for-reichstag.md) | Galerie-Pflanzenreihenfolge auch für den Reichstag | User (plants stay), Sonnet 5.5 |
+| [0074](0074-combined-integration-branch.md) | Sammel-Branch für die Gesamtprüfung (#76) | User (Auftrag), Sonnet 5.5 |
+| [0075](0075-five-landmark-order.md) | Reihenfolge der fünf Bauwerke, Volkspark folgt der Liste | User (Reihenfolge), Sonnet 5.5 |
+| [0076](0076-all-landmarks-loaded-together.md) | Alle fünf Bauwerke laden gemeinsam; Budget und Messung | Sonnet 5.5 (Messung) |
