@@ -23,6 +23,9 @@ import { loadRathausSprites } from './rathaus-sprites.js';
 import {
   primeGrade, warmUp,
 } from './render-fx.js';
+import { syringeFor, stepSyringes, syringeContextSafe } from './syringes.js';
+import { impactLeft } from './impact-effect.js';
+import { warmSyringes } from './render-syringes.js';
 import { stepFx } from './fx.js';
 import { STREAK_NEED, judgePass } from './scoring.js';
 import { bindInput as setupInput } from './input.js';
@@ -173,6 +176,10 @@ function spawnWall() {
   if (s.id === 'spring' && game.spawned > 2 && Math.random() < 0.6) {
     game.puddles.push({ z: SPAWN_Z + spacing * (0.3 + Math.random() * 0.4), x: (Math.random() - 0.5) * (CORRIDOR - 2), r: 0.9 + Math.random() * 0.6 });
   }
+  const syringe = syringeFor({ index: game.spawned, season: s.id,
+    previous: game.walls.at(-2), wall: game.walls.at(-1), puddles: game.puddles, pickups: game.pickups,
+    surfaceAt: (z) => game.surfaceAt(game.travelled + z), lastIndex: game.lastSyringeIndex });
+  if (syringe) { game.syringes.push(syringe); game.lastSyringeIndex = game.spawned; }
   game.spawned++;
   game.nextSpawnIn = spacing;
 }
@@ -313,6 +320,12 @@ function update(dt) {
       }
     }
   }
+  if (!syringeContextSafe(season().id, p.slippery, game.surface.id)) game.syringes.length = 0;
+  if (stepSyringes(game.syringes, dz, p.x)) {
+    crash('syringe');
+    if (state === 'over') return;
+  }
+  game.syringes = game.syringes.filter((item) => item.z > 0.6 && !item.hit);
   for (const item of game.pickups) {
     const before = item.z;
     item.z -= dz;
@@ -352,6 +365,7 @@ function step(dt) {
     if (at.done) beginPlay();
   }
   else if (state === 'over') game.time += dt; // keeps the dazed stars turning
+  game.syringeImpact = impactLeft(game.syringeImpact, dt);
   game.fx = stepFx(game.fx, dt);
   game.shake = Math.max(0, game.shake - dt);
   game.flash = Math.max(0, game.flash - dt);
@@ -388,6 +402,7 @@ async function init() {
     powerIcons = Object.fromEntries(Object.keys(POWERUPS).map((k, i) => [k, icons[i]]));
     groundTiles = { volkspark: buildGroundTiles(SEASONS, preview?.idx ?? 0) };
     warmUp(SEASONS);
+    warmSyringes();
   } catch (err) {
     hud.start.querySelector('.tap').textContent = 'Laden fehlgeschlagen – bitte neu laden.';
     console.error(err);

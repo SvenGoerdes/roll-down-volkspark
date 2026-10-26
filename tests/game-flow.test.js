@@ -127,3 +127,24 @@ test('flow respects the helmet cap when collecting', () => {
   flow.collect('helmet');
   expect(game.player.helmets).toBe(MAX_HELMETS);
 });
+
+test('syringe crash consumes exactly one helmet and shows a brief visible impact', () => {
+  const { game, calls, flow, getState } = fixture();
+  game.player.helmets = 2;
+  flow.crash('syringe');
+  expect(game.player.helmets).toBe(1);
+  expect(game.streak).toBe(0);
+  expect(game.syringeImpact).toBe(0.85);
+  expect(game.fx).toHaveLength(0);
+  expect(getState()).toBe('playing');
+  expect(calls.some(([kind, text]) => kind === 'banner' && text === 'Spritze – Helm kaputt')).toBe(true);
+});
+
+test('a syringe without a helmet follows the normal fatal crash flow', () => {
+  const { game, calls, flow, getState } = fixture();
+  flow.crash('syringe');
+  expect(game.player.helmets).toBe(0);
+  expect(game.player.dazed).toBe(true);
+  expect(getState()).toBe('over');
+  expect(calls.filter(([kind]) => kind === 'offer')).toHaveLength(1);
+});

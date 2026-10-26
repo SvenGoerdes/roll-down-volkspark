@@ -9,7 +9,7 @@ export function environmentPreview() {
   const width = Number(params.get('width'));
   const height = Number(params.get('height'));
   const near = Number(params.get('near'));
-  return { idx, surface: SURFACES[params.get('surface')] || SURFACES.dirt,
+  return { idx, syringe: params.get('syringe'), surface: SURFACES[params.get('surface')] || SURFACES.dirt,
     width: Number.isInteger(width) && width >= 320 && width <= 480 ? width : null,
     height: Number.isInteger(height) && height >= 568 && height <= 1000 ? height : null,
     near: Number.isFinite(near) && near >= 4.1 && near <= 14 ? near : 7.5 };
@@ -24,4 +24,13 @@ export function preparePreview(game, preview) {
     index: preview.idx * WALLS_PER_SEASON + i,
   }));
   game.pickups = [{ x: -1, z: 13, type: 'helmet' }];
+  if (['near', 'approach', 'impact'].includes(preview.syringe)) {
+    // Local art-review fixture, never a production spawn override.
+    const z = preview.syringe === 'approach' ? 14 : 5.8;
+    game.walls = [12, 30, 48].map((offset, index) => ({ z: z + offset,
+      gaps: [{ x: -0.7, w: 2.9 }], index: preview.idx * WALLS_PER_SEASON + index }));
+    game.pickups = [];
+    game.syringes = [{ x: 3.43, z }];
+    if (preview.syringe === 'impact') { game.syringes = []; game.syringeImpact = 0.8; }
+  }
 }

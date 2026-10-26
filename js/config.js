@@ -132,3 +132,10 @@ export const POWERUP_CHANCES = { helmet: 0.05, slowmo: 0.1, widen: 0.1 };
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
 // Public Turnstile sitekey for leaderboard entries. Empty = no widget (the worker then must not have the secret).
 export const TURNSTILE_SITEKEY = '';
+
+// Rare side obstacles; never add a second steering challenge on slippery/windy stretches.
+export const SYRINGES = {
+  from: 8, introChance: 0.08, chance: 0.18, cooldown: 5,
+  radius: 0.32, driftMargin: 0.35, wallClearance: 6,
+  puddleClearance: 45, effectDuration: 0.85,
+};

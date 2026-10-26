@@ -9,6 +9,7 @@ const surfaceTrack = () => {
 export function newGame(readBest, worldBest = null) {
   return {
     time: 0, travelled: 0, passed: 0, spawned: 0, nextSpawnIn: 0, lastGapX: 0,
+    syringes: [], lastSyringeIndex: -Infinity, syringeImpact: 0,
     walls: [], pickups: [], puddles: [], particles: [], skids: [], spray: [], skidding: false, fx: [],
     seasonIdx: 0, prevSeasonIdx: null, seasonFade: 1,
     surfaceAt: surfaceTrack(), surface: SURFACES.dirt, nextKick: 0, bannerAt: 0,

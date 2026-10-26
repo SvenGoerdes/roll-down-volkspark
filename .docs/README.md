@@ -11,6 +11,7 @@ Für die Fortsetzung in einer neuen Session zuerst [handoff.md](handoff.md) lese
 | [handoff.md](handoff.md) | Current handoff: decisions, assets, worktrees and next steps |
 | [plans/art-integration-2026-10-18/](plans/art-integration-2026-10-18/README.md) | Eleven ticket drafts, approved and published on GitHub (#28, #47, #24, #20, #71–#77) |
 | [art-review-sources-2026-10-18.md](art-review-sources-2026-10-18.md) | Local gallery, actual Blender sources, references and renders |
+| [syringe-obstacles.md](syringe-obstacles.md) | Local syringe obstacle draft, safety rules, art review fixtures and balance |
 | [architecture.md](architecture.md) | How the game and the worker are built today |
 | [art-bible.md](art-bible.md) | The art style and rules for making game art |
 | [operations.md](operations.md) | Run, test, deploy, secrets, infrastructure IDs |

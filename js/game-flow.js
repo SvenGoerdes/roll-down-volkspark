@@ -1,4 +1,4 @@
-import { MAX_HELMETS, POWERUPS } from './config.js';
+import { MAX_HELMETS, POWERUPS, SYRINGES } from './config.js';
 import { STREAK_NEED, nextStreak, applyWorldBest, overNote } from './scoring.js';
 import { addHelmet } from './logic.js';
 import { burstSparkles, burstStones } from './fx.js';
@@ -101,17 +101,18 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
       navigator.vibrate?.([40, 40, 40]);
     }
   }
-  function crash() {
+  function crash(cause = 'wall') {
     const game = getGame();
     const at = playerSpot();
-    burstStones(game.fx, at.sx, at.sy, at.s / 45);
+    if (cause === 'syringe') game.syringeImpact = SYRINGES.effectDuration;
+    else burstStones(game.fx, at.sx, at.sy, at.s / 45);
     if (game.player.helmets > 0) {
       game.player.helmets--;
       game.streak = 0;
       game.shake = 0.3;
       game.flash = 0.25;
       navigator.vibrate?.(80);
-      showBanner('Helm kaputt', game.player.helmets ? `Noch ${game.player.helmets} übrig` : 'Glück gehabt!', POWERUPS.helmet.img);
+      showBanner(cause === 'syringe' ? 'Spritze – Helm kaputt' : 'Helm kaputt', game.player.helmets ? `Noch ${game.player.helmets} übrig` : 'Glück gehabt!', POWERUPS.helmet.img);
       return;
     }
     game.shake = 0.5;

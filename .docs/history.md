@@ -14,6 +14,12 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - 174 Tests grün; echte Chrome-Handyansichten in beiden Themen, allen Jahreszeiten und beiden Lenkrichtungen bei 390×844/320×568, Wintervorschauen bei 375×667; Intro, Crash und mittiger Retry geprüft. Keine JS-Fehler. Keine echten Mobilgeräte oder Safari geprüft.
 - Entschieden vom Nutzer, implementiert durch GPT-6.1 Sol (High) im Branch `codex/camera-follow`; Commit: dieser Kamera-Commit.
 
+## 2026-10-26: Spritzen als seltener Randhindernis-Entwurf (#34, #35, #36)
+- Nutzerpriorität Kamera/Oberbaum/Spritzen im eigenen Branch umgesetzt: konservative Platzierung außerhalb der maximal verbreiterten Verbindungen zweier Nachbarlücken, Ausschlüsse für überlagerte Rutsch-/Windgefahren und nahe Pickups, einmalige Treffer nach bestehenden Helmregeln.
+- Kleiner vorberechneter Canvas-Sprite und 0,85 s Trefferhinweis; keine neue Lenk-/Sichtstörung. Grafik als lokaler Entwurf für die Nutzerfreigabe, nichts gemergt oder veröffentlicht. Regeln, Vorschau und Prüfgrenzen stehen in [syringe-obstacles.md](syringe-obstacles.md).
+- 177 Tests grün, 50 Browsermodule gebündelt; 1.000 Balance-Runden je Variante: Median 123 / p90 201 identisch mit und ohne Spritzen, 1,12 Spritzen je 100 gespawnte Mauern. Echter Browser bei 390×844 und 320×568 ohne Konsolenfehler; keine neue Geräte-/FPS-Prüfung.
+- Beauftragt vom Nutzer; gebaut durch GPT-6.1 Sol High. Commit: dieser Featurecommit auf `codex/syringe-obstacles`.
+
 ## 2026-10-25: Alle offenen PRs nach Nutzerfreigabe zusammengeführt
 - Grafik-Sammel-PR #97 mit enthaltenen PRs #87/#89/#91/#92 unter Erhalt ihrer Commit-Historie gemergt. Danach #90 (Performance-Werkzeug), #93 (optionale Token-Prüfung), #94 (Balance), #95 (Herbstlaub), #96 (Weltrekord); dieser Dokumentations-PR #98 hält den Abschluss fest.
 - Fünf nach dem ersten Merge entstandene Konfliktstände aufgelöst. Historien und ADR-Einträge erhalten; `main.js` behält das Bauwerk-Vorladen mit der neuen Pickup-Auswahl, die Bestenliste beide Funktionen für Weltrekord und Token. Keine Branches erzwungen überschrieben, keine Schutzregeln umgangen.
