@@ -2,6 +2,12 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-26: Oberbaumbrücke – gestützte Bögen bei aktuellen Spiellücken
+- Nutzerfeedback zu frei hängenden Bogenfüßen im echten Browser bestätigt: der feste Bogen folgte den verbreiterten/versetzten Pfeilern nicht; der bisherige Mauerhöhen-Clip berührte das Bogenbild nicht.
+- Bestehenden detaillierten Bogen pro tatsächlicher Öffnung horizontal an deren Pfeilern ausgerichtet; Doppel-/überlappende Lücken und ↔️ an/aus berücksichtigt. Modellgrafiken, Höhe, Kollisionsregeln, Abstände und Schwierigkeit unverändert.
+- 169 Tests grün; Original-WebP-Rasterprüfung 45/45 ohne ungestützte Fußpixel, identischer Altstand 39 Fehlerfälle. Handygröße 390×844 in Cua, zusätzlich vollständige Herbst-Spielszene. [Ursache, Fixture, Bilder und Grenzen](oberbaum-opening-fix-2026-10-26.md).
+- Beauftragt vom Nutzer; umgesetzt und lokal geprüft durch GPT-6.1 Sol High. Commit: dieser Fix. Kein Push, Merge oder Deploy.
+
 ## 2026-10-25: Alle offenen PRs nach Nutzerfreigabe zusammengeführt
 - Grafik-Sammel-PR #97 mit enthaltenen PRs #87/#89/#91/#92 unter Erhalt ihrer Commit-Historie gemergt. Danach #90 (Performance-Werkzeug), #93 (optionale Token-Prüfung), #94 (Balance), #95 (Herbstlaub), #96 (Weltrekord); dieser Dokumentations-PR #98 hält den Abschluss fest.
 - Fünf nach dem ersten Merge entstandene Konfliktstände aufgelöst. Historien und ADR-Einträge erhalten; `main.js` behält das Bauwerk-Vorladen mit der neuen Pickup-Auswahl, die Bestenliste beide Funktionen für Weltrekord und Token. Keine Branches erzwungen überschrieben, keine Schutzregeln umgangen.

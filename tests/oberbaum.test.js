@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test';
 import { createHash } from 'node:crypto';
-import { WALL_H, PLAYER_Z, OBERBAUM_TOWER_X } from '../js/config.js';
+import { PLAYER_Z, OBERBAUM_TOWER_X } from '../js/config.js';
 import { gateLayout } from '../js/logic.js';
 import { computeView, project } from '../js/view.js';
 import { drawOberbaum } from '../js/render-oberbaum.js';
@@ -24,7 +24,7 @@ function canvas() {
   };
 }
 
-test('the bridge draws piers and towers only inside solid spans, the arch only above wall height', () => {
+test('bridge piers and towers stay in the solids and each real opening gets an attached arch', () => {
   for (const gaps of [
     [{ x: -1.8, w: 1.95 }], [{ x: 1.8, w: 3.2 }],
     [{ x: -2, w: 2.2 }, { x: 2, w: 2.2 }],
@@ -32,11 +32,20 @@ test('the bridge draws piers and towers only inside solid spans, the arch only a
   ]) {
     const ctx = canvas(), wall = { z: 10 }, p = project(view, 0, wall.z);
     drawOberbaum(ctx, view, wall, gaps, art);
-    const solids = gateLayout(gaps).solids, cutoff = p.sy - WALL_H * p.s;
+    const { solids, openings } = gateLayout(gaps);
     const arch = ctx.calls.filter((c) => c.args[0] === 'arch');
-    expect(arch).toHaveLength(1);
-    const [, top, , height] = arch[0].clips[0][0];
-    expect(top + height).toBeLessThanOrEqual(cutoff + 1e-9);
+    expect(arch).toHaveLength(openings.length);
+    for (let i = 0; i < arch.length; i++) {
+      const [, x, y, width, height] = arch[i].args;
+      // Real sprite spring points at the pier crown must track both passage edges.
+      expect((x + width * 140 / 696 - p.sx) / p.s).toBeCloseTo(openings[i].x - openings[i].w / 2);
+      expect((x + width * 555 / 696 - p.sx) / p.s).toBeCloseTo(openings[i].x + openings[i].w / 2);
+      expect(height / p.s).toBeCloseTo(art.arch.worldHeight);
+      expect((p.sy - y - height) / p.s).toBeCloseTo(art.arch.bottom);
+      const [clipX, , clipWidth] = arch[i].clips[0][0];
+      if (i) expect(clipX).toBeGreaterThanOrEqual(arch[i - 1].clips[0][0][0] + arch[i - 1].clips[0][0][2] - 1e-9);
+      expect(clipWidth).toBeGreaterThan(0);
+    }
     const rest = ctx.calls.filter((c) => c.args[0] !== 'arch');
     expect(rest.some((c) => c.args[0] === 'pier')).toBe(true);
     for (const call of rest) {
@@ -45,6 +54,23 @@ test('the bridge draws piers and towers only inside solid spans, the arch only a
       expect(solids.some(([a, b]) => left >= a - 1e-9 && right <= b + 1e-9)).toBe(true);
     }
   }
+});
+
+test('arches follow widening activation and expiry during approach on the same wall', () => {
+  const wall = { z: 14 }, gaps = [{ x: -2, w: 2.2 }, { x: 2, w: 2.2 }];
+  const archImages = (w) => {
+    const ctx = canvas();
+    drawOberbaum(ctx, view, wall, gaps.map((g) => ({ ...g, w: g.w * w })), art);
+    const p = project(view, 0, wall.z);
+    return ctx.calls.filter((c) => c.args[0] === 'arch').map(({ args: [, x, , width] }) => [(x - p.sx) / p.s, width / p.s]);
+  };
+  const normal = archImages(1), wide = archImages(1.6);
+  expect(wide).not.toEqual(normal);
+  wall.z = 10;
+  const active = archImages(1.6);
+  active.forEach((a, i) => a.forEach((value, j) => expect(value).toBeCloseTo(wide[i][j])));
+  wall.z = 6;
+  archImages(1).forEach((a, i) => a.forEach((value, j) => expect(value).toBeCloseTo(normal[i][j])));
 });
 
 test('towers stand outside the corridor so a following gap is never behind one', () => {
