@@ -47,3 +47,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0074](0074-combined-integration-branch.md) | Sammel-Branch für die Gesamtprüfung (#76) | User (Auftrag), Sonnet 5.5 |
 | [0075](0075-five-landmark-order.md) | Reihenfolge der fünf Bauwerke, Volkspark folgt der Liste | User (Reihenfolge), Sonnet 5.5 |
 | [0076](0076-all-landmarks-loaded-together.md) | Alle fünf Bauwerke laden gemeinsam; Budget und Messung | Sonnet 5.5 (Messung) |
+| [0077](0077-readable-passages-and-syringe-draft.md) | Folgende Kamera, an Öffnungen ausgerichtete Brückenbögen und vorsichtiger Spritzenentwurf | Nutzer (Auftrag), GPT-6.1 Sol High (Umsetzung) |

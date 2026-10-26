@@ -1,6 +1,7 @@
 # 0053: Oberbaumbrücke aus vier Modellteilen als Bauwerk der dritten Jahreszeit
 
 - **Status:** Implemented; Darstellung im Spiel wartet auf Nutzerfreigabe
+- **Fixed arch placement superseded by:** [ADR 0077](0077-readable-passages-and-syringe-draft.md); übrige Spritepipeline bleibt erhalten
 - **Date:** 2026-10-18
 - **Decided by:** Nutzer (Issue #72, ADR 0037; ein Bauwerk je Jahreszeit, Reihenfolge Tor, Galerie, Brücke)
 - **Built by:** Claude Sonnet 5.5 (Blender-Export, Renderer, Tests, Doku)
