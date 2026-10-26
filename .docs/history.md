@@ -8,6 +8,12 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - 169 Tests grün; Original-WebP-Rasterprüfung 45/45 ohne ungestützte Fußpixel, identischer Altstand 39 Fehlerfälle. Handygröße 390×844 in Cua, zusätzlich vollständige Herbst-Spielszene. [Ursache, Fixture, Bilder und Grenzen](oberbaum-opening-fix-2026-10-26.md).
 - Beauftragt vom Nutzer; umgesetzt und lokal geprüft durch GPT-6.1 Sol High. Commit: dieser Fix. Kein Push, Merge oder Deploy.
 
+## 2026-10-26: Begrenzte seitlich folgende Kamera
+- Nutzerauftrag: Die Position der Figur vor versetzten Lücken soll leichter einschätzbar sein. Kamera folgt weich zu 45 Prozent und maximal ±1,4 Welt-Einheiten; keine Änderung an Physik, Steuerung oder Spielregeln.
+- Projektion, gemalter Boden, alle fünf Bauwerke, Wintereis und Effekte bleiben aufeinander abgestimmt; inverse Bodentiefen werden weiterhin nur beim Resize berechnet. Neue Runde/Figurenwechsel setzt die Kamera zurück. Details: [camera-follow.md](camera-follow.md).
+- 174 Tests grün; echte Chrome-Handyansichten in beiden Themen, allen Jahreszeiten und beiden Lenkrichtungen bei 390×844/320×568, Wintervorschauen bei 375×667; Intro, Crash und mittiger Retry geprüft. Keine JS-Fehler. Keine echten Mobilgeräte oder Safari geprüft.
+- Entschieden vom Nutzer, implementiert durch GPT-6.1 Sol (High) im Branch `codex/camera-follow`; Commit: dieser Kamera-Commit.
+
 ## 2026-10-25: Alle offenen PRs nach Nutzerfreigabe zusammengeführt
 - Grafik-Sammel-PR #97 mit enthaltenen PRs #87/#89/#91/#92 unter Erhalt ihrer Commit-Historie gemergt. Danach #90 (Performance-Werkzeug), #93 (optionale Token-Prüfung), #94 (Balance), #95 (Herbstlaub), #96 (Weltrekord); dieser Dokumentations-PR #98 hält den Abschluss fest.
 - Fünf nach dem ersten Merge entstandene Konfliktstände aufgelöst. Historien und ADR-Einträge erhalten; `main.js` behält das Bauwerk-Vorladen mit der neuen Pickup-Auswahl, die Bestenliste beide Funktionen für Weltrekord und Token. Keine Branches erzwungen überschrieben, keine Schutzregeln umgangen.

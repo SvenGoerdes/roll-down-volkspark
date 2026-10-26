@@ -21,13 +21,13 @@ export function drawGate(ctx, view, wall, gaps, season, art) {
 
   function image(part, x) {
     const item = art[part], w = item.worldWidth * p.s, h = item.worldHeight * p.s;
-    ctx.drawImage(item.image, view.cx + x * p.s - w / 2, p.sy - item.bottom * p.s - h, w, h);
+    ctx.drawImage(item.image, p.sx + x * p.s - w / 2, p.sy - item.bottom * p.s - h, w, h);
   }
   // Clip each part to its own span and band so nothing reaches into a passage.
   function clipped(part, x, a, b, top, bottom) {
     ctx.save();
     ctx.beginPath();
-    ctx.rect(view.cx + a * p.s, top, (b - a) * p.s, Math.max(0, bottom - top));
+    ctx.rect(p.sx + a * p.s, top, (b - a) * p.s, Math.max(0, bottom - top));
     ctx.clip();
     ctx.globalAlpha = alpha;
     image(part, x);

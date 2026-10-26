@@ -27,12 +27,12 @@ export function drawReichstag(ctx, view, wall, gaps, art) {
 
   function image(part, left) {
     const item = art[part], w = item.worldWidth * p.s, h = item.worldHeight * p.s;
-    ctx.drawImage(item.image, view.cx + left * p.s, p.sy - item.bottom * p.s - h, w, h);
+    ctx.drawImage(item.image, p.sx + left * p.s, p.sy - item.bottom * p.s - h, w, h);
   }
   function clipped(part, left, a, b) {
     ctx.save();
     ctx.beginPath();
-    ctx.rect(view.cx + a * p.s, 0, (b - a) * p.s, p.sy);
+    ctx.rect(p.sx + a * p.s, 0, (b - a) * p.s, p.sy);
     ctx.clip();
     image(part, left);
     ctx.restore();

@@ -12,10 +12,10 @@ export { computeView, project } from './view.js';
 const rgb = ([r, g, b], k = 1) => `rgb(${(r * k) | 0},${(g * k) | 0},${(b * k) | 0})`;
 const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 
-export function drawBackground(ctx, view, bg, prevBg, fade, playerX) {
+export function drawBackground(ctx, view, bg, prevBg, fade) {
   const bgH = view.horizonY + 16;
   const bgW = Math.max(view.W + 32, bgH * bg.width / bg.height);
-  const x = view.cx - bgW / 2 - playerX * 3;
+  const x = view.cx - bgW / 2 - (view.cameraX || 0) * 3;
   const y = view.horizonY + 6 - bgH;
   if (prevBg && fade < 1) ctx.drawImage(prevBg, x, y, bgW, bgH);
   ctx.globalAlpha = prevBg ? fade : 1;
@@ -46,6 +46,7 @@ export function drawGround(ctx, view, season, travelled, surfaceAt, tiles, seamO
     const fog = depthMist(z);
     const stripe = 1;
     const verge = Math.sin((z + travelled) * 0.9) * 0.12 + Math.sin((z + travelled) * 2.3) * 0.06;
+    const center = cx - (view.cameraX || 0) * F / z;
     const pw = ((half + verge) * F) / z;
     ctx.fillStyle = rgb(mix(side.grass, season.fog, fog), stripe);
     ctx.fillRect(0, y, W, 2);
@@ -53,7 +54,7 @@ export function drawGround(ctx, view, season, travelled, surfaceAt, tiles, seamO
     if (mips) {
       if (fog > 0.97) {
         ctx.fillStyle = fogCss;
-        ctx.fillRect(cx - pw, y, pw * 2, 2);
+        ctx.fillRect(center - pw, y, pw * 2, 2);
         continue;
       }
       // map the tile in perspective: one slice of it per screen row
@@ -62,18 +63,18 @@ export function drawGround(ctx, view, season, travelled, surfaceAt, tiles, seamO
       );
       const q = 2 ** level;
       for (const p of parts) {
-        ctx.drawImage(mips[level], 0, p.sy / q, TILE_W >> level, p.sh / q, cx - pw, y + 2 * p.f0, pw * 2, 2 * (p.f1 - p.f0) + (p.f1 < 1 ? seamOverlap : 0));
+        ctx.drawImage(mips[level], 0, p.sy / q, TILE_W >> level, p.sh / q, center - pw, y + 2 * p.f0, pw * 2, 2 * (p.f1 - p.f0) + (p.f1 < 1 ? seamOverlap : 0));
       }
       if (fog > 0.02) {
         ctx.globalAlpha = fog;
         ctx.fillStyle = fogCss;
-        ctx.fillRect(cx - pw, y, pw * 2, 2);
+        ctx.fillRect(center - pw, y, pw * 2, 2);
         ctx.globalAlpha = 1;
       }
       continue;
     }
     ctx.fillStyle = rgb(mix(season.path, season.fog, fog), stripe);
-    ctx.fillRect(cx - pw, y, pw * 2, 2);
+    ctx.fillRect(center - pw, y, pw * 2, 2);
   }
   ctx.drawImage(groundLight(season), 0, horizonY, W, H - horizonY);
 }
@@ -130,7 +131,7 @@ export function drawWall(ctx, view, z, gaps, season) {
   const yT = f.sy - WALL_H * f.s, yB = f.sy;
   const yT2 = b.sy - (WALL_H + terrainDrop(z + WALL_D) - terrainDrop(z)) * b.s;
   const yB2 = b.sy, h = yB - yT;
-  const X = (x, p) => view.cx + x * p.s;
+  const X = (x, p) => p.sx + x * p.s;
   const origin = -CORRIDOR * 2;
   const alpha = wallAlpha(z), mist = depthMist(z) * 0.9;
   const snowy = season.id === 'winter';
@@ -155,10 +156,10 @@ export function drawWall(ctx, view, z, gaps, season) {
     ctx.globalAlpha = alpha;
     quad(ctx, x0, yT, x1, yT, bx1, yT2, bx0, yT2);
     ctx.fillStyle = snowy ? '#e4edf4'
-      : facePattern(ctx, top, (tileW * f.s) / top.width, Math.max(0.01, yT - yT2) / top.height, view.cx + origin * f.s, yT2);
+      : facePattern(ctx, top, (tileW * f.s) / top.width, Math.max(0.01, yT - yT2) / top.height, f.sx + origin * f.s, yT2);
     ctx.fill(); tint();
     for (const end of [a, c]) {
-      if ((end === c && end >= 0) || (end === a && end <= 0)) continue;
+      if ((end === c && end >= (view.cameraX || 0)) || (end === a && end <= (view.cameraX || 0))) continue;
       const x = X(end, f), bx = X(end, b);
       quad(ctx, x, yT, bx, yT2, bx, yB2, x, yB);
       ctx.fillStyle = facePattern(ctx, side, (bx - x) / side.width, h / fh, x, yT);

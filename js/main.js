@@ -11,6 +11,7 @@ import { loadGroundArt } from './surface-art.js';
 import { setupIdeas } from './ideas.js';
 import { setupLeaderboard } from './leaderboard.js';
 import { computeView, project } from './render.js';
+import { followCamera, shiftCameraEffects } from './view.js';
 import { loadFigure, introAt } from './figure.js';
 import { readFigure, saveFigure, setupFigureSelect } from './figure-select.js';
 import { setupThemeSelect } from './theme-select.js';
@@ -125,7 +126,9 @@ function resize() {
   canvas.width = Math.round(W * dpr);
   canvas.height = Math.round(H * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cameraX = view?.cameraX || 0;
   view = computeView(W, H);
+  view.cameraX = cameraX;
   if (game) primeGrades();
 }
 
@@ -143,12 +146,21 @@ const flow = createGameFlow({ hud, getState: () => state, getGame: () => game, g
   setLoadingFigure: (value) => {
     loadingFigure = value;
     for (const button of $('themes').children) button.disabled = value;
-  }, setGame: (value) => { game = value; },
+  }, setGame: replaceGame,
   newGame, getBoard: () => board, setState, updateHud, speedAt, showBanner, season, sheetsFor: sheetsForRound,
   figureSheets, pick,
   setFigure: (value) => { figure = value; }, playerSpot,
   popText: showPopText, showOver, readBest, writeBest });
 const { beginIntro, beginPlay, choose, start, collect, onPass, crash } = flow;
+
+function replaceGame(next) {
+  game = next;
+  view.cameraX = 0;
+}
+
+function updateCamera(dt) {
+  shiftCameraEffects(game, view, followCamera(view, game.player.x, dt));
+}
 
 function spawnWall() {
   const s = SEASONS[seasonIndexAt(game.spawned, WALLS_PER_SEASON, SEASONS.length)];
@@ -279,6 +291,7 @@ function update(dt) {
 
   stepWind(game.wind, dt, season().id === 'autumn', windAt(game.passed), Math.random);
   updatePlayer(dt, speed);
+  updateCamera(dt);
   const p = game.player;
   updateSkids(dt, dz);
   const widenFactor = eff.widen > 0 ? 1.6 : 1;
@@ -328,7 +341,7 @@ function render() {
 }
 
 function step(dt) {
-  if (preview && game && state !== 'loading') { render(); return; }
+  if (preview && game && state !== 'loading') { updateCamera(dt); render(); return; }
   if (state === 'playing') update(dt);
   else if (state === 'start') { game.time += dt; game.travelled += dt * 6; updateParticles(dt); }
   else if (state === 'intro') {
@@ -359,7 +372,7 @@ function pick(id) {
 
 function bindInput() {
   setupInput({ input, hud, getState: () => state, getGame: () => game, getView: () => view,
-    choose: () => choose(figureId), start, newGame, setGame: (next) => { game = next; }, getBoard: () => board,
+    choose: () => choose(figureId), start, newGame, setGame: replaceGame, getBoard: () => board,
     readBest, setState, beginPlay, resize, setLast: (value) => { last = value; } });
 }
 
