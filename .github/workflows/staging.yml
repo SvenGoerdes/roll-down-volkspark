@@ -1,0 +1,64 @@
+name: Private staging
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: private-staging
+  cancel-in-progress: true
+
+jobs:
+  wrong-branch:
+    if: github.ref != 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject other branches
+        run: |
+          echo 'Staging bleibt geschlossen: dieser Workflow darf nur auf dem Branch staging laufen.' >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+  staging:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install pinned staging dependencies
+        working-directory: staging
+        run: bun install --frozen-lockfile
+      - name: Test game and private staging
+        run: bun test tests staging/tests
+      - name: Package runtime assets
+        run: bun tools/build-staging.js
+      - name: Check deployment setup
+        id: setup
+        env:
+          STAGING_DEPLOY_ENABLED: ${{ vars.STAGING_DEPLOY_ENABLED }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ "$STAGING_DEPLOY_ENABLED" != 'true' ]; then
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'Staging-Deploy geschlossen: STAGING_DEPLOY_ENABLED ist nicht true. Tests und Paket wurden geprüft; nichts wurde veröffentlicht.' >> "$GITHUB_STEP_SUMMARY"
+          elif [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'Staging-Setup fehlt: CLOUDFLARE_ACCOUNT_ID (Variable) und CLOUDFLARE_API_TOKEN (Secret im Environment staging) werden benötigt. Nichts wurde veröffentlicht.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy authenticated staging worker and assets
+        if: steps.setup.outputs.ready == 'true'
+        working-directory: staging
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: ./node_modules/.bin/wrangler deploy --config wrangler.jsonc
+      - name: Deployment summary
+        if: success() && steps.setup.outputs.ready == 'true'
+        run: echo 'Staging-Worker und freigegebene Laufzeitdateien veröffentlicht. Zugriffsschutz erfolgt durch Cloudflare Access und den JWT-Guard.' >> "$GITHUB_STEP_SUMMARY"
