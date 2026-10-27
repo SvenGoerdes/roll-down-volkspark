@@ -80,6 +80,8 @@ python3 tools/cut-icons.py assets/src/powerups.png assets/powerups helmet slowmo
 
 ## Deploy
 
+**Private Testversion:** siehe [Staging](staging.md). Der Branch `staging` hat einen separaten Cloudflare-Worker, Zugriffsschutz und eigene Bestenliste. Die Erstinstallation bleibt bis zur persönlichen Access-Aktivierung geschlossen; `STAGING_DEPLOY_ENABLED` ist noch `false`.
+
 **Game:** open a PR. CI (`.github/workflows/ci.yml`) runs `bun test tests`; `main` takes only green PRs, and merges need the user's OK (ADR 0026). GitHub Pages builds from `main` at the root and is live after about a minute.
 
 **Worker:** deploy the worker **before** pushing a frontend that needs new worker routes.

@@ -98,11 +98,15 @@ test('browser GET without Origin works, but foreign or missing write origins rem
   const url = 'https://staging.example.test';
   const read = new Request(`${url}/api/leaderboard`, { headers: { 'Cf-Access-Jwt-Assertion': jwt } });
   expect((await worker.fetch(read, env)).status).toBe(200);
-  for (const origin of ['', 'https://unrelated.example.test']) {
+  for (const origin of ['', 'https://unrelated.example.test', 'https://svengoerdes.github.io']) {
     const headers = { 'Cf-Access-Jwt-Assertion': jwt, 'Content-Type': 'application/json' };
     if (origin) headers.Origin = origin;
     const write = new Request(`${url}/api/scores`, { method: 'POST', headers,
       body: JSON.stringify({ name: 'Test', score: 3, season: 'Frühling' }) });
     expect((await worker.fetch(write, env)).status).toBe(403);
   }
+  const crossRead = new Request(`${url}/api/leaderboard`, { headers: {
+    'Cf-Access-Jwt-Assertion': jwt, Origin: 'https://svengoerdes.github.io',
+  } });
+  expect((await worker.fetch(crossRead, env)).status).toBe(403);
 });

@@ -4,6 +4,8 @@ Roll Down Volkspark is a browser game for phones. A kid tumbles down the hill in
 
 ## Aktueller Wiedereinstieg: 25. Oktober 2026
 
+**Staging vom 27. Oktober:** [Private Testumgebung](staging.md) auf Branch `staging`, getrennt von Produktion. Technisch gehostet, aber bis zur persönlichen Access-Aktivierung und Loginprüfung geschlossen; automatische Deployments sind noch ausgeschaltet.
+
 Review vom **26. Oktober**: [Brücke, folgende Kamera und Spritzenentwurf](playability-review-2026-10-26.md) im gemeinsamen Prüfbranch, mit drei getrennten Sol-High-Umsetzungen. Die Spritzenoptik wartet auf Sichtfreigabe; dieser Stand ist noch kein Produktionsrollout.
 
 Für die Fortsetzung in einer neuen Session zuerst [handoff.md](handoff.md) lesen. Dort stehen die aktuellen Nutzerentscheidungen, lokalen Blender-/Bildquellen, Worktree-Vorarbeiten und die [elf Tickets](plans/art-integration-2026-10-18/README.md). Die neuen Grafik-/Feinschliff-Features und das Performance-Werkzeug sind in `main` übernommen (PRs #87, #89–#97). PR #98 dokumentiert den Merge-Abschluss. Turnstile ist im Code vorbereitet, aber ohne Sitekey/Secret weiterhin nicht aktiviert; es gab keinen Worker-Deploy.

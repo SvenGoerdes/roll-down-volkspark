@@ -48,3 +48,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0075](0075-five-landmark-order.md) | Reihenfolge der fünf Bauwerke, Volkspark folgt der Liste | User (Reihenfolge), Sonnet 5.5 |
 | [0076](0076-all-landmarks-loaded-together.md) | Alle fünf Bauwerke laden gemeinsam; Budget und Messung | Sonnet 5.5 (Messung) |
 | [0077](0077-readable-passages-and-syringe-draft.md) | Folgende Kamera, an Öffnungen ausgerichtete Brückenbögen und vorsichtiger Spritzenentwurf | Nutzer (Auftrag), GPT-6.1 Sol High (Umsetzung) |
+| [0078](0078-private-staging-with-cloudflare-access.md) | Private Staging-Testwebsite mit Access-JWT, separaten Daten und gesperrtem CI-Deploy bis Einrichtung | Nutzer (privater Zugang), Codex/Sol High (Umsetzung) |

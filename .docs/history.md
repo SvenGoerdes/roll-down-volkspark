@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-27: Private Staging-Testumgebung vorbereitet und geschlossen gehostet
+- Nutzerauftrag: eigener Branch und gehostete Testwebsite nur für die bestätigte persönliche E-Mail. Branch `staging` basiert auf dem geprüften PR-99-Stand.
+- Cloudflare-Worker `roll-down-staging` mit eigener KV-Bestenliste erstellt. Signierte Access-JWTs werden vor jeder Datei/API geprüft; ohne Access-Konfiguration keine Spieldateien. Externe Abrufe von HTML/JS/Bild/API liefern geschlossen 503. Private Adresse und noch ausstehende persönliche Access-Aktivierung: [staging.md](staging.md), [ADR 0078](decisions/0078-private-staging-with-cloudflare-access.md).
+- Freigegebene 105 Laufzeitdateien statt Repository-Root; Same-Origin-Test-API und keine GitHub-Ideen-Schreibzugriffe. GitHub-Environment nur für `staging`; automatischer Deploy bis Login-Test und CI-Token bewusst deaktiviert.
+- 197 Tests grün, Cloudflare-Dry-Run erfolgreich. Sol-High-Review fand GET ohne Origin; Korrektur und Regression enthalten. Echte Access-Anmeldung und spielbarer Browserlauf hinter ihr stehen noch aus.
+- Codex: Worker, Zugriffsschutz, getrennte Ressourcen und Integration; GPT-6.1 Sol High: Paketierung/Pipeline; weiterer Sol-High-Agent: unabhängige Prüfung. Commits `c4a9916`, `3e8212c` und folgende auf `staging`.
+
 ## 2026-10-26: Oberbaumbrücke – gestützte Bögen bei aktuellen Spiellücken
 - Nutzerfeedback zu frei hängenden Bogenfüßen im echten Browser bestätigt: der feste Bogen folgte den verbreiterten/versetzten Pfeilern nicht; der bisherige Mauerhöhen-Clip berührte das Bogenbild nicht.
 - Bestehenden detaillierten Bogen pro tatsächlicher Öffnung horizontal an deren Pfeilern ausgerichtet; Doppel-/überlappende Lücken und ↔️ an/aus berücksichtigt. Modellgrafiken, Höhe, Kollisionsregeln, Abstände und Schwierigkeit unverändert.

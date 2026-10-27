@@ -14,6 +14,12 @@ export function createStagingWorker(authorize = createAccessVerifier()) {
 
       const url = new URL(request.url);
       let response;
+      if (url.pathname.startsWith('/api/')) {
+        const origin = request.headers.get('Origin');
+        if ((origin && origin !== url.origin) || (!origin && !['GET', 'HEAD'].includes(request.method))) {
+          return json({ error: 'Nicht erlaubt' }, 403);
+        }
+      }
       if (url.pathname === '/api/ideas') {
         return json({ error: 'Staging: Ideen werden hier nicht veröffentlicht.' }, 409);
       }
