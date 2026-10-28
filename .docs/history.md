@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-28: Issue #21 – Alaska per lokalem Rekord freischalten
+- Nutzerentscheidung: Alaska ist erst ab einem lokalen Rekord von mindestens 140 passierten Mauern spielbar (`ALASKA_UNLOCK_WALLS = 140` in `js/config.js`). Vorher bleibt ihre Karte im Auswahlscreen sichtbar, abgedunkelt mit Schloss-Badge und Hinweis „Knack 140 Mauern“; Antippen wählt oder startet sie nicht (kurzes Wackeln/Hervorheben des Hinweises).
+- Reine Freischalt-Logik in `js/figure.js` (`isFigureUnlocked`, `justUnlockedFigure`, `unlockWallsFor`, `pickFigure(id, best)`, gebündelte UI-Texte `unlockHint`/`unlockNotice`). War Alaska gespeichert, fällt `readFigure(best)` unterhalb der Schwelle stillschweigend auf `kalle` zurück.
+- Hebt ein Lauf den lokalen Rekord erstmals auf ≥ 140 Mauern, zeigt der Game-Over-Screen „Alaska freigeschaltet!“ (`#over-unlock`) und schaltet die Karte in `figure-select.js` sofort frei (`picker.refresh(best)`).
+- Geprüft: 190 Bun-Tests in 26 Dateien grün (neu: `tests/figure-select.test.js` sowie Tests in `tests/figure.test.js` und `tests/game-flow.test.js` für Grenze 139/140, fehlenden Rekord, gesperrte gespeicherte Figur und Game-Over-Freischaltung). Sichtprüfung in Chrome bei 390×844 (DPR 2): Startscreen gesperrt bei 139, Tap-Nudge auf gesperrter Karte, Game-Over mit „Alaska freigeschaltet!“ bei 140, Wechsel zu freigeschalteter Alaska-Karte. Keine echten Handys oder iOS Safari geprüft.
+- Entschieden vom Nutzer; gebaut von Gemini 4 Argon (Subagent). Commit: dieser PR (`Closes #21`).
+
 ## 2026-10-28: Turnstile für Bestenliste aktiviert und Fake-Score entfernt (#77)
 - `TURNSTILE_SECRET` im produktiven Cloudflare Worker `roll-down-ideas` gesetzt und Worker mit `turnstile.js`-Prüfung (`siteverify` für `svengoerdes.github.io`, Action `score`) ausgerollt.
 - Öffentlichen Sitekey `TURNSTILE_SITEKEY` in `js/config.js` eingetragen.

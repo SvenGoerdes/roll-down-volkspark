@@ -1,9 +1,10 @@
 import { MAX_HELMETS, POWERUPS, SYRINGES } from './config.js';
+import { justUnlockedFigure, pickFigure, unlockNotice } from './figure.js';
 import { STREAK_NEED, nextStreak, applyWorldBest, overNote } from './scoring.js';
 import { addHelmet } from './logic.js';
 import { burstSparkles, burstStones } from './fx.js';
 
-export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigure, getGame, setGame, newGame, getBoard, setState, updateHud, speedAt, showBanner, popText, showOver, season, sheetsFor, figureSheets, pick, setFigure, playerSpot, readBest, writeBest }) {
+export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigure, getGame, setGame, newGame, getBoard, setState, updateHud, speedAt, showBanner, popText, showOver, season, sheetsFor, figureSheets, pick, setFigure, playerSpot, readBest, writeBest, onUnlock }) {
   const TAP_TEXT = 'Losrollen';
   function beginPlay() {
     setState('playing');
@@ -28,13 +29,14 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
   }
   async function choose(id) {
     if (getState() !== 'start' || getLoadingFigure()) return;
+    const unlockedId = pickFigure(id, readBest());
     document.activeElement?.blur();
-    pick(id);
+    pick(unlockedId);
     const tap = hud.start.querySelector('.tap');
     setLoadingFigure(true);
     tap.textContent = 'Lädt …';
     try {
-      setFigure(await sheetsFor(id));
+      setFigure(await sheetsFor(unlockedId));
     } catch (err) {
       tap.textContent = 'Nochmal versuchen';
       console.error(err);
@@ -43,7 +45,7 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
       setLoadingFigure(false);
     }
     tap.textContent = TAP_TEXT;
-    for (const key of figureSheets.keys()) if (key !== id) figureSheets.delete(key);
+    for (const key of figureSheets.keys()) if (key !== unlockedId) figureSheets.delete(key);
     beginIntro();
   }
   // Fast retry after a crash: straight into the round, no intro.
@@ -121,10 +123,13 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
     game.crashAt = game.time;
     navigator.vibrate?.([120, 60, 200]);
     setState('over');
-    const best = Math.max(readBest(), game.passed);
+    const prevBest = readBest();
+    const best = Math.max(prevBest, game.passed);
     writeBest(best);
+    const unlocked = justUnlockedFigure(prevBest, best);
+    if (unlocked) onUnlock?.(best);
     getBoard().offer(game.passed, season().name);
-    showOver(best, overNote(game.passed, game.best, game.worldBest), game.passed);
+    showOver(best, overNote(game.passed, game.best, game.worldBest), game.passed, unlocked ? unlockNotice() : '');
   }
   return { beginIntro, beginPlay, choose, start, collect, onPass, crash };
 }

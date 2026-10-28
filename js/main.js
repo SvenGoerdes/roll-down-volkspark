@@ -42,7 +42,7 @@ const hud = {
   wind: $('wind'), banner: $('banner'), start: $('start'), over: $('over'),
   final: $('final'), best: $('best'), bestStart: $('best-start'),
   figures: $('figures'), changeFigure: $('change-figure'),
-  streak: $('streak'), pop: $('pop'), overNote: $('over-note'),
+  streak: $('streak'), pop: $('pop'), overNote: $('over-note'), overUnlock: $('over-unlock'),
 };
 
 const loadImage = (src) => new Promise((ok, fail) => {
@@ -63,7 +63,7 @@ let game;
 const preview = environmentPreview();
 let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
-let figureId = readFigure(), figure = null, picker, loadingFigure = false;
+let figureId = readFigure(readBest()), figure = null, picker, loadingFigure = false;
 let themeId = 'volkspark', gateSprites, gateLoad, groundLoad;
 const figureSheets = new Map();
 
@@ -153,7 +153,7 @@ const flow = createGameFlow({ hud, getState: () => state, getGame: () => game, g
   newGame, getBoard: () => board, setState, updateHud, speedAt, showBanner, season, sheetsFor: sheetsForRound,
   figureSheets, pick,
   setFigure: (value) => { figure = value; }, playerSpot,
-  popText: showPopText, showOver, readBest, writeBest });
+  popText: showPopText, showOver, readBest, writeBest, onUnlock: (best) => picker?.refresh(best) });
 const { beginIntro, beginPlay, choose, start, collect, onPass, crash } = flow;
 
 function replaceGame(next) {
@@ -379,9 +379,8 @@ function frame(now) {
 }
 
 function pick(id) {
-  figureId = id;
-  saveFigure(id);
-  picker.select(id);
+  figureId = picker ? picker.select(id) : id;
+  saveFigure(figureId);
 }
 
 function bindInput() {
@@ -419,14 +418,15 @@ async function init() {
     if (id === 'berlin-tour') { gatesFor().catch(() => {}); berlinGroundFor().catch(() => {}); }
   });
   // a card only picks the figure; the button (or a tap anywhere else) starts
+  const initialBest = readBest();
   picker = setupFigureSelect(hud.figures, figureId, (id) => {
     if (loadingFigure) return; // a round is already starting with the other figure
     pick(id);
     sheetsFor(id).catch(() => {});
     hud.start.querySelector('.tap').focus(); // so Space/Enter starts next, not the card again
-  });
+  }, initialBest);
   sheetsFor(figureId).catch(() => {});
-  hud.bestStart.textContent = readBest();
+  hud.bestStart.textContent = initialBest;
   hud.start.classList.add('show');
   setState('start');
   if (preview) {
