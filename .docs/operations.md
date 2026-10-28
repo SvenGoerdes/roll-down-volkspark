@@ -123,7 +123,7 @@ Lokal testen: `worker/.dev.vars` (nicht committen) mit `TURNSTILE_SECRET=1x00000
 | `TRIPO_API_KEY` | User's `~/.zshrc` only | Tripo 3D API (separate wallet from the Tripo web studio). Never in the repo. |
 | `GEMINI_API_KEY` | User's `~/.zshrc` only | Nano Banana via Google, billing on. Never in the repo. |
 | `OPENROUTER_API_KEY` | User's `~/.zshrc` only | Image generation, credit limit $5. Never in the repo. |
-| `TURNSTILE_SECRET` | Cloudflare worker secret | Turnstile-Widget-Secret. Noch nicht gesetzt (Rollout offen). |
+| `TURNSTILE_SECRET` | Cloudflare worker secret | Turnstile-Widget-Secret (aktiviert für `svengoerdes.github.io`, Action `score`). |
 | `GITHUB_TOKEN` | Cloudflare worker secret | Fine-grained PAT, only this repo, **Issues: read and write** (+ Metadata read). Nothing else. |
 
 Set or rotate it in your own terminal, never in a chat:
