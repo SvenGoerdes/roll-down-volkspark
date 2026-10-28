@@ -1,11 +1,11 @@
 import { test, expect } from 'bun:test';
 import { createGameFlow } from '../js/game-flow.js';
-import { MAX_HELMETS } from '../js/config.js';
+import { MAX_HELMETS, SUPERATTACK } from '../js/config.js';
 
 function fixture(overrides = {}) {
   const originalGame = {
     passed: 7, best: 6, streak: 5, recordShown: false, time: 3, fx: [],
-    player: { x: 0, helmets: 0, dazed: false }, effects: { slowmo: 0, widen: 0 },
+    player: { x: 0, helmets: 0, dazed: false }, effects: { slowmo: 0, widen: 0, superattack: 0 },
   };
   const calls = [];
   let game = originalGame;
@@ -40,7 +40,8 @@ test('flow reads the replacement game after start', () => {
 
   expect(currentGame).not.toBe(originalGame);
   expect(currentGame.streak).toBe(0);
-  expect(currentGame.player.helmets).toBe(2);
+  expect(currentGame.effects.superattack).toBe(SUPERATTACK.duration);
+  expect(currentGame.player.helmets).toBe(1);
   expect(currentGame.fx.length).toBeGreaterThan(0);
   expect(originalGame.streak).toBe(5);
   expect(originalGame.player.helmets).toBe(0);
@@ -48,14 +49,37 @@ test('flow reads the replacement game after start', () => {
   expect(calls.some(([kind, text]) => kind === 'pop' && text === 'Perfekt')).toBe(true);
 });
 
-test('flow pass uses current game for streak reward and record', () => {
+test('flow pass triggers superattack on 6th perfect instead of granting a helmet, and record wins banner', () => {
   const { game, calls, flow } = fixture();
   flow.onPass('perfect');
   expect(game.streak).toBe(0);
-  expect(game.player.helmets).toBe(1);
+  expect(game.player.helmets).toBe(0);
+  expect(game.effects.superattack).toBe(SUPERATTACK.duration);
   expect(game.recordShown).toBe(true);
   expect(calls.some(([kind, text]) => kind === 'pop' && text === 'Perfekt')).toBe(true);
+  expect(calls.some(([kind, text]) => kind === 'banner' && text === SUPERATTACK.name)).toBe(true);
   expect(calls.some(([kind, text]) => kind === 'banner' && text === 'Neuer Rekord!')).toBe(true);
+});
+
+test('flow during superattack: smashing spawns stones, no streak builds, and crashes/syringes are harmless', () => {
+  const { game, calls, flow, getState } = fixture();
+  game.effects.superattack = 6;
+  game.streak = 0;
+  game.player.helmets = 1;
+  flow.onPass('perfect');
+  expect(game.streak).toBe(0);
+  expect(calls.some(([kind, text]) => kind === 'pop' && text === 'Perfekt')).toBe(false);
+
+  flow.onPass('smash');
+  expect(game.streak).toBe(0);
+  expect(game.fx.some((f) => f.kind === 'stone')).toBe(true);
+  expect(game.shake).toBeGreaterThanOrEqual(0.18);
+
+  flow.crash('wall');
+  flow.crash('syringe');
+  expect(game.player.helmets).toBe(1);
+  expect(game.player.dazed).toBe(false);
+  expect(getState()).toBe('playing');
 });
 
 test('flow: passing the world record wins the banner, own record follows later', () => {
@@ -147,4 +171,59 @@ test('a syringe without a helmet follows the normal fatal crash flow', () => {
   expect(game.player.dazed).toBe(true);
   expect(getState()).toBe('over');
   expect(calls.filter(([kind]) => kind === 'offer')).toHaveLength(1);
+});
+
+test('crashing across the 140-wall threshold unlocks Alaska once and shows the game-over notice', () => {
+  const unlocked = [];
+  const below = fixture({ readBest: () => 138, onUnlock: (b) => unlocked.push(b) });
+  below.game.passed = 139;
+  below.game.best = 138;
+  below.flow.crash();
+  expect(unlocked).toEqual([]);
+  expect(below.calls.find(([k]) => k === 'over')[4]).toBe('');
+
+  const crossed = fixture({ readBest: () => 139, onUnlock: (b) => unlocked.push(b) });
+  crossed.game.passed = 140;
+  crossed.game.best = 139;
+  crossed.flow.crash();
+  expect(unlocked).toEqual([140]);
+  expect(crossed.calls.find(([k]) => k === 'over')[4]).toBe('Alaska freigeschaltet!');
+
+  const already = fixture({ readBest: () => 140, onUnlock: (b) => unlocked.push(b) });
+  already.game.passed = 155;
+  already.game.best = 140;
+  already.flow.crash();
+  expect(unlocked).toEqual([140]);
+  expect(already.calls.find(([k]) => k === 'over')[4]).toBe('');
+});
+
+test('choose falls back to default when Alaska is locked and loads Alaska when unlocked', async () => {
+  const picked = [];
+  const loaded = [];
+  const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: { activeElement: { blur() {} } } });
+  try {
+    const locked = fixture({
+      readBest: () => 139,
+      pick: (id) => picked.push(id),
+      sheetsFor: async (id) => { loaded.push(id); return {}; },
+    });
+    locked.setState('start');
+    await locked.flow.choose('alaska');
+    expect(picked).toEqual(['kalle']);
+    expect(loaded).toEqual(['kalle']);
+
+    const open = fixture({
+      readBest: () => 140,
+      pick: (id) => picked.push(id),
+      sheetsFor: async (id) => { loaded.push(id); return {}; },
+    });
+    open.setState('start');
+    await open.flow.choose('alaska');
+    expect(picked).toEqual(['kalle', 'alaska']);
+    expect(loaded).toEqual(['kalle', 'alaska']);
+  } finally {
+    if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
+    else delete globalThis.document;
+  }
 });

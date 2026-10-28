@@ -1,8 +1,8 @@
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, WALLS_PER_SEASON, SPRING, ICE, VOLKSPARK_LANDMARK_PRELOAD,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, SUPERATTACK, WALLS_PER_SEASON, SPRING, ICE, VOLKSPARK_LANDMARK_PRELOAD,
 } from './config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow, selectPowerup,
+  speedAt, spacingAt, makeGaps, widened, resolveWall, superattackActive, stepSuperattack, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow, selectPowerup,
 } from './logic.js';
 import { loadSeasonBackgrounds } from './seasons.js';
 import { environmentPreview, preparePreview } from './environment-preview.js';
@@ -44,7 +44,7 @@ const hud = {
   wind: $('wind'), banner: $('banner'), start: $('start'), over: $('over'),
   final: $('final'), best: $('best'), bestStart: $('best-start'),
   figures: $('figures'), changeFigure: $('change-figure'), share: $('share-run'),
-  streak: $('streak'), pop: $('pop'), overNote: $('over-note'),
+  streak: $('streak'), pop: $('pop'), overNote: $('over-note'), overUnlock: $('over-unlock'),
 };
 
 const loadImage = (src) => new Promise((ok, fail) => {
@@ -65,7 +65,7 @@ let game;
 const preview = environmentPreview();
 let last = 0;
 const input = { dragging: false, lastX: 0, keys: new Set() };
-let figureId = readFigure(), figure = null, picker, loadingFigure = false;
+let figureId = readFigure(readBest()), figure = null, picker, loadingFigure = false;
 let themeId = 'volkspark', gateSprites, gateLoad, groundLoad;
 const figureSheets = new Map();
 
@@ -155,7 +155,7 @@ const flow = createGameFlow({ hud, getState: () => state, getGame: () => game, g
   newGame, getBoard: () => board, setState, updateHud, speedAt, showBanner, season, sheetsFor: sheetsForRound,
   figureSheets, pick,
   setFigure: (value) => { figure = value; }, playerSpot,
-  popText: showPopText, showOver, readBest, writeBest });
+  popText: showPopText, showOver, readBest, writeBest, onUnlock: (best) => picker?.refresh(best) });
 const { beginIntro, beginPlay, choose, start, collect, onPass, crash } = flow;
 
 function replaceGame(next) {
@@ -279,6 +279,7 @@ function update(dt) {
   const eff = game.effects;
   eff.slowmo = Math.max(0, eff.slowmo - dt);
   eff.widen = Math.max(0, eff.widen - dt);
+  eff.superattack = stepSuperattack(eff.superattack, dt);
   game.slowFactor += ((eff.slowmo > 0 ? 0.55 : 1) - game.slowFactor) * Math.min(1, dt * 4);
   game.seasonFade = Math.min(1, game.seasonFade + dt / 1.5);
 
@@ -310,11 +311,13 @@ function update(dt) {
     w.z -= dz;
     if (before > PLAYER_Z && w.z <= PLAYER_Z) {
       const gaps = w.gaps.map((g) => widened(g, widenFactor));
-      if (passesWall(p.x, PLAYER_R * 0.75, gaps)) {
+      const res = resolveWall(p.x, PLAYER_R * 0.75, gaps, eff.superattack);
+      if (res.passed) {
+        if (res.broken) w.broken = true;
         game.passed++;
         preloadLandmarks();
         setSeason(seasonIndexAt(game.passed, WALLS_PER_SEASON, SEASONS.length));
-        onPass(judgePass(p.x, PLAYER_R * 0.75, gaps));
+        onPass(res.broken ? 'smash' : judgePass(p.x, PLAYER_R * 0.75, gaps));
       } else {
         crash();
         w.broken = true;
@@ -323,7 +326,7 @@ function update(dt) {
     }
   }
   if (!syringeContextSafe(season().id, p.slippery, game.surface.id)) game.syringes.length = 0;
-  if (stepSyringes(game.syringes, dz, p.x)) {
+  if (stepSyringes(game.syringes, dz, p.x) && !superattackActive(eff.superattack)) {
     crash('syringe');
     if (state === 'over') return;
   }
@@ -381,9 +384,8 @@ function frame(now) {
 }
 
 function pick(id) {
-  figureId = id;
-  saveFigure(id);
-  picker.select(id);
+  figureId = picker ? picker.select(id) : id;
+  saveFigure(figureId);
 }
 
 function bindInput() {
@@ -412,7 +414,7 @@ async function init() {
   }
   game = newGame();
   primeGrades();
-  hud.streak.innerHTML = '<i></i>'.repeat(STREAK_NEED) + `<img src="${POWERUPS.helmet.img}" alt="">`; // only our own markup
+  hud.streak.innerHTML = '<i></i>'.repeat(STREAK_NEED) + `<b>${SUPERATTACK.icon}</b>`; // only our own markup
   board = setupLeaderboard();
   setupIdeas(() => ({ score: game.passed, season: season().name }));
   setupShareCard(() => ({
@@ -426,14 +428,15 @@ async function init() {
     if (id === 'berlin-tour') { gatesFor().catch(() => {}); berlinGroundFor().catch(() => {}); }
   });
   // a card only picks the figure; the button (or a tap anywhere else) starts
+  const initialBest = readBest();
   picker = setupFigureSelect(hud.figures, figureId, (id) => {
     if (loadingFigure) return; // a round is already starting with the other figure
     pick(id);
     sheetsFor(id).catch(() => {});
     hud.start.querySelector('.tap').focus(); // so Space/Enter starts next, not the card again
-  });
+  }, initialBest);
   sheetsFor(figureId).catch(() => {});
-  hud.bestStart.textContent = readBest();
+  hud.bestStart.textContent = initialBest;
   hud.start.classList.add('show');
   setState('start');
   if (preview) {

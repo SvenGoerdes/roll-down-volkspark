@@ -20,6 +20,8 @@ export const ICE = { k: 70, c: 8, kick: 0.3 };
 export const WIND_WARN = 0.7; // seconds a gust is announced before it pushes
 
 export const WALLS_PER_SEASON = 20;
+// Local record (walls passed) required to unlock Alaska.
+export const ALASKA_UNLOCK_WALLS = 140;
 
 // Difficulty curve: the gap eases toward a wider late-run floor without changing its opening width.
 export const GAP_WIDTH = { start: 3.2, target: 1.95, floor: 2.0, tau: 35, lateTightening: 0.003, relief: 0.5 };
@@ -128,10 +130,20 @@ export const MAX_HELMETS = 3;
 // Per-wall chance for each pickup type; the combined chance is 25%.
 export const POWERUP_CHANCES = { helmet: 0.05, slowmo: 0.1, widen: 0.1 };
 
+// Superattack earned after STREAK_NEED perfect passes in a row (replaces the streak helmet).
+export const SUPERATTACK = {
+  duration: 10,
+  warn: 1.5,
+  scale: 1.3,
+  icon: '💥',
+  name: '💥 Superattacke!',
+  hint: '6× Perfekt – 10 s durch jede Mauer',
+};
+
 // Cloudflare Worker: ideas → GitHub issues, shared leaderboard (see worker/)
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
 // Public Turnstile sitekey for leaderboard entries. Empty = no widget (the worker then must not have the secret).
-export const TURNSTILE_SITEKEY = '';
+export const TURNSTILE_SITEKEY = '0x4AAAAAAFqLcCPjJPaXVT8n';
 
 // Rare side obstacles; never add a second steering challenge on slippery/windy stretches.
 export const SYRINGES = {

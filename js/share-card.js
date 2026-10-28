@@ -1,5 +1,5 @@
 import { SEASONS } from './config.js';
-import { DEFAULT_FIGURE, FIGURES, pickFigure } from './figure.js';
+import { DEFAULT_FIGURE, FIGURES } from './figure.js';
 import { overNote } from './scoring.js';
 import { seeded } from './sprites.js';
 import { THEMES, validateThemeId } from './theme-select.js';
@@ -35,7 +35,7 @@ export function buildShareCardModel({
   const isRecord = typeof record === 'boolean' ? record : Boolean(overNote(score, best, worldBest).record);
   const seasonObj = resolveSeason(season);
   const themeObj = THEMES.find((t) => t.id === validateThemeId(themeId)) || THEMES[0];
-  const figureObj = FIGURES.find((f) => f.id === pickFigure(figureId)) || FIGURES[0];
+  const figureObj = FIGURES.find((f) => f.id === figureId) || FIGURES[0];
   const unitLabel = score === 1 ? SHARE_TEXT.wallSingular : SHARE_TEXT.walls;
   const scoreText = String(score);
   const recordBadge = isRecord ? SHARE_TEXT.record : '';
