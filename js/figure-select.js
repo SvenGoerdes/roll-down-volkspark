@@ -1,6 +1,7 @@
 // Figure picker on the start overlay: one card per figure with its breathing select sprite, and the saved choice.
 import { FIGURES, isFigureUnlocked, pickFigure, unlockHint } from './figure.js';
 import { SHEETS } from './figure-sheets.js';
+import { t } from './i18n.js';
 
 const KEY = 'rollDownFigure';
 
@@ -66,7 +67,7 @@ export function setupFigureSelect(root, current, onPick, best = 0) {
       const unlocked = isFigureUnlocked(fig.id, currentBest);
       card.classList.toggle('locked', !unlocked);
       card.setAttribute('aria-disabled', String(!unlocked));
-      note.textContent = unlocked ? fig.tag : unlockHint(fig.unlockWalls);
+      note.textContent = unlocked ? t(`figure.${fig.id}.tag`) : unlockHint(fig.unlockWalls);
     }
   };
 

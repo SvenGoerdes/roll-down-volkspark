@@ -1,11 +1,12 @@
 import { WALL_H } from './config.js';
 import { project } from './view.js';
 import { wallAlpha } from './atmosphere.js';
+import { t } from './i18n.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 // A small sign above the wall whose pass beats the nearest record: "Rekord" (own) or "Weltrekord".
-export function drawRecordMark(ctx, view, wall, label = 'Rekord') {
+export function drawRecordMark(ctx, view, wall, label = t('record.ownSign')) {
   const p = project(view, wall.gaps[0].x, wall.z, WALL_H + 0.35);
   const size = clamp(p.s * 0.55, 10, 26);
   ctx.save();

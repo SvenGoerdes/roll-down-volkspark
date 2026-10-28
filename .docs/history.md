@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-28: Issue #70 – Englische Übersetzung und DE/EN-Schalter
+- Nutzerentscheidung: automatische Sprachwahl nach Browsersprache (`en*` → Englisch, sonst Deutsch als Standard/Fallback) plus kleiner `DE | EN`-Schalter oben rechts auf dem Startscreen (`localStorage` `rollDownLang`), der sofort ohne Neuladen wirkt und `<html lang>` mitzieht. → [ADR 0079](decisions/0079-english-translation-mini-i18n.md)
+- Neu: `js/i18n.js` mit `STRINGS.de`/`STRINGS.en`, `t(key, vars)`, `applyI18n()` (`data-i18n`, `data-i18n-placeholder`, `data-i18n-aria`) und `setupLangSwitch()`. Alle sichtbaren Spieltexte inklusive der neuen Texte aus #21 (Alaska-Freischaltung), #64 (Superattacke) und #62 (Teilen-Karte) zweisprachig angebunden.
+- Eigennamen (`Roll Down Volkspark`, Figurennamen, Berliner Bauwerke) sowie die an den Worker gesendeten Daten (`season.name`) bleiben unverändert; Worker-Validierungsfehler bleiben vorerst deutsch (kein Worker-Umbau in diesem PR).
+- Geprüft: `bun test tests` grün (`tests/i18n.test.js` prüft Sprachwahl, `localStorage`-Vorrang, Platzhalter, DOM-Umschaltung sowie vollständige Schlüssel- und Platzhalter-Deckung zwischen `de`, `en` und `index.html`). Sichtprüfung in Headless Chrome bei 390×844 (DPR 2) für Startscreen (DE/EN), Intro, laufendes Spiel mit Banner und Rekordschild, Game-Over, Bestenliste und Ideen-Sheet. Nicht geprüft: echte Mobilgeräte, Safari, Live-Worker-Fehlerantworten.
+- Entschieden vom Nutzer; gebaut durch Gemini 4 Argon (Subagent) auf `feat/english`.
+
 ## 2026-10-28: #62 – Dezente Teilen-Karte nach Game Over
 - Kleiner „Teilen“-Knopf (`#share-run`) auf dem Game-Over-Screen ohne Popup oder automatisches Teilen; bei neuem Rekord (`note.record`) dezent goldfarben hervorgehoben. Ein Tipp startet keine neue Runde.
 - `js/share-card.js` baut das Kartenmodell (`buildShareCardModel`) und rendert erst beim Tippen einmalig eine 1080×1350-Karte (`renderShareCard`) im Art-Bible-Look mit gemaltem Jahreszeiten-Horizont, Gabionen-Lücke, gewählter Figur, Mauer-Anzahl, optionalem „Neuer Rekord!“-Abzeichen sowie Spielname und URL.

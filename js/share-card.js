@@ -1,5 +1,6 @@
 import { SEASONS } from './config.js';
 import { DEFAULT_FIGURE, FIGURES } from './figure.js';
+import { seasonName, t } from './i18n.js';
 import { overNote } from './scoring.js';
 import { seeded } from './sprites.js';
 import { THEMES, validateThemeId } from './theme-select.js';
@@ -34,16 +35,27 @@ export function buildShareCardModel({
   const score = Math.max(0, Math.floor(Number(passed) || 0));
   const isRecord = typeof record === 'boolean' ? record : Boolean(overNote(score, best, worldBest).record);
   const seasonObj = resolveSeason(season);
-  const themeObj = THEMES.find((t) => t.id === validateThemeId(themeId)) || THEMES[0];
+  const themeObj = THEMES.find((tItem) => tItem.id === validateThemeId(themeId)) || THEMES[0];
   const figureObj = FIGURES.find((f) => f.id === figureId) || FIGURES[0];
-  const unitLabel = score === 1 ? SHARE_TEXT.wallSingular : SHARE_TEXT.walls;
+  const unitLabel = score === 1 ? t('hud.wallSingular') : t('hud.walls');
   const scoreText = String(score);
-  const recordBadge = isRecord ? SHARE_TEXT.record : '';
-  const chipText = `${seasonObj.icon} ${seasonObj.name} · ${themeObj.label}`;
-  const figureLabel = `${figureObj.name} · ${figureObj.tag}`;
+  const recordLabel = t('over.ownRecord');
+  const recordBadge = isRecord ? recordLabel : '';
+  const localizedSeason = seasonName(seasonObj);
+  const localizedTheme = t(`theme.${themeObj.id}`);
+  const localizedTag = t(`figure.${figureObj.id}.tag`);
+  const chipText = `${seasonObj.icon} ${localizedSeason} · ${localizedTheme}`;
+  const figureLabel = `${figureObj.name} · ${localizedTag}`;
   const fileName = `roll-down-volkspark-${score}-mauern.png`;
-  const baseText = `${score} ${unitLabel} mit ${figureObj.name} (${seasonObj.name}, ${themeObj.label}) in ${SHARE_TEXT.title}!`;
-  const shareText = isRecord ? `${SHARE_TEXT.record} ${baseText}` : baseText;
+  const baseText = t('share.text', {
+    score,
+    unit: unitLabel,
+    figure: figureObj.name,
+    season: localizedSeason,
+    theme: localizedTheme,
+    title: SHARE_TEXT.title,
+  });
+  const shareText = isRecord ? `${recordLabel} ${baseText}` : baseText;
   return {
     score, scoreText, unitLabel, record: isRecord, recordBadge,
     season: seasonObj, theme: themeObj, figure: figureObj,

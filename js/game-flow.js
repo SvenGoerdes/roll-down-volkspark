@@ -3,12 +3,13 @@ import { justUnlockedFigure, pickFigure, unlockNotice } from './figure.js';
 import { STREAK_NEED, nextStreak, applyWorldBest, overNote } from './scoring.js';
 import { addHelmet, superattackActive } from './logic.js';
 import { burstSparkles, burstStones } from './fx.js';
+import { seasonHint, seasonName, t } from './i18n.js';
 
 export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigure, getGame, setGame, newGame, getBoard, setState, updateHud, speedAt, showBanner, popText, showOver, season, sheetsFor, figureSheets, pick, setFigure, playerSpot, readBest, writeBest, onUnlock }) {
-  const TAP_TEXT = 'Losrollen';
   function beginPlay() {
     setState('playing');
-    showBanner(season().name, season().hint);
+    const s = season();
+    showBanner(seasonName(s), seasonHint(s));
   }
   // The world record may arrive after the run began: it counts only while no wall is passed yet.
   function loadWorld() {
@@ -34,17 +35,17 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
     pick(unlockedId);
     const tap = hud.start.querySelector('.tap');
     setLoadingFigure(true);
-    tap.textContent = 'Lädt …';
+    tap.textContent = t('status.loading');
     try {
       setFigure(await sheetsFor(unlockedId));
     } catch (err) {
-      tap.textContent = 'Nochmal versuchen';
+      tap.textContent = t('start.retry');
       console.error(err);
       return;
     } finally {
       setLoadingFigure(false);
     }
-    tap.textContent = TAP_TEXT;
+    tap.textContent = t('start.go');
     for (const key of figureSheets.keys()) if (key !== unlockedId) figureSheets.delete(key);
     beginIntro();
   }
@@ -65,11 +66,13 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
     if (type === 'helmet') {
       const before = game.player.helmets;
       game.player.helmets = addHelmet(before, MAX_HELMETS);
-      const hint = game.player.helmets === before ? `Maximal ${MAX_HELMETS} Helme` : `${game.player.helmets} von ${MAX_HELMETS} – je ein Crash frei`;
-      showBanner(powerup.name, hint, powerup.img);
+      const hint = game.player.helmets === before
+        ? t('powerup.helmet.max', { max: MAX_HELMETS })
+        : t('powerup.helmet.count', { count: game.player.helmets, max: MAX_HELMETS });
+      showBanner(t('powerup.helmet'), hint, powerup.img);
     } else {
       game.effects[type] = powerup.duration;
-      showBanner(powerup.name, powerup.hint, powerup.img);
+      showBanner(t(`powerup.${type}`), t(`powerup.${type}.hint`), powerup.img);
     }
     navigator.vibrate?.(30);
   }
@@ -81,9 +84,9 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
       burstStones(game.fx, at.sx, at.sy, at.s / 45);
       game.shake = Math.max(game.shake || 0, 0.18);
       navigator.vibrate?.(25);
-    } else if (!active && kind === 'perfect') popText('Perfekt', 'perfect');
+    } else if (!active && kind === 'perfect') popText(t('pass.perfect'), 'perfect');
     else if (!active && kind === 'close') {
-      popText('Knapp!', 'close');
+      popText(t('pass.close'), 'close');
       game.shake = Math.max(game.shake || 0, 0.12);
       navigator.vibrate?.(15);
     }
@@ -92,7 +95,7 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
     if (reward) {
       burstSparkles(game.fx, at.sx, at.sy, at.s / 45);
       game.effects.superattack = SUPERATTACK.duration;
-      showBanner(SUPERATTACK.name, SUPERATTACK.hint);
+      showBanner(t('superattack.name'), t('superattack.hint'));
       navigator.vibrate?.([35, 30, 60]);
     }
     // last, so the record wins the banner over a season or streak on the same wall
@@ -102,7 +105,7 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
       if (world) game.worldShown = true;
       if (own) game.recordShown = true;
       burstSparkles(game.fx, at.sx, at.sy, at.s / 45);
-      showBanner(world ? 'Weltrekord!' : 'Neuer Rekord!', `Mehr als ${world ? game.worldBest : game.best} Mauern`);
+      showBanner(t(world ? 'record.worldBanner' : 'record.ownBanner'), t('record.moreThan', { count: world ? game.worldBest : game.best }));
       navigator.vibrate?.([40, 40, 40]);
     }
   }
@@ -118,7 +121,11 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
       game.shake = 0.3;
       game.flash = 0.25;
       navigator.vibrate?.(80);
-      showBanner(cause === 'syringe' ? 'Spritze – Helm kaputt' : 'Helm kaputt', game.player.helmets ? `Noch ${game.player.helmets} übrig` : 'Glück gehabt!', POWERUPS.helmet.img);
+      showBanner(
+        t(cause === 'syringe' ? 'crash.syringeHelmet' : 'crash.helmet'),
+        game.player.helmets ? t('crash.helmetsLeft', { count: game.player.helmets }) : t('crash.phew'),
+        POWERUPS.helmet.img,
+      );
       return;
     }
     game.shake = 0.5;

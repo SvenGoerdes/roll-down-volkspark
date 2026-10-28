@@ -2,6 +2,7 @@
 // Frames come from Blender renders packed by tools/build-sprites.py; see js/figure-sheets.js.
 import { ALASKA_UNLOCK_WALLS } from './config.js';
 import { SHEETS, PPU } from './figure-sheets.js';
+import { t } from './i18n.js';
 
 export const FIGURES = [
   { id: 'kalle', name: 'Kalle', tag: 'vom Kiez' },
@@ -11,10 +12,10 @@ export const FIGURES = [
 export const DEFAULT_FIGURE = 'kalle';
 export const GAME_CLIPS = ['intro', 'roll', 'roll-helmet', 'dazed'];
 
-export const unlockHint = (walls = ALASKA_UNLOCK_WALLS) => `Knack ${walls} Mauern`;
+export const unlockHint = (walls = ALASKA_UNLOCK_WALLS) => t('figure.unlockHint', { walls });
 export const unlockNotice = (id = 'alaska') => {
   const fig = FIGURES.find((f) => f.id === id);
-  return fig ? `${fig.name} freigeschaltet!` : '';
+  return fig ? t('figure.unlockNotice', { name: fig.name }) : '';
 };
 
 // Walls needed to unlock a figure (0 when playable from the start).

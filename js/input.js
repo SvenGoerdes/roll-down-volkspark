@@ -2,7 +2,7 @@ import { CORRIDOR, PLAYER_R, PLAYER_Z } from './config.js';
 
 export function bindInput({ input, hud, getState, getGame, getView, choose, start, newGame, setGame, getBoard, readBest, setState, beginPlay, resize, setLast }) {
   const onPointerDown = (e) => {
-    if (e.target?.closest?.('#ideas, #board, #over button, #figures, #themes')) return;
+    if (e.target?.closest?.('#ideas, #board, #over button, #figures, #themes, #lang')) return;
     if (getState() === 'start') { choose(); return; }
     if (getState() === 'over') {
       if (hud.over.dataset.ready === '1') start();
@@ -26,7 +26,7 @@ export function bindInput({ input, hud, getState, getGame, getView, choose, star
   window.addEventListener('pointerup', () => { input.dragging = false; });
   window.addEventListener('pointercancel', () => { input.dragging = false; });
   window.addEventListener('keydown', (e) => {
-    if (e.target.closest?.('#ideas, #board, #over button, #figures, #themes')) return;
+    if (e.target.closest?.('#ideas, #board, #over button, #figures, #themes, #lang')) return;
     input.keys.add(e.key);
     if ((e.key === ' ' || e.key === 'Enter') && getState() !== 'playing') {
       onPointerDown({ clientX: 0 });

@@ -57,22 +57,25 @@ test('theme controls do not trigger gameplay, while Enter still activates gamepl
   const over = { dataset: {} };
   const windowMock = { addEventListener: (name, fn) => { events[name] = fn; } };
   const documentMock = { addEventListener() {} };
-  const themeTarget = { closest: (selector) => selector.includes('#themes') };
-  const ordinaryTarget = { closest: () => null };
-  try {
-    Object.defineProperty(globalThis, 'window', { configurable: true, value: windowMock });
-    Object.defineProperty(globalThis, 'document', { configurable: true, value: documentMock });
-    bindInput({
-      input: { dragging: false, lastX: 0, keys: new Set() },
-      hud: { over, changeFigure: { addEventListener() {} } },
-      getState: () => state, getGame: () => ({}), getView: () => ({ F: 1 }),
-      choose: () => { chosen++; }, start: () => { started++; },
-      newGame: () => ({}), setGame() {}, getBoard: () => ({ offer() {} }), readBest: () => 0,
-      setState: (next) => { state = next; }, beginPlay() {}, resize() {}, setLast() {},
-    });
-    events.pointerdown({ target: themeTarget, clientX: 0 });
-    events.keydown({ target: themeTarget, key: 'Enter' });
-    expect(chosen).toBe(0);
+    const themeTarget = { closest: (selector) => selector.includes('#themes') };
+    const langTarget = { closest: (selector) => selector.includes('#lang') };
+    const ordinaryTarget = { closest: () => null };
+    try {
+      Object.defineProperty(globalThis, 'window', { configurable: true, value: windowMock });
+      Object.defineProperty(globalThis, 'document', { configurable: true, value: documentMock });
+      bindInput({
+        input: { dragging: false, lastX: 0, keys: new Set() },
+        hud: { over, changeFigure: { addEventListener() {} } },
+        getState: () => state, getGame: () => ({}), getView: () => ({ F: 1 }),
+        choose: () => { chosen++; }, start: () => { started++; },
+        newGame: () => ({}), setGame() {}, getBoard: () => ({ offer() {} }), readBest: () => 0,
+        setState: (next) => { state = next; }, beginPlay() {}, resize() {}, setLast() {},
+      });
+      events.pointerdown({ target: themeTarget, clientX: 0 });
+      events.keydown({ target: themeTarget, key: 'Enter' });
+      events.pointerdown({ target: langTarget, clientX: 0 });
+      events.keydown({ target: langTarget, key: 'Enter' });
+      expect(chosen).toBe(0);
     expect(started).toBe(0);
     events.keydown({ target: ordinaryTarget, key: 'Enter' });
     expect(chosen).toBe(1);
