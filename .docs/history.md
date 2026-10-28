@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-28: #62 – Dezente Teilen-Karte nach Game Over
+- Kleiner „Teilen“-Knopf (`#share-run`) auf dem Game-Over-Screen ohne Popup oder automatisches Teilen; bei neuem Rekord (`note.record`) dezent goldfarben hervorgehoben. Ein Tipp startet keine neue Runde.
+- `js/share-card.js` baut das Kartenmodell (`buildShareCardModel`) und rendert erst beim Tippen einmalig eine 1080×1350-Karte (`renderShareCard`) im Art-Bible-Look mit gemaltem Jahreszeiten-Horizont, Gabionen-Lücke, gewählter Figur, Mauer-Anzahl, optionalem „Neuer Rekord!“-Abzeichen sowie Spielname und URL.
+- Teilen per Web Share API mit PNG-Datei (`navigator.canShare({ files })`), sonst Text+URL, sonst PNG-Download. Nutzerabbruch (`AbortError`) und Fehler werden still behandelt.
+- Geprüft: 190 Bun-Tests grün (`tests/share-card.test.js`); Chrome 390×844 DPR 2 (Normal- und Rekord-Game-Over sowie erzeugte 1080×1350-Kartenbilder). Echtes Teilen über native iOS-/Android-Share-Sheets (WhatsApp, Instagram) nicht auf physischen Geräten geprüft.
+- Entschieden vom Nutzer (#62), gebaut von Gemini 4 Argon (Subagent).
+
 ## 2026-10-28: Issue #64 / #10 – 💥 Superattacke nach 6× Perfekt ersetzt den Streak-Helm
 - Nutzerentscheidung zu Spieler-Idee #10 („Zu viele Helme“) und #64: Wer 6× in Folge „Perfekt“ schafft, erhält keinen Gratis-Helm mehr, sondern 10 s lang die Superattacke (`SUPERATTACK` in `config.js`). Normale Helm-Pickups bleiben unverändert. → [ADR 0078](decisions/0078-superattack-replaces-streak-helmet.md) (ersetzt den Streak-Helm aus [ADR 0025](decisions/0025-perfect-streak-and-record-chase.md)).
 - Reine Regeln in `scoring.js` (`nextStreak` baut während aktiver Superattacke keine neue Serie auf) und `logic.js` (`stepSuperattack`, `superattackActive`, `superattackWarn`, `superattackBlink`, `superattackScale`, `resolveWall`).
