@@ -128,6 +128,16 @@ export const MAX_HELMETS = 3;
 // Per-wall chance for each pickup type; the combined chance is 25%.
 export const POWERUP_CHANCES = { helmet: 0.05, slowmo: 0.1, widen: 0.1 };
 
+// Superattack earned after STREAK_NEED perfect passes in a row (replaces the streak helmet).
+export const SUPERATTACK = {
+  duration: 10,
+  warn: 1.5,
+  scale: 1.3,
+  icon: '💥',
+  name: '💥 Superattacke!',
+  hint: '6× Perfekt – 10 s durch jede Mauer',
+};
+
 // Cloudflare Worker: ideas → GitHub issues, shared leaderboard (see worker/)
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
 // Public Turnstile sitekey for leaderboard entries. Empty = no widget (the worker then must not have the secret).

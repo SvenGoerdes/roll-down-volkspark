@@ -27,6 +27,14 @@ test('intro rendering needs no idle sheet and hands off with the roll squash at 
     expect(introScale[1]).toBeCloseTo(rollScale[1]);
     expect(introScale[2]).toBeCloseTo(rollScale[2]);
     expect(calls.some(([kind, ...args]) => kind === 'draw' && args[0] === 'roll-sheet')).toBe(true);
+
+    const normalDraw = calls.find(([kind, img]) => kind === 'draw' && img === 'roll-sheet');
+    calls.length = 0;
+    drawPlayer(ctx, view, player, 0, 0, figure, { clip: 'roll', frame: 0 }, 5);
+    const superDraws = calls.filter(([kind]) => kind === 'draw');
+    expect(superDraws.length).toBe(3); // shadow, aura, figure
+    const superFigureDraw = calls.find(([kind, img]) => kind === 'draw' && img === 'roll-sheet');
+    expect(superFigureDraw[7]).toBeCloseTo(normalDraw[7] * 1.3);
   } finally {
     if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
     else delete globalThis.document;

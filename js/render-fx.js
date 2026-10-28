@@ -1,6 +1,7 @@
 import { SCENERY_FAR, hash } from './scenery.js';
 import { project } from './view.js';
-import { softDot, paintGrade } from './sprites.js';
+import { softDot, superAura, stoneSprite, paintGrade } from './sprites.js';
+import { STONES } from './fx.js';
 import { forestSprite, gabionFaces, horizonVeil, groundLight, valleySprite } from './environment-sprites.js';
 import { arrivalAlpha, depthMist } from './atmosphere.js';
 
@@ -94,6 +95,8 @@ export function drawParticles(ctx, particles) {
 
 // Build the small environment cache before the first moving frame.
 export function warmUp(seasons) {
+  superAura();
+  for (const color of STONES) stoneSprite(color);
   for (const s of seasons) {
     if (s.id === 'autumn') for (const color of s.particle.colors) {
       if (!leafSprites.has(color)) paintLeaf(color);
@@ -180,9 +183,8 @@ export function drawGrade(ctx, view, season, prev, fade) {
   ctx.setTransform(m);
 }
 
-const STONE = [[1, 0], [0.5, 0.85], [-0.45, 0.8], [-1, 0.1], [-0.6, -0.75], [0.4, -0.9]];
-
 export function drawFx(ctx, fx) {
+  const m = ctx.getTransform();
   for (const f of fx) {
     const t = f.life / f.max, size = f.size * (1 + f.grow * t);
     if (f.kind === 'dust') {
@@ -200,20 +202,20 @@ export function drawFx(ctx, fx) {
       continue;
     }
     ctx.globalAlpha = f.kind === 'spark' ? 1 - t : Math.min(1, (1 - t) * 4);
-    ctx.fillStyle = f.color;
     if (f.kind === 'spark') {
+      ctx.fillStyle = f.color;
       star(ctx, f.x, f.y, size);
       ctx.fill();
       continue;
     }
-    const cos = Math.cos(f.rot) * size, sin = Math.sin(f.rot) * size;
-    ctx.beginPath();
-    for (const [u, v] of STONE) ctx.lineTo(f.x + u * cos - v * sin, f.y + u * sin + v * cos);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.22)';
-    ctx.beginPath();
-    ctx.arc(f.x - size * 0.25, f.y - size * 0.3, size * 0.35, 0, Math.PI * 2);
-    ctx.fill();
+    const cos = Math.cos(f.rot), sin = Math.sin(f.rot);
+    ctx.setTransform(
+      m.a * cos + m.c * sin, m.b * cos + m.d * sin,
+      m.c * cos - m.a * sin, m.d * cos - m.b * sin,
+      m.a * f.x + m.c * f.y + m.e, m.b * f.x + m.d * f.y + m.f,
+    );
+    ctx.drawImage(stoneSprite(f.color), -size, -size, size * 2, size * 2);
+    ctx.setTransform(m);
   }
   ctx.globalAlpha = 1;
 }

@@ -1,11 +1,11 @@
 import { test, expect } from 'bun:test';
 import { createGameFlow } from '../js/game-flow.js';
-import { MAX_HELMETS } from '../js/config.js';
+import { MAX_HELMETS, SUPERATTACK } from '../js/config.js';
 
 function fixture(overrides = {}) {
   const originalGame = {
     passed: 7, best: 6, streak: 5, recordShown: false, time: 3, fx: [],
-    player: { x: 0, helmets: 0, dazed: false }, effects: { slowmo: 0, widen: 0 },
+    player: { x: 0, helmets: 0, dazed: false }, effects: { slowmo: 0, widen: 0, superattack: 0 },
   };
   const calls = [];
   let game = originalGame;
@@ -40,7 +40,8 @@ test('flow reads the replacement game after start', () => {
 
   expect(currentGame).not.toBe(originalGame);
   expect(currentGame.streak).toBe(0);
-  expect(currentGame.player.helmets).toBe(2);
+  expect(currentGame.effects.superattack).toBe(SUPERATTACK.duration);
+  expect(currentGame.player.helmets).toBe(1);
   expect(currentGame.fx.length).toBeGreaterThan(0);
   expect(originalGame.streak).toBe(5);
   expect(originalGame.player.helmets).toBe(0);
@@ -48,14 +49,37 @@ test('flow reads the replacement game after start', () => {
   expect(calls.some(([kind, text]) => kind === 'pop' && text === 'Perfekt')).toBe(true);
 });
 
-test('flow pass uses current game for streak reward and record', () => {
+test('flow pass triggers superattack on 6th perfect instead of granting a helmet, and record wins banner', () => {
   const { game, calls, flow } = fixture();
   flow.onPass('perfect');
   expect(game.streak).toBe(0);
-  expect(game.player.helmets).toBe(1);
+  expect(game.player.helmets).toBe(0);
+  expect(game.effects.superattack).toBe(SUPERATTACK.duration);
   expect(game.recordShown).toBe(true);
   expect(calls.some(([kind, text]) => kind === 'pop' && text === 'Perfekt')).toBe(true);
+  expect(calls.some(([kind, text]) => kind === 'banner' && text === SUPERATTACK.name)).toBe(true);
   expect(calls.some(([kind, text]) => kind === 'banner' && text === 'Neuer Rekord!')).toBe(true);
+});
+
+test('flow during superattack: smashing spawns stones, no streak builds, and crashes/syringes are harmless', () => {
+  const { game, calls, flow, getState } = fixture();
+  game.effects.superattack = 6;
+  game.streak = 0;
+  game.player.helmets = 1;
+  flow.onPass('perfect');
+  expect(game.streak).toBe(0);
+  expect(calls.some(([kind, text]) => kind === 'pop' && text === 'Perfekt')).toBe(false);
+
+  flow.onPass('smash');
+  expect(game.streak).toBe(0);
+  expect(game.fx.some((f) => f.kind === 'stone')).toBe(true);
+  expect(game.shake).toBeGreaterThanOrEqual(0.18);
+
+  flow.crash('wall');
+  flow.crash('syringe');
+  expect(game.player.helmets).toBe(1);
+  expect(game.player.dazed).toBe(false);
+  expect(getState()).toBe('playing');
 });
 
 test('flow: passing the world record wins the banner, own record follows later', () => {

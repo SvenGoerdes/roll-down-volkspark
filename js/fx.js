@@ -1,6 +1,6 @@
 // Short-lived screen-space effects: wall debris, dust and pickup sparkles.
 
-const STONES = ['#8d877c', '#6f6a61', '#a59f92', '#57524b', '#7b6c5a'];
+export const STONES = ['#8d877c', '#6f6a61', '#a59f92', '#57524b', '#7b6c5a'];
 const GRAVITY = { stone: 900, dust: -30, spark: 0, ring: 0 };
 
 export function burstStones(fx, x, y, scale, rng = Math.random) {
@@ -19,6 +19,7 @@ export function burstStones(fx, x, y, scale, rng = Math.random) {
       rot: 0, vr: 0, size: (10 + rng() * 12) * scale, grow: 2.4, life: 0, max: 0.7 + rng() * 0.5, color: '196,184,160',
     });
   }
+  if (fx.length > 140) fx.splice(0, fx.length - 140);
 }
 
 export function burstSparkles(fx, x, y, scale, rng = Math.random) {
