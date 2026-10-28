@@ -1,4 +1,5 @@
-import { POWERUPS, WALLS_PER_SEASON } from './config.js';
+import { POWERUPS, SUPERATTACK, WALLS_PER_SEASON } from './config.js';
+import { superattackWarn } from './logic.js';
 import { STREAK_NEED } from './scoring.js';
 
 export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
@@ -49,6 +50,12 @@ export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
     hud.season.textContent = getSeason().name;
     const parts = [];
     for (let i = 0; i < game.player.helmets; i++) parts.push(`<span class="pw helmet"><img src="${POWERUPS.helmet.img}" alt=""></span>`);
+    const superLeft = game.effects.superattack;
+    if (superLeft > 0) {
+      const pct = (superLeft / SUPERATTACK.duration) * 100;
+      const warn = superattackWarn(superLeft) ? ' warn' : '';
+      parts.push(`<span class="pw superattack${warn}"><b>${SUPERATTACK.icon}</b><small>${Math.ceil(superLeft)}s</small><i style="width:${pct}%"></i></span>`);
+    }
     for (const key of ['slowmo', 'widen']) {
       const left = game.effects[key];
       if (left > 0) {

@@ -1,6 +1,6 @@
 # 0025: Perfect passes, streak helmet and the record chase
 
-- **Status:** Accepted
+- **Status:** Superseded by [0078](0078-superattack-replaces-streak-helmet.md) (for the streak helmet reward; Perfekt/Knapp judging and record chase remain)
 - **Date:** 2026-10-14
 - **Decided by:** user (the game must grip and make you want one more run); Opus 5.5 (which hooks, rules, numbers)
 - **Built by:** Opus 5.5 planned and integrated; Haiku 5.5 subagent wrote `js/scoring.js`; Sonnet 5.5 subagent wrote the UI; Sonnet 5.5 reviewed (nothing serious; small fixes by Opus 5.5)

@@ -1,17 +1,17 @@
 // Balance check: a human-like bot plays many runs against the real difficulty curve (js/logic.js).
 // bun tools/balance-sim.js [runs] [--no-streak]   → survival stats, crash share per season, crash rate per wall.
 // --no-syringes: same planning and surface probes, but no syringe objects/collisions.
-// --no-streak: the 6-perfect streak gives no helmet, to see what the streak adds.
+// --no-streak: the 6-perfect streak triggers no superattack, to see what the streak adds.
 // The bot was tuned so that on the old curve (ADR 0024) it got stuck around wall 50 like our testers.
 // Spring, ice and wind come from js/config.js and js/logic.js; the rest of the steering copies js/main.js, keep both in step.
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, WALLS_PER_SEASON, MAX_HELMETS, POWERUPS, SURFACES, SPRING, ICE,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, WALLS_PER_SEASON, MAX_HELMETS, POWERUPS, SUPERATTACK, SURFACES, SPRING, ICE,
 } from '../js/config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, windAt, addHelmet, stepWind, createSurfaceTrack, selectPowerup,
+  speedAt, spacingAt, makeGaps, widened, resolveWall, superattackActive, stepSuperattack, seasonIndexAt, windAt, addHelmet, stepWind, createSurfaceTrack, selectPowerup,
 } from '../js/logic.js';
 import { syringeFor, stepSyringes, syringeContextSafe } from '../js/syringes.js';
-import { judgePass, nextStreak } from '../js/scoring.js';
+import { STREAK_NEED, judgePass, nextStreak } from '../js/scoring.js';
 
 // Drag precision by Fitts' law (a, b), feedback delay, pull against drift, rare sloppy swipes, more noise at speed.
 const NO_SYRINGES = process.argv.includes('--no-syringes');
@@ -40,11 +40,11 @@ function aimSigma(d, T, speed) {
 }
 
 function run(rng) {
-  const g = { time: 0, dist: 0, passed: 0, streak: 0, perfects: 0, spawned: 0, nextSpawnIn: 0, nextKick: 0, lastGapX: 0, pace: speedAt(0), syringeSpawned: 0, syringeEncountered: 0, syringeHits: 0, lastSyringeIndex: -Infinity, eligibleWalls: 0, pickupSpawned: 0, helmetSpawned: 0, slowmoSpawned: 0, widenSpawned: 0, pickupCollected: 0, normalHelmetSpawned: 0, normalHelmetCollected: 0, normalHelmetGranted: 0, normalHelmetWaste: 0, streakHelmetGranted: 0, streakHelmetWaste: 0 };
+  const g = { time: 0, dist: 0, passed: 0, streak: 0, perfects: 0, spawned: 0, nextSpawnIn: 0, nextKick: 0, lastGapX: 0, pace: speedAt(0), syringeSpawned: 0, syringeEncountered: 0, syringeHits: 0, lastSyringeIndex: -Infinity, eligibleWalls: 0, pickupSpawned: 0, helmetSpawned: 0, slowmoSpawned: 0, widenSpawned: 0, pickupCollected: 0, normalHelmetSpawned: 0, normalHelmetCollected: 0, normalHelmetGranted: 0, normalHelmetWaste: 0, superattackTriggered: 0, superattackSmashed: 0 };
   const track = createSurfaceTrack(rng);
   const walls = [], pickups = [], puddles = [], syringes = [];
   const p = { x: 0, vx: 0, target: 0, slippery: 0, helmets: 0 };
-  const eff = { slowmo: 0, widen: 0 };
+  const eff = { slowmo: 0, widen: 0, superattack: 0 };
   const wind = { force: 0, target: 0, next: 0, warn: 0, nextGust: 4, drift: 0 };
   const seen = [];
   let slow = 1, goal = null, aim = 0, from = 0, moveT = 0, moveDur = 0.2, pull = 0;
@@ -80,6 +80,7 @@ function run(rng) {
     g.time += DT;
     eff.slowmo = Math.max(0, eff.slowmo - DT);
     eff.widen = Math.max(0, eff.widen - DT);
+    eff.superattack = stepSuperattack(eff.superattack, DT);
     slow += ((eff.slowmo > 0 ? 0.55 : 1) - slow) * Math.min(1, DT * 4);
     const s = seasonAt(g.passed);
     g.pace += (speedAt(g.passed) - g.pace) * Math.min(1, DT * 1.5);
@@ -129,22 +130,24 @@ function run(rng) {
       w.z -= dz;
       if (before <= PLAYER_Z || w.z > PLAYER_Z) continue;
       const gaps = w.gaps.map((gp) => widened(gp, widen));
-      if (passesWall(p.x, PLAYER_R * 0.75, gaps)) {
+      const res = resolveWall(p.x, PLAYER_R * 0.75, gaps, eff.superattack);
+      if (res.passed) {
         g.passed++;
-        const kind = judgePass(p.x, PLAYER_R * 0.75, gaps);
+        if (res.broken) { w.broken = true; g.superattackSmashed++; }
+        const kind = res.broken ? 'smash' : judgePass(p.x, PLAYER_R * 0.75, gaps);
         if (kind === 'perfect') g.perfects++;
-        const st = nextStreak(g.streak, kind);
+        const st = nextStreak(g.streak, kind, STREAK_NEED, superattackActive(eff.superattack));
         g.streak = st.streak;
         if (st.reward && !NO_STREAK) {
-          if (p.helmets < MAX_HELMETS) { p.helmets = addHelmet(p.helmets, MAX_HELMETS); g.streakHelmetGranted++; }
-          else g.streakHelmetWaste++;
+          eff.superattack = SUPERATTACK.duration;
+          g.superattackTriggered++;
         }
       } else if (p.helmets > 0) { p.helmets--; g.streak = 0; w.broken = true; }
       else return result();
     }
     if (!syringeContextSafe(seasonAt(g.passed).id, p.slippery, under.id)) syringes.length = 0;
     g.syringeEncountered += syringes.filter((item) => !item.resolved && item.z > PLAYER_Z && item.z - dz <= PLAYER_Z).length;
-    if (stepSyringes(syringes, dz, p.x)) {
+    if (stepSyringes(syringes, dz, p.x) && !superattackActive(eff.superattack)) {
       g.syringeHits++;
       if (p.helmets > 0) { p.helmets--; g.streak = 0; }
       else return result();
@@ -176,7 +179,7 @@ function run(rng) {
   function result() {
     return { spawned: g.spawned, syringeEncountered: g.syringeEncountered, syringeSpawned: g.syringeSpawned, syringeHits: g.syringeHits, score: g.passed, season: g.passed >= MAX_WALLS ? -1 : seasonIndexAt(g.passed, WALLS_PER_SEASON, SEASONS.length), time: g.time, perfects: g.perfects,
       eligibleWalls: g.eligibleWalls, pickupSpawned: g.pickupSpawned, helmetSpawned: g.helmetSpawned, slowmoSpawned: g.slowmoSpawned, widenSpawned: g.widenSpawned, pickupCollected: g.pickupCollected, normalHelmetSpawned: g.normalHelmetSpawned, normalHelmetCollected: g.normalHelmetCollected,
-      normalHelmetGranted: g.normalHelmetGranted, normalHelmetWaste: g.normalHelmetWaste, streakHelmetGranted: g.streakHelmetGranted, streakHelmetWaste: g.streakHelmetWaste };
+      normalHelmetGranted: g.normalHelmetGranted, normalHelmetWaste: g.normalHelmetWaste, superattackTriggered: g.superattackTriggered, superattackSmashed: g.superattackSmashed };
   }
 }
 
@@ -204,6 +207,6 @@ const eligible = sum('eligibleWalls');
 console.log(`Pickup-Häufigkeit je 100 berechtigte Mauern (${eligible}): Helm ${(sum('helmetSpawned') / eligible * 100).toFixed(2)}, Zeitlupe ${(sum('slowmoSpawned') / eligible * 100).toFixed(2)}, breite Lücken ${(sum('widenSpawned') / eligible * 100).toFixed(2)}`);
 console.log(`Normale Helme je 100 berechtigte Mauern: ${(sum('normalHelmetGranted') / eligible * 100).toFixed(2)} vergeben, ${(sum('normalHelmetWaste') / eligible * 100).toFixed(2)} verfallen`);
 console.log(`Normale Helme je Runde: ${perRun('normalHelmetSpawned')} gespawnt, ${perRun('normalHelmetCollected')} eingesammelt, ${perRun('normalHelmetGranted')} vergeben, ${perRun('normalHelmetWaste')} am Limit verfallen`);
-console.log(`Streak-Helme je Runde: ${perRun('streakHelmetGranted')} vergeben, ${perRun('streakHelmetWaste')} am Limit verfallen`);
+console.log(`Superattacke je Runde: ${perRun('superattackTriggered')} ausgelöst, ${perRun('superattackSmashed')} Mauern durchbrochen`);
 
 console.log(`Spritzen: ${perRun('syringeSpawned')} gespawnt / ${perRun('syringeEncountered')} passiert je Runde, ${(sum('syringeSpawned') / sum('spawned') * 100).toFixed(2)} je 100 gespawnte Mauern, ${sum('syringeHits')} Treffer (${perRun('syringeHits')} je Runde)`);

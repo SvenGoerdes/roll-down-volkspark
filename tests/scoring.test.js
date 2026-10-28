@@ -38,7 +38,7 @@ test('nextStreak: close and clean passes reset the streak', () => {
   expect(nextStreak(4, 'clean')).toEqual({ streak: 0, reward: false });
 });
 
-test('nextStreak: a helmet on every 6th perfect in a row', () => {
+test('nextStreak: a superattack reward on every 6th perfect in a row', () => {
   let streak = 0;
   const rewards = [];
   for (let i = 1; i <= 2 * STREAK_NEED; i++) {
@@ -49,6 +49,12 @@ test('nextStreak: a helmet on every 6th perfect in a row', () => {
   expect(rewards).toEqual([STREAK_NEED, 2 * STREAK_NEED]);
   expect(nextStreak(5, 'perfect')).toEqual({ streak: 0, reward: true });
   expect(nextStreak(0, 'perfect')).toEqual({ streak: 1, reward: false });
+});
+
+test('nextStreak: while superattack is active, no new streak builds up', () => {
+  expect(nextStreak(0, 'perfect', STREAK_NEED, true)).toEqual({ streak: 0, reward: false });
+  expect(nextStreak(5, 'perfect', STREAK_NEED, true)).toEqual({ streak: 0, reward: false });
+  expect(nextStreak(3, 'smash', STREAK_NEED, true)).toEqual({ streak: 0, reward: false });
 });
 
 test('nextStreak: custom need', () => {

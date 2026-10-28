@@ -1,8 +1,9 @@
 import { test, expect } from 'bun:test';
-import { CORRIDOR, WALL_EXT, SEASONS, WALLS_PER_SEASON, WIND_WARN, GAP_WIDTH, POWERUP_CHANCES } from '../js/config.js';
+import { CORRIDOR, WALL_EXT, SEASONS, WALLS_PER_SEASON, WIND_WARN, GAP_WIDTH, POWERUP_CHANCES, SUPERATTACK } from '../js/config.js';
 import {
   speedAt, gapWidthAt, intervalAt, spacingAt, seasonRelief, shiftAt, windAt, stepWind, windArrow, seasonIndexAt, makeGaps, widened,
-  passesWall, solidSegments, slipAmount, skidStrength, createSurfaceTrack, stripSource, addHelmet, seasonAhead, selectPowerup,
+  passesWall, resolveWall, superattackActive, stepSuperattack, superattackWarn, superattackBlink, superattackScale,
+  solidSegments, slipAmount, skidStrength, createSurfaceTrack, stripSource, addHelmet, seasonAhead, selectPowerup,
 } from '../js/logic.js';
 
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
@@ -269,4 +270,32 @@ test('helmets stack up to the cap', () => {
   expect(addHelmet(0, 3)).toBe(1);
   expect(addHelmet(2, 3)).toBe(3);
   expect(addHelmet(3, 3)).toBe(3);
+});
+
+test('superattack timer steps down to zero, warns in final 1.5s, blinks and scales', () => {
+  expect(SUPERATTACK.duration).toBe(10);
+  expect(SUPERATTACK.warn).toBe(1.5);
+  expect(SUPERATTACK.scale).toBeCloseTo(1.3);
+  expect(superattackActive(0)).toBe(false);
+  expect(superattackActive(10)).toBe(true);
+  expect(stepSuperattack(10, 0.5)).toBeCloseTo(9.5);
+  expect(stepSuperattack(0.2, 0.5)).toBe(0);
+  expect(superattackWarn(10)).toBe(false);
+  expect(superattackWarn(1.51)).toBe(false);
+  expect(superattackWarn(1.5)).toBe(true);
+  expect(superattackWarn(0.1)).toBe(true);
+  expect(superattackWarn(0)).toBe(false);
+  expect(superattackBlink(5)).toBe(false);
+  expect(superattackBlink(0)).toBe(false);
+  expect(superattackBlink(1.4)).not.toBe(superattackBlink(1.28));
+  expect(superattackScale(0)).toBe(1);
+  expect(superattackScale(4)).toBe(SUPERATTACK.scale);
+});
+
+test('resolveWall: smashing through a wall during superattack counts as passed and breaks the wall', () => {
+  const gaps = [{ x: 0, w: 2 }];
+  expect(resolveWall(0, 0.4, gaps, 0)).toEqual({ passed: true, broken: false });
+  expect(resolveWall(2.5, 0.4, gaps, 0)).toEqual({ passed: false, broken: true });
+  expect(resolveWall(2.5, 0.4, gaps, 5)).toEqual({ passed: true, broken: true });
+  expect(resolveWall(0, 0.4, gaps, 5)).toEqual({ passed: true, broken: false });
 });

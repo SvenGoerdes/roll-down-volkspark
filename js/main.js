@@ -1,8 +1,8 @@
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, WALLS_PER_SEASON, SPRING, ICE, VOLKSPARK_LANDMARK_PRELOAD,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, SUPERATTACK, WALLS_PER_SEASON, SPRING, ICE, VOLKSPARK_LANDMARK_PRELOAD,
 } from './config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow, selectPowerup,
+  speedAt, spacingAt, makeGaps, widened, resolveWall, superattackActive, stepSuperattack, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow, selectPowerup,
 } from './logic.js';
 import { loadSeasonBackgrounds } from './seasons.js';
 import { environmentPreview, preparePreview } from './environment-preview.js';
@@ -277,6 +277,7 @@ function update(dt) {
   const eff = game.effects;
   eff.slowmo = Math.max(0, eff.slowmo - dt);
   eff.widen = Math.max(0, eff.widen - dt);
+  eff.superattack = stepSuperattack(eff.superattack, dt);
   game.slowFactor += ((eff.slowmo > 0 ? 0.55 : 1) - game.slowFactor) * Math.min(1, dt * 4);
   game.seasonFade = Math.min(1, game.seasonFade + dt / 1.5);
 
@@ -308,11 +309,13 @@ function update(dt) {
     w.z -= dz;
     if (before > PLAYER_Z && w.z <= PLAYER_Z) {
       const gaps = w.gaps.map((g) => widened(g, widenFactor));
-      if (passesWall(p.x, PLAYER_R * 0.75, gaps)) {
+      const res = resolveWall(p.x, PLAYER_R * 0.75, gaps, eff.superattack);
+      if (res.passed) {
+        if (res.broken) w.broken = true;
         game.passed++;
         preloadLandmarks();
         setSeason(seasonIndexAt(game.passed, WALLS_PER_SEASON, SEASONS.length));
-        onPass(judgePass(p.x, PLAYER_R * 0.75, gaps));
+        onPass(res.broken ? 'smash' : judgePass(p.x, PLAYER_R * 0.75, gaps));
       } else {
         crash();
         w.broken = true;
@@ -321,7 +324,7 @@ function update(dt) {
     }
   }
   if (!syringeContextSafe(season().id, p.slippery, game.surface.id)) game.syringes.length = 0;
-  if (stepSyringes(game.syringes, dz, p.x)) {
+  if (stepSyringes(game.syringes, dz, p.x) && !superattackActive(eff.superattack)) {
     crash('syringe');
     if (state === 'over') return;
   }
@@ -409,7 +412,7 @@ async function init() {
   }
   game = newGame();
   primeGrades();
-  hud.streak.innerHTML = '<i></i>'.repeat(STREAK_NEED) + `<img src="${POWERUPS.helmet.img}" alt="">`; // only our own markup
+  hud.streak.innerHTML = '<i></i>'.repeat(STREAK_NEED) + `<b>${SUPERATTACK.icon}</b>`; // only our own markup
   board = setupLeaderboard();
   setupIdeas(() => ({ score: game.passed, season: season().name }));
   setupThemeSelect($('themes'), themeId, (id) => {

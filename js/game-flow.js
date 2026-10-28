@@ -1,7 +1,7 @@
-import { MAX_HELMETS, POWERUPS, SYRINGES } from './config.js';
+import { MAX_HELMETS, POWERUPS, SUPERATTACK, SYRINGES } from './config.js';
 import { justUnlockedFigure, pickFigure, unlockNotice } from './figure.js';
 import { STREAK_NEED, nextStreak, applyWorldBest, overNote } from './scoring.js';
-import { addHelmet } from './logic.js';
+import { addHelmet, superattackActive } from './logic.js';
 import { burstSparkles, burstStones } from './fx.js';
 
 export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigure, getGame, setGame, newGame, getBoard, setState, updateHud, speedAt, showBanner, popText, showOver, season, sheetsFor, figureSheets, pick, setFigure, playerSpot, readBest, writeBest, onUnlock }) {
@@ -76,21 +76,24 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
   function onPass(kind) {
     const game = getGame();
     const at = playerSpot();
-    if (kind === 'perfect') popText('Perfekt', 'perfect');
-    else if (kind === 'close') {
+    const active = superattackActive(game.effects.superattack);
+    if (kind === 'smash') {
+      burstStones(game.fx, at.sx, at.sy, at.s / 45);
+      game.shake = Math.max(game.shake || 0, 0.18);
+      navigator.vibrate?.(25);
+    } else if (!active && kind === 'perfect') popText('Perfekt', 'perfect');
+    else if (!active && kind === 'close') {
       popText('Knapp!', 'close');
-      game.shake = Math.max(game.shake, 0.12);
+      game.shake = Math.max(game.shake || 0, 0.12);
       navigator.vibrate?.(15);
     }
-    const { streak, reward } = nextStreak(game.streak, kind);
+    const { streak, reward } = nextStreak(game.streak, kind, STREAK_NEED, active);
     game.streak = streak;
     if (reward) {
-      const before = game.player.helmets;
       burstSparkles(game.fx, at.sx, at.sy, at.s / 45);
-      game.player.helmets = addHelmet(before, MAX_HELMETS);
-      const sub = `${STREAK_NEED}× Perfekt`;
-      showBanner('Serie!', game.player.helmets > before ? `${sub} – Helm geschenkt` : sub, POWERUPS.helmet.img);
-      navigator.vibrate?.(30);
+      game.effects.superattack = SUPERATTACK.duration;
+      showBanner(SUPERATTACK.name, SUPERATTACK.hint);
+      navigator.vibrate?.([35, 30, 60]);
     }
     // last, so the record wins the banner over a season or streak on the same wall
     const world = !game.worldShown && game.worldBest > 0 && game.passed > game.worldBest;
@@ -105,6 +108,7 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
   }
   function crash(cause = 'wall') {
     const game = getGame();
+    if (superattackActive(game.effects?.superattack)) return;
     const at = playerSpot();
     if (cause === 'syringe') game.syringeImpact = SYRINGES.effectDuration;
     else burstStones(game.fx, at.sx, at.sy, at.s / 45);

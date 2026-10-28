@@ -66,7 +66,7 @@ body[data-state="loading"] #hud, body[data-state="start"] #hud { visibility: hid
   transition: background 0.15s, border-color 0.15s;
 }
 #streak i.on { background: #ffd23f; border-color: #ffd23f; }
-#streak img { width: 18px; height: 18px; object-fit: contain; opacity: 0.6; margin-left: 1px; }
+#streak img, #streak b { width: 18px; height: 18px; object-fit: contain; opacity: 0.85; margin-left: 1px; font-size: 13px; line-height: 18px; text-align: center; }
 #streak:not(.active) { visibility: hidden; }
 
 /* progress through the season: a thin bar along the bottom of the chip */
@@ -98,6 +98,11 @@ body[data-state="loading"] #hud, body[data-state="start"] #hud { visibility: hid
 .pw.slowmo i { background: #2f7de1; }
 .pw.widen { border-color: #1f9d55; background: #ddf6e7; }
 .pw.widen i { background: #1f9d55; }
+.pw.superattack { border-color: #ff9800; background: #fff0d6; color: #1c2a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.pw.superattack b { font-size: 15px; }
+.pw.superattack small { font-size: 10px; font-weight: 800; }
+.pw.superattack i { background: #ff9800; }
+.pw.superattack.warn { animation: wind-warn 0.35s steps(2, jump-none) infinite; }
 #wind { font-size: 22px; font-weight: 700; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
 #wind.warn { animation: wind-warn 0.35s steps(2, jump-none) infinite; }
 @keyframes wind-warn { from { opacity: 1; } to { opacity: 0.25; } }
