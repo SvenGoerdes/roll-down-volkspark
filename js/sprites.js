@@ -36,6 +36,38 @@ export const softDot = (rgb = '255,255,255', core = 1, size = 64) => memo(`dot:$
   return c;
 });
 
+// Warm golden aura with a bright halo ring for the superattack, painted once.
+export const superAura = () => memo('super-aura', () => {
+  const size = 96, r = size / 2;
+  const c = makeCanvas(size, size), g = c.getContext('2d');
+  const grad = g.createRadialGradient(r, r, r * 0.15, r, r, r);
+  grad.addColorStop(0, 'rgba(255,248,180,0.95)');
+  grad.addColorStop(0.5, 'rgba(255,195,45,0.58)');
+  grad.addColorStop(0.62, 'rgba(255,242,150,0.88)');
+  grad.addColorStop(0.74, 'rgba(255,140,20,0.38)');
+  grad.addColorStop(1, 'rgba(255,90,0,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, size, size);
+  return c;
+});
+
+const STONE = [[1, 0], [0.5, 0.85], [-0.45, 0.8], [-1, 0.1], [-0.6, -0.75], [0.4, -0.9]];
+
+// Pre-rendered stone chunk for wall debris, painted once per color.
+export const stoneSprite = (color) => memo(`stone:${color}`, () => {
+  const size = 32, r = 13, c = makeCanvas(size, size), g = c.getContext('2d');
+  g.fillStyle = color;
+  g.beginPath();
+  for (const [u, v] of STONE) g.lineTo(16 + u * r, 16 + v * r);
+  g.closePath();
+  g.fill();
+  g.fillStyle = 'rgba(255,255,255,0.22)';
+  g.beginPath();
+  g.arc(16 - r * 0.25, 16 - r * 0.3, r * 0.35, 0, TAU);
+  g.fill();
+  return c;
+});
+
 // Soft-edged shadow a wall throws onto the ground in front of it.
 export const slab = () => memo('slab', () => {
   const c = makeCanvas(64, 32), g = c.getContext('2d');

@@ -90,7 +90,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
       }
       case 'syringe': drawSyringe(ctx, view, o); break;
       case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time, powerIcons[o.type]); break;
-      default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0, figure, look.pose);
+      default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0, figure, look.pose, state === 'playing' ? game.effects.superattack : 0);
     }
   }
   drawSpray(ctx, game.spray);

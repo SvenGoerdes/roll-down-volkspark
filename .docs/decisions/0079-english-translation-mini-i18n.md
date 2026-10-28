@@ -1,9 +1,9 @@
-# 0078: Englische Übersetzung über eigenes Mini-Modul (`js/i18n.js`)
+# 0079: Englische Übersetzung über eigenes Mini-Modul (`js/i18n.js`)
 
 - **Status:** Accepted
 - **Date:** 2026-10-28
 - **Decided by:** Nutzer (Umfang, automatische Sprachwahl, DE/EN-Schalter, sprachneutrale Worker-Daten)
-- **Built by:** Claude Opus 4.6 (Antigravity Subagent)
+- **Built by:** Gemini 4 Argon (Subagent)
 - **Commits:** dieser PR (#70)
 
 ## Context

@@ -27,7 +27,7 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0022](0022-painted-seasonal-environment.md) | Layered painted seasons, forest clusters, cached atmosphere | User (references), Codex (implementation) |
 | [0023](0023-painted-materials-and-hill-profile.md) | Painted earth/gabions and shared descending hill projection | User (look, downhill), Codex (projection) |
 | [0024](0024-difficulty-curve-by-walls.md) | Difficulty by walls, eased curves, wind warning, tuned with a balance sim | User (too hard at 50), Opus 5.5 (curve) |
-| [0025](0025-perfect-streak-and-record-chase.md) | Perfekt/Knapp feedback, streak helmet, record sign, season progress | User (must grip), Opus 5.5 (rules) |
+| [0025](0025-perfect-streak-and-record-chase.md) | Perfekt/Knapp feedback, streak helmet (superseded by 0078), record sign, season progress | User (must grip), Opus 5.5 (rules) |
 | [0026](0026-opencode-panes-tickets-and-ci.md) | OpenCode panes run by Claude, GitHub epics, CI on PRs | User (orchestration, CI), Opus 5.5 (setup) |
 | [0052](0052-gate-drawn-whole-without-sight-window.md) | Gate always drawn whole, no see-through sight window | User (looked like a bug), Opus 5.5 (fix) |
 | [0037](0037-integrate-reviewed-art-without-rebalancing.md) | Preserve new model look, shifted passages, full art integration without rebalancing | User (scope), Codex (handoff/ticket drafts) |
@@ -48,4 +48,5 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0075](0075-five-landmark-order.md) | Reihenfolge der fünf Bauwerke, Volkspark folgt der Liste | User (Reihenfolge), Sonnet 5.5 |
 | [0076](0076-all-landmarks-loaded-together.md) | Alle fünf Bauwerke laden gemeinsam; Budget und Messung | Sonnet 5.5 (Messung) |
 | [0077](0077-readable-passages-and-syringe-draft.md) | Folgende Kamera, an Öffnungen ausgerichtete Brückenbögen und vorsichtiger Spritzenentwurf | Nutzer (Auftrag), GPT-6.1 Sol High (Umsetzung) |
-| [0078](0078-english-translation-mini-i18n.md) | Englische Übersetzung über eigenes Mini-Modul (`js/i18n.js`), Auto-Sprachwahl und DE/EN-Schalter | Nutzer (Auftrag/Regeln), Claude Opus 4.6 (Umsetzung) |
+| [0078](0078-superattack-replaces-streak-helmet.md) | Superattacke (10 s Mauern durchbrechen, 1,3× Größe mit Aura) ersetzt den Streak-Helm nach 6× Perfekt (#64, #10) | Nutzer (Entscheidung), Gemini 4 Argon (Umsetzung) |
+| [0079](0079-english-translation-mini-i18n.md) | Englische Übersetzung über eigenes Mini-Modul (`js/i18n.js`), Auto-Sprachwahl und DE/EN-Schalter | Nutzer (Auftrag/Regeln), Gemini 4 Argon (Umsetzung) |

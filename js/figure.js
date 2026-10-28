@@ -1,14 +1,40 @@
 // The figures (ADR 0018): which sprite frame to show when, and drawing a frame from its sheet.
 // Frames come from Blender renders packed by tools/build-sprites.py; see js/figure-sheets.js.
+import { ALASKA_UNLOCK_WALLS } from './config.js';
 import { SHEETS, PPU } from './figure-sheets.js';
+import { t } from './i18n.js';
 
 export const FIGURES = [
   { id: 'kalle', name: 'Kalle', tag: 'vom Kiez' },
   { id: 'tine', name: 'Tine', tag: 'Techno' },
-  { id: 'alaska', name: 'Alaska', tag: 'Brillenkatze' },
+  { id: 'alaska', name: 'Alaska', tag: 'Brillenkatze', unlockWalls: ALASKA_UNLOCK_WALLS },
 ];
 export const DEFAULT_FIGURE = 'kalle';
 export const GAME_CLIPS = ['intro', 'roll', 'roll-helmet', 'dazed'];
+
+export const unlockHint = (walls = ALASKA_UNLOCK_WALLS) => t('figure.unlockHint', { walls });
+export const unlockNotice = (id = 'alaska') => {
+  const fig = FIGURES.find((f) => f.id === id);
+  return fig ? t('figure.unlockNotice', { name: fig.name }) : '';
+};
+
+// Walls needed to unlock a figure (0 when playable from the start).
+export function unlockWallsFor(id) {
+  return FIGURES.find((f) => f.id === id)?.unlockWalls || 0;
+}
+
+// Whether figure `id` exists and is unlocked at the local record `best`.
+export function isFigureUnlocked(id, best = 0) {
+  const fig = FIGURES.find((f) => f.id === id);
+  if (!fig) return false;
+  const record = typeof best === 'number' && best > 0 ? best : 0;
+  return record >= (fig.unlockWalls || 0);
+}
+
+// True when a run raises the local record across a figure's unlock threshold.
+export function justUnlockedFigure(prevBest, nextBest, id = 'alaska') {
+  return !isFigureUnlocked(id, prevBest) && isFigureUnlocked(id, nextBest);
+}
 
 // Dazed loop speed in frames per second.
 export const DAZED_FPS = 8;
@@ -36,9 +62,9 @@ export function introAt(t, sheets) {
   return { clip: 'intro', frame, trip, done: t >= intro.n / intro.fps };
 }
 
-// The figure id if it exists, else the default.
-export function pickFigure(id) {
-  return FIGURES.some((f) => f.id === id) ? id : DEFAULT_FIGURE;
+// The figure id if it exists and is unlocked for `best`, else the default.
+export function pickFigure(id, best = 0) {
+  return isFigureUnlocked(id, best) ? id : DEFAULT_FIGURE;
 }
 
 // Clip and frame of a figure for a mode: 'intro', 'roll' or 'dazed'. sheets is one figure's sheet map.

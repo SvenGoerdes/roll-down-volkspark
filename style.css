@@ -66,7 +66,7 @@ body[data-state="loading"] #hud, body[data-state="start"] #hud { visibility: hid
   transition: background 0.15s, border-color 0.15s;
 }
 #streak i.on { background: #ffd23f; border-color: #ffd23f; }
-#streak img { width: 18px; height: 18px; object-fit: contain; opacity: 0.6; margin-left: 1px; }
+#streak img, #streak b { width: 18px; height: 18px; object-fit: contain; opacity: 0.85; margin-left: 1px; font-size: 13px; line-height: 18px; text-align: center; }
 #streak:not(.active) { visibility: hidden; }
 
 /* progress through the season: a thin bar along the bottom of the chip */
@@ -98,6 +98,11 @@ body[data-state="loading"] #hud, body[data-state="start"] #hud { visibility: hid
 .pw.slowmo i { background: #2f7de1; }
 .pw.widen { border-color: #1f9d55; background: #ddf6e7; }
 .pw.widen i { background: #1f9d55; }
+.pw.superattack { border-color: #ff9800; background: #fff0d6; color: #1c2a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.pw.superattack b { font-size: 15px; }
+.pw.superattack small { font-size: 10px; font-weight: 800; }
+.pw.superattack i { background: #ff9800; }
+.pw.superattack.warn { animation: wind-warn 0.35s steps(2, jump-none) infinite; }
 #wind { font-size: 22px; font-weight: 700; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
 #wind.warn { animation: wind-warn 0.35s steps(2, jump-none) infinite; }
 @keyframes wind-warn { from { opacity: 1; } to { opacity: 0.25; } }
@@ -184,6 +189,8 @@ h2 { font-size: 40px; font-weight: 900; }
 #over-note { font-size: 18px; font-weight: 800; }
 #over-note.record { color: #ffd23f; }
 #over-note:empty { display: none; }
+#over-unlock { font-size: 15px; font-weight: 800; color: #ffd23f; }
+#over-unlock:empty { display: none; }
 .small { opacity: 0.8; font-size: 14px !important; }
 .tap {
   margin-top: 8px;
@@ -234,6 +241,7 @@ body[data-state="intro"] #hint { opacity: 1; }
 .theme { border: 2px solid rgba(255,255,255,.4); border-radius: 999px; padding: 9px 14px; background: rgba(255,255,255,.08); color: inherit; font: 700 14px system-ui, sans-serif; }
 .theme[aria-pressed="true"] { border-color: #ffd23f; background: rgba(255,210,63,.18); }
 .fig {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -249,6 +257,37 @@ body[data-state="intro"] #hint { opacity: 1; }
 .fig small { font-size: 12px; opacity: 0.8; }
 .fig.on { border-color: #ffd23f; background: rgba(255, 210, 63, 0.15); }
 .fig:active { transform: scale(0.97); }
+.fig.locked {
+  background: rgba(10, 16, 10, 0.42);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.fig.locked .fig-sprite {
+  filter: brightness(0.42) saturate(0.35);
+  opacity: 0.78;
+  animation-play-state: paused;
+}
+.fig.locked b { opacity: 0.72; }
+.fig.locked small { color: #ffd23f; opacity: 0.95; font-weight: 700; }
+.fig.locked::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(20, 28, 18, 0.85) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffd23f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='10' rx='2' fill='%23ffd23f'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
+  border: 1.5px solid rgba(255, 210, 63, 0.55);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+.fig.nudge { animation: fig-nudge 0.35s ease; }
+.fig.nudge small { color: #fff; text-shadow: 0 0 8px rgba(255, 210, 63, 0.9); }
+@keyframes fig-nudge {
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
 .fig-sprite {
   display: block;
   background-repeat: no-repeat;
@@ -268,6 +307,21 @@ body:not([data-state="start"]) .fig-sprite { animation-play-state: paused; }
   font: 700 15px system-ui, sans-serif;
   background: transparent;
   color: #fff;
+}
+#share-run {
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font: 600 13px system-ui, sans-serif;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+}
+#share-run.record {
+  border-color: #ffd23f;
+  background: rgba(255, 210, 63, 0.2);
+  color: #ffd23f;
+  font-weight: 800;
+  box-shadow: 0 2px 12px rgba(255, 210, 63, 0.22);
 }
 @media (max-height: 700px) {
   .overlay { gap: 10px; }

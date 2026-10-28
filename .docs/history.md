@@ -3,11 +3,39 @@
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
 ## 2026-10-28: Issue #70 – Englische Übersetzung und DE/EN-Schalter
-- Nutzerentscheidung: automatische Sprachwahl nach Browsersprache (`en*` → Englisch, sonst Deutsch als Standard/Fallback) plus kleiner `DE | EN`-Schalter oben rechts auf dem Startscreen (`localStorage` `rollDownLang`), der sofort ohne Neuladen wirkt und `<html lang>` mitzieht. → [ADR 0078](decisions/0078-english-translation-mini-i18n.md)
-- Neu: `js/i18n.js` mit `STRINGS.de`/`STRINGS.en`, `t(key, vars)`, `applyI18n()` (`data-i18n`, `data-i18n-placeholder`, `data-i18n-aria`) und `setupLangSwitch()`. Alle sichtbaren Spieltexte (Startscreen, Themen-/Figurenauswahl, HUD, Jahreszeiten-/Boden-/Pickup-/Pfützen-/Crash-/Rekord-Banner, Perfekt/Knapp-Popups, Rekord-Schild über der Zielmauer, Spritzen-Stempel, Game-Over, Bestenliste, Ideen-Sheet, Netzwerk-/Turnstile-Fehler) zweisprachig angebunden.
+- Nutzerentscheidung: automatische Sprachwahl nach Browsersprache (`en*` → Englisch, sonst Deutsch als Standard/Fallback) plus kleiner `DE | EN`-Schalter oben rechts auf dem Startscreen (`localStorage` `rollDownLang`), der sofort ohne Neuladen wirkt und `<html lang>` mitzieht. → [ADR 0079](decisions/0079-english-translation-mini-i18n.md)
+- Neu: `js/i18n.js` mit `STRINGS.de`/`STRINGS.en`, `t(key, vars)`, `applyI18n()` (`data-i18n`, `data-i18n-placeholder`, `data-i18n-aria`) und `setupLangSwitch()`. Alle sichtbaren Spieltexte inklusive der neuen Texte aus #21 (Alaska-Freischaltung), #64 (Superattacke) und #62 (Teilen-Karte) zweisprachig angebunden.
 - Eigennamen (`Roll Down Volkspark`, Figurennamen, Berliner Bauwerke) sowie die an den Worker gesendeten Daten (`season.name`) bleiben unverändert; Worker-Validierungsfehler bleiben vorerst deutsch (kein Worker-Umbau in diesem PR).
-- Geprüft: `bun test tests` mit 191 grünen Tests (neu: `tests/i18n.test.js` prüft Sprachwahl, `localStorage`-Vorrang, Platzhalter, DOM-Umschaltung sowie vollständige Schlüssel- und Platzhalter-Deckung zwischen `de`, `en` und `index.html`). Sichtprüfung in Headless Chrome bei 390×844 (DPR 2) für Startscreen (DE/EN), Intro, laufendes Spiel mit Banner und Rekordschild, Game-Over, Bestenliste und Ideen-Sheet. Nicht geprüft: echte Mobilgeräte, Safari, Live-Worker-Fehlerantworten.
-- Entschieden vom Nutzer; gebaut durch Claude Opus 4.6 (Antigravity Subagent) auf `feat/english`.
+- Geprüft: `bun test tests` grün (`tests/i18n.test.js` prüft Sprachwahl, `localStorage`-Vorrang, Platzhalter, DOM-Umschaltung sowie vollständige Schlüssel- und Platzhalter-Deckung zwischen `de`, `en` und `index.html`). Sichtprüfung in Headless Chrome bei 390×844 (DPR 2) für Startscreen (DE/EN), Intro, laufendes Spiel mit Banner und Rekordschild, Game-Over, Bestenliste und Ideen-Sheet. Nicht geprüft: echte Mobilgeräte, Safari, Live-Worker-Fehlerantworten.
+- Entschieden vom Nutzer; gebaut durch Gemini 4 Argon (Subagent) auf `feat/english`.
+
+## 2026-10-28: #62 – Dezente Teilen-Karte nach Game Over
+- Kleiner „Teilen“-Knopf (`#share-run`) auf dem Game-Over-Screen ohne Popup oder automatisches Teilen; bei neuem Rekord (`note.record`) dezent goldfarben hervorgehoben. Ein Tipp startet keine neue Runde.
+- `js/share-card.js` baut das Kartenmodell (`buildShareCardModel`) und rendert erst beim Tippen einmalig eine 1080×1350-Karte (`renderShareCard`) im Art-Bible-Look mit gemaltem Jahreszeiten-Horizont, Gabionen-Lücke, gewählter Figur, Mauer-Anzahl, optionalem „Neuer Rekord!“-Abzeichen sowie Spielname und URL.
+- Teilen per Web Share API mit PNG-Datei (`navigator.canShare({ files })`), sonst Text+URL, sonst PNG-Download. Nutzerabbruch (`AbortError`) und Fehler werden still behandelt.
+- Geprüft: 190 Bun-Tests grün (`tests/share-card.test.js`); Chrome 390×844 DPR 2 (Normal- und Rekord-Game-Over sowie erzeugte 1080×1350-Kartenbilder). Echtes Teilen über native iOS-/Android-Share-Sheets (WhatsApp, Instagram) nicht auf physischen Geräten geprüft.
+- Entschieden vom Nutzer (#62), gebaut von Gemini 4 Argon (Subagent).
+
+## 2026-10-28: Issue #64 / #10 – 💥 Superattacke nach 6× Perfekt ersetzt den Streak-Helm
+- Nutzerentscheidung zu Spieler-Idee #10 („Zu viele Helme“) und #64: Wer 6× in Folge „Perfekt“ schafft, erhält keinen Gratis-Helm mehr, sondern 10 s lang die Superattacke (`SUPERATTACK` in `config.js`). Normale Helm-Pickups bleiben unverändert. → [ADR 0078](decisions/0078-superattack-replaces-streak-helmet.md) (ersetzt den Streak-Helm aus [ADR 0025](decisions/0025-perfect-streak-and-record-chase.md)).
+- Reine Regeln in `scoring.js` (`nextStreak` baut während aktiver Superattacke keine neue Serie auf) und `logic.js` (`stepSuperattack`, `superattackActive`, `superattackWarn`, `superattackBlink`, `superattackScale`, `resolveWall`).
+- Während der Superattacke rollt die Figur 1,3× größer mit vorgerenderter goldener Aura (`superAura` in `sprites.js`), bricht ohne Crash und ohne Helmverbrauch durch Mauern und Bauwerke in vorgerenderte Steinbrocken (`stoneSprite` in `sprites.js`, `burstStones` in `fx.js`), zählt durchbrochene Mauern regulär als geschafft und ignoriert Spritzen-Treffer. In den letzten 1,5 s blinken Figur, Aura und HUD-Badge zur Warnung.
+- HUD: Serien-Anzeige zeigt `💥` statt Helm; beim Auslösen Banner „💥 Superattacke!“; Restzeit als kompaktes Powerup-Badge mit Fortschrittsbalken in `#powers`.
+- Geprüft: 188 Bun-Tests grün; `tools/balance-sim.js` (600 Runden): Median 124 → 85 Mauern, p90 202 → 186 Mauern (ohne Streak: Median 76, p90 142), Crashes nach Jahreszeit Frühling 27 % · Sommer 17 % · Herbst 33 % · Winter 23 %, Helme am Limit verfallen 0,4 → 0,1 je Runde, im Schnitt 1,9 Superattacken und 0,7 durchbrochene Mauern je Runde. Headless Chrome bei 390×844 @2x (Serie 5/6, Auslösen mit Banner/Aura, Mauer-Durchbruch mit Brocken ohne Helmverlust, Warnblinken bei ≤ 1,5 s) und `tools/perf-check.mjs` mit 4×-CPU-Drossel (Update+Render Median 2,9 / 2,6 ms, p95 4,6 / 6,1 ms). Keine echten Mobilgeräte oder Safari geprüft.
+- Entschieden vom Nutzer; gebaut von Gemini 4 Argon (Subagent) im Branch `feat/superattacke`.
+
+## 2026-10-28: Issue #21 – Alaska per lokalem Rekord freischalten
+- Nutzerentscheidung: Alaska ist erst ab einem lokalen Rekord von mindestens 140 passierten Mauern spielbar (`ALASKA_UNLOCK_WALLS = 140` in `js/config.js`). Vorher bleibt ihre Karte im Auswahlscreen sichtbar, abgedunkelt mit Schloss-Badge und Hinweis „Knack 140 Mauern“; Antippen wählt oder startet sie nicht (kurzes Wackeln/Hervorheben des Hinweises).
+- Reine Freischalt-Logik in `js/figure.js` (`isFigureUnlocked`, `justUnlockedFigure`, `unlockWallsFor`, `pickFigure(id, best)`, gebündelte UI-Texte `unlockHint`/`unlockNotice`). War Alaska gespeichert, fällt `readFigure(best)` unterhalb der Schwelle stillschweigend auf `kalle` zurück.
+- Hebt ein Lauf den lokalen Rekord erstmals auf ≥ 140 Mauern, zeigt der Game-Over-Screen „Alaska freigeschaltet!“ (`#over-unlock`) und schaltet die Karte in `figure-select.js` sofort frei (`picker.refresh(best)`).
+- Geprüft: 190 Bun-Tests in 26 Dateien grün (neu: `tests/figure-select.test.js` sowie Tests in `tests/figure.test.js` und `tests/game-flow.test.js` für Grenze 139/140, fehlenden Rekord, gesperrte gespeicherte Figur und Game-Over-Freischaltung). Sichtprüfung in Chrome bei 390×844 (DPR 2): Startscreen gesperrt bei 139, Tap-Nudge auf gesperrter Karte, Game-Over mit „Alaska freigeschaltet!“ bei 140, Wechsel zu freigeschalteter Alaska-Karte. Keine echten Handys oder iOS Safari geprüft.
+- Entschieden vom Nutzer; gebaut von Gemini 4 Argon (Subagent). Commit: dieser PR (`Closes #21`).
+
+## 2026-10-28: Turnstile für Bestenliste aktiviert und Fake-Score entfernt (#77)
+- `TURNSTILE_SECRET` im produktiven Cloudflare Worker `roll-down-ideas` gesetzt und Worker mit `turnstile.js`-Prüfung (`siteverify` für `svengoerdes.github.io`, Action `score`) ausgerollt.
+- Öffentlichen Sitekey `TURNSTILE_SITEKEY` in `js/config.js` eingetragen.
+- Gefälschten Bestenlisten-Eintrag (`Ben`, 2941 Mauern) aus dem produktiven KV-Namespace `LEADERBOARD` entfernt; die übrigen 15 Einträge blieben unverändert.
+- Beauftragt vom Nutzer; umgesetzt in der Hauptsession.
 
 ## 2026-10-26: Oberbaumbrücke – gestützte Bögen bei aktuellen Spiellücken
 - Nutzerfeedback zu frei hängenden Bogenfüßen im echten Browser bestätigt: der feste Bogen folgte den verbreiterten/versetzten Pfeilern nicht; der bisherige Mauerhöhen-Clip berührte das Bogenbild nicht.

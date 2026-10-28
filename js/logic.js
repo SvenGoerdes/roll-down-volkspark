@@ -1,4 +1,4 @@
-import { CORRIDOR, WALL_EXT, SURFACE_FIRST, SURFACE_LEN, SURFACE_ORDER, WALLS_PER_SEASON, SEASONS, WIND_WARN, GAP_WIDTH, POWERUP_CHANCES } from './config.js';
+import { CORRIDOR, WALL_EXT, SURFACE_FIRST, SURFACE_LEN, SURFACE_ORDER, WALLS_PER_SEASON, SEASONS, WIND_WARN, GAP_WIDTH, POWERUP_CHANCES, SUPERATTACK } from './config.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -120,6 +120,21 @@ export const widened = (gap, factor) => ({ x: gap.x, w: Math.min(gap.w * factor,
 
 export function passesWall(px, radius, gaps) {
   return gaps.some((g) => px - radius >= g.x - g.w / 2 && px + radius <= g.x + g.w / 2);
+}
+
+// Superattack timer, warning window and visual scale.
+export const superattackActive = (left = 0) => left > 0;
+export const stepSuperattack = (left = 0, dt = 0) => Math.max(0, left - dt);
+export const superattackWarn = (left = 0, warn = SUPERATTACK.warn) => left > 0 && left <= warn;
+export const superattackBlink = (left = 0, warn = SUPERATTACK.warn) =>
+  superattackWarn(left, warn) && Math.floor(left * 8) % 2 === 0;
+export const superattackScale = (left = 0, scale = SUPERATTACK.scale) => (left > 0 ? scale : 1);
+
+// Outcome at a wall plane: open gap passes cleanly; during superattack a hit smashes the wall and still counts as passed.
+export function resolveWall(px, radius, gaps, superattack = 0) {
+  if (passesWall(px, radius, gaps)) return { passed: true, broken: false };
+  if (superattackActive(superattack)) return { passed: true, broken: true };
+  return { passed: false, broken: true };
 }
 
 // Build once per wall: merge open spans for rendering; preserve individual passages for collision.

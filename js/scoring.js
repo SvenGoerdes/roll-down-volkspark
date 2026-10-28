@@ -3,7 +3,7 @@ import { t } from './i18n.js';
 
 export const PERFECT = 0.25; // ball centre at most this far from the gap centre
 export const CLOSE = 0.12; // room left to the nearer gap edge that counts as a near miss
-export const STREAK_NEED = 6; // perfect passes in a row for a free helmet
+export const STREAK_NEED = 6; // perfect passes in a row for a superattack
 
 // How a successful pass went, judged against the gap whose centre is nearest the ball.
 export function judgePass(px, radius, gaps) {
@@ -14,9 +14,10 @@ export function judgePass(px, radius, gaps) {
   return room <= CLOSE ? 'close' : 'clean';
 }
 
-// Perfect streak after one pass. Every `need`th perfect in a row gives a helmet and starts the count over.
-export function nextStreak(streak, kind, need = STREAK_NEED) {
-  if (kind !== 'perfect') return { streak: 0, reward: false };
+// Perfect streak after one pass. Every `need`th perfect in a row triggers the superattack and starts the count over.
+// While the superattack is active, no new streak builds up.
+export function nextStreak(streak, kind, need = STREAK_NEED, active = false) {
+  if (active || kind !== 'perfect') return { streak: 0, reward: false };
   const s = streak + 1;
   return s >= need ? { streak: 0, reward: true } : { streak: s, reward: false };
 }
