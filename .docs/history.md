@@ -7,7 +7,13 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Reine Freischalt-Logik in `js/figure.js` (`isFigureUnlocked`, `justUnlockedFigure`, `unlockWallsFor`, `pickFigure(id, best)`, gebündelte UI-Texte `unlockHint`/`unlockNotice`). War Alaska gespeichert, fällt `readFigure(best)` unterhalb der Schwelle stillschweigend auf `kalle` zurück.
 - Hebt ein Lauf den lokalen Rekord erstmals auf ≥ 140 Mauern, zeigt der Game-Over-Screen „Alaska freigeschaltet!“ (`#over-unlock`) und schaltet die Karte in `figure-select.js` sofort frei (`picker.refresh(best)`).
 - Geprüft: 190 Bun-Tests in 26 Dateien grün (neu: `tests/figure-select.test.js` sowie Tests in `tests/figure.test.js` und `tests/game-flow.test.js` für Grenze 139/140, fehlenden Rekord, gesperrte gespeicherte Figur und Game-Over-Freischaltung). Sichtprüfung in Chrome bei 390×844 (DPR 2): Startscreen gesperrt bei 139, Tap-Nudge auf gesperrter Karte, Game-Over mit „Alaska freigeschaltet!“ bei 140, Wechsel zu freigeschalteter Alaska-Karte. Keine echten Handys oder iOS Safari geprüft.
-- Entschieden vom Nutzer; gebaut von Claude Opus 4.6 (Subagent). Commit: dieser PR (`Closes #21`).
+- Entschieden vom Nutzer; gebaut von Gemini 4 Argon (Subagent). Commit: dieser PR (`Closes #21`).
+
+## 2026-10-28: Turnstile für Bestenliste aktiviert und Fake-Score entfernt (#77)
+- `TURNSTILE_SECRET` im produktiven Cloudflare Worker `roll-down-ideas` gesetzt und Worker mit `turnstile.js`-Prüfung (`siteverify` für `svengoerdes.github.io`, Action `score`) ausgerollt.
+- Öffentlichen Sitekey `TURNSTILE_SITEKEY` in `js/config.js` eingetragen.
+- Gefälschten Bestenlisten-Eintrag (`Ben`, 2941 Mauern) aus dem produktiven KV-Namespace `LEADERBOARD` entfernt; die übrigen 15 Einträge blieben unverändert.
+- Beauftragt vom Nutzer; umgesetzt in der Hauptsession.
 
 ## 2026-10-26: Oberbaumbrücke – gestützte Bögen bei aktuellen Spiellücken
 - Nutzerfeedback zu frei hängenden Bogenfüßen im echten Browser bestätigt: der feste Bogen folgte den verbreiterten/versetzten Pfeilern nicht; der bisherige Mauerhöhen-Clip berührte das Bogenbild nicht.

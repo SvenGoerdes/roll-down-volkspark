@@ -133,7 +133,7 @@ export const POWERUP_CHANCES = { helmet: 0.05, slowmo: 0.1, widen: 0.1 };
 // Cloudflare Worker: ideas → GitHub issues, shared leaderboard (see worker/)
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
 // Public Turnstile sitekey for leaderboard entries. Empty = no widget (the worker then must not have the secret).
-export const TURNSTILE_SITEKEY = '';
+export const TURNSTILE_SITEKEY = '0x4AAAAAAFqLcCPjJPaXVT8n';
 
 // Rare side obstacles; never add a second steering challenge on slippery/windy stretches.
 export const SYRINGES = {
