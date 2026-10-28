@@ -2,32 +2,38 @@ import { makeCanvas } from './sprites.js';
 import { project } from './view.js';
 import { PLAYER_Z, PLAYER_R, SYRINGES } from './config.js';
 import { drawImpact } from './impact-effect.js';
+import { getLang, t } from './i18n.js';
 
-let sprite, impact;
+let sprite, impact, impactLang;
 export function warmSyringes() {
-  if (sprite) return;
-  sprite = makeCanvas(192, 96);
-  const c = sprite.getContext('2d');
-  c.translate(96, 48); c.rotate(-0.25);
-  // Dark outline, pale barrel and orange plunger stay readable on earth and snow.
-  c.lineCap = 'round'; c.lineJoin = 'round'; c.lineWidth = 9; c.strokeStyle = '#443b35';
-  c.fillStyle = '#f9f1d5'; c.beginPath(); c.roundRect(-42, -17, 77, 34, 7); c.fill(); c.stroke();
-  c.fillStyle = '#87cbd1'; c.fillRect(-30, -10, 28, 20);
-  c.lineWidth = 4; c.beginPath();
-  for (const x of [4, 15, 26]) { c.moveTo(x, -12); c.lineTo(x, -3); }
-  c.stroke();
-  c.lineWidth = 9; c.beginPath(); c.moveTo(36, 0); c.lineTo(69, 0); c.stroke();
-  c.strokeStyle = '#f8f0cf'; c.lineWidth = 3; c.stroke();
-  c.strokeStyle = '#443b35'; c.lineWidth = 11; c.beginPath(); c.moveTo(-45, 0); c.lineTo(-66, 0); c.stroke();
-  c.beginPath(); c.moveTo(-68, -17); c.lineTo(-68, 17); c.stroke();
-  c.strokeStyle = '#e48643'; c.lineWidth = 6; c.stroke();
-  // Compact reusable impact stamp, painted once.
-  impact = makeCanvas(300, 135);
+  if (!sprite) {
+    sprite = makeCanvas(192, 96);
+    const c = sprite.getContext('2d');
+    c.translate(96, 48); c.rotate(-0.25);
+    // Dark outline, pale barrel and orange plunger stay readable on earth and snow.
+    c.lineCap = 'round'; c.lineJoin = 'round'; c.lineWidth = 9; c.strokeStyle = '#443b35';
+    c.fillStyle = '#f9f1d5'; c.beginPath(); c.roundRect(-42, -17, 77, 34, 7); c.fill(); c.stroke();
+    c.fillStyle = '#87cbd1'; c.fillRect(-30, -10, 28, 20);
+    c.lineWidth = 4; c.beginPath();
+    for (const x of [4, 15, 26]) { c.moveTo(x, -12); c.lineTo(x, -3); }
+    c.stroke();
+    c.lineWidth = 9; c.beginPath(); c.moveTo(36, 0); c.lineTo(69, 0); c.stroke();
+    c.strokeStyle = '#f8f0cf'; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = '#443b35'; c.lineWidth = 11; c.beginPath(); c.moveTo(-45, 0); c.lineTo(-66, 0); c.stroke();
+    c.beginPath(); c.moveTo(-68, -17); c.lineTo(-68, 17); c.stroke();
+    c.strokeStyle = '#e48643'; c.lineWidth = 6; c.stroke();
+  }
+  const lang = getLang();
+  if (impact && impactLang === lang) return;
+  impactLang = lang;
+  // Compact reusable impact stamp, painted once per language.
+  impact ??= makeCanvas(300, 135);
   const g = impact.getContext('2d');
+  g.clearRect(0, 0, 300, 135);
   g.fillStyle = '#fff0c6'; g.strokeStyle = '#644333'; g.lineWidth = 5;
   g.beginPath(); g.roundRect(5, 12, 290, 105, 30); g.fill(); g.stroke();
   g.fillStyle = '#69372b'; g.font = 'bold 43px system-ui'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText('Spritze!', 150, 65);
+  g.fillText(t('crash.syringeStamp'), 150, 65);
 }
 
 export function drawSyringe(ctx, view, item) {

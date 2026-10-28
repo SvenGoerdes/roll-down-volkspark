@@ -1,6 +1,7 @@
 // Figure picker on the start overlay: one card per figure with its breathing select sprite, and the saved choice.
 import { FIGURES, pickFigure } from './figure.js';
 import { SHEETS } from './figure-sheets.js';
+import { t } from './i18n.js';
 
 const KEY = 'rollDownFigure';
 
@@ -38,7 +39,8 @@ export function setupFigureSelect(root, current, onPick) {
     const label = document.createElement('b');
     label.textContent = name;
     const note = document.createElement('small');
-    note.textContent = tag;
+    note.setAttribute('data-i18n', `figure.${id}.tag`);
+    note.textContent = t(`figure.${id}.tag`);
 
     const card = document.createElement('button');
     card.type = 'button';

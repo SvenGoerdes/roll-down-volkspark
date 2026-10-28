@@ -1,4 +1,6 @@
 // How a wall was passed, for the "Perfekt" and "Knapp!" feedback. Pure, no DOM.
+import { t } from './i18n.js';
+
 export const PERFECT = 0.25; // ball centre at most this far from the gap centre
 export const CLOSE = 0.12; // room left to the nearer gap edge that counts as a near miss
 export const STREAK_NEED = 6; // perfect passes in a row for a free helmet
@@ -39,11 +41,12 @@ export function recordGoal(passed, best, worldBest) {
 
 // Text under the game-over score: which record fell, or how far the nearest one is.
 export function overNote(passed, best, worldBest) {
-  if (worldBest > 0 && passed > worldBest) return { text: 'Neuer Weltrekord!', record: true };
-  if (best > 0 && passed > best) return { text: 'Neuer Rekord!', record: true };
+  if (worldBest > 0 && passed > worldBest) return { text: t('over.worldRecord'), record: true };
+  if (best > 0 && passed > best) return { text: t('over.ownRecord'), record: true };
   const goal = recordGoal(passed, best, worldBest);
   if (!goal) return { text: '', record: false };
-  return { text: `Noch ${goal.walls} ${goal.walls === 1 ? 'Mauer' : 'Mauern'} bis zum ${goal.world ? 'Weltrekord' : 'Rekord'}`, record: false };
+  const target = t(goal.world ? 'record.worldTarget' : 'record.ownTarget');
+  return { text: t(goal.walls === 1 ? 'over.toRecordOne' : 'over.toRecordMany', { count: goal.walls, target }), record: false };
 }
 
 // The wall whose pass would beat the record, or null. Only walls still ahead of the ball count.

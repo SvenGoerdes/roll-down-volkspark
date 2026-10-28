@@ -27,12 +27,13 @@ import { syringeFor, stepSyringes, syringeContextSafe } from './syringes.js';
 import { impactLeft } from './impact-effect.js';
 import { warmSyringes } from './render-syringes.js';
 import { stepFx } from './fx.js';
-import { STREAK_NEED, judgePass } from './scoring.js';
+import { STREAK_NEED, judgePass, overNote } from './scoring.js';
 import { bindInput as setupInput } from './input.js';
 import { createHud } from './hud.js';
 import { createGameFlow } from './game-flow.js';
 import { renderScene } from './render-scene.js';
 import { newGame as createGameState } from './game-state.js';
+import { applyI18n, seasonHint, seasonName, setupLangSwitch, t } from './i18n.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -190,7 +191,7 @@ function setSeason(idx) {
   game.seasonIdx = idx;
   game.seasonFade = 0;
   const s = season();
-  showBanner(s.name, s.hint);
+  showBanner(seasonName(s), seasonHint(s));
   idle(primeGrades);
 }
 
@@ -284,7 +285,9 @@ function update(dt) {
   if (under.id !== game.surface.id) {
     game.surface = under;
     // no banner for plain dirt or while another one is still showing
-    if (under.id !== 'dirt' && performance.now() - game.bannerAt > 2400) showBanner(under.name, under.hint);
+    if (under.id !== 'dirt' && performance.now() - game.bannerAt > 2400) {
+      showBanner(t(`surface.${under.id}`), t(`surface.${under.id}.hint`));
+    }
   }
   // the base speed follows the walls passed; it eases up instead of stepping at each wall
   game.pace += (speedAt(game.passed) - game.pace) * Math.min(1, dt * 1.5);
@@ -338,7 +341,7 @@ function update(dt) {
     const before = pd.z;
     pd.z -= dz;
     if (before > PLAYER_Z && pd.z <= PLAYER_Z && Math.abs(pd.x - p.x) < pd.r) {
-      if (p.slippery <= 0) showBanner('Rutschig!', 'Gegenlenken dauert länger');
+      if (p.slippery <= 0) showBanner(t('puddle.title'), t('puddle.hint'));
       p.slippery = 1.4;
     }
   }
@@ -390,7 +393,18 @@ function bindInput() {
     readBest, setState, beginPlay, resize, setLast: (value) => { last = value; } });
 }
 
+function syncLang() {
+  applyI18n();
+  if (game) {
+    updateHud(game.speed);
+    hud.overNote.textContent = overNote(game.passed, game.best, game.worldBest).text;
+    warmSyringes();
+  }
+}
+
 async function init() {
+  applyI18n();
+  setupLangSwitch($('lang'), syncLang);
   resize();
   bindInput();
   try {
@@ -404,7 +418,7 @@ async function init() {
     warmUp(SEASONS);
     warmSyringes();
   } catch (err) {
-    hud.start.querySelector('.tap').textContent = 'Laden fehlgeschlagen – bitte neu laden.';
+    hud.start.querySelector('.tap').textContent = t('start.loadError');
     console.error(err);
     return;
   }

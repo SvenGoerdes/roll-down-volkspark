@@ -24,7 +24,7 @@
     <div id="hud">
       <div class="row">
         <div class="score-col">
-          <div class="chip big"><span id="score">0</span><small>Mauern</small></div>
+          <div class="chip big"><span id="score">0</span><small data-i18n="hud.walls">Mauern</small></div>
           <div id="streak" aria-hidden="true"></div>
         </div>
         <div class="stack">
@@ -40,59 +40,63 @@
 
     <div id="banner"></div>
     <div id="pop" aria-hidden="true"></div>
-    <p id="hint" aria-hidden="true">Wischen zum Lenken</p>
+    <p id="hint" aria-hidden="true" data-i18n="hud.hint">Wischen zum Lenken</p>
 
     <section id="start" class="overlay">
+      <div id="lang" class="lang" role="group" aria-label="Sprache" data-i18n-aria="start.langAria">
+        <button type="button" data-lang="de">DE</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
       <h1>Roll Down<br><span>Volkspark</span></h1>
-      <p>Roll den Berg runter und triff die Lücken in den Mauern.</p>
-      <div id="themes" class="themes" role="group" aria-label="Strecke wählen"></div>
-      <div id="figures" class="figures" role="group" aria-label="Figur wählen"></div>
-      <button class="tap" type="button">Losrollen</button>
+      <p data-i18n="start.tagline">Roll den Berg runter und triff die Lücken in den Mauern.</p>
+      <div id="themes" class="themes" role="group" aria-label="Strecke wählen" data-i18n-aria="start.themesAria"></div>
+      <div id="figures" class="figures" role="group" aria-label="Figur wählen" data-i18n-aria="start.figuresAria"></div>
+      <button class="tap" type="button" data-i18n="start.go">Losrollen</button>
       <ul class="legend" aria-label="Power-ups">
-        <li><img src="assets/powerups/helmet.webp" alt=""><b>Helm</b><small>1 Crash frei</small></li>
-        <li><img src="assets/powerups/slowmo.webp" alt=""><b>Zeitlupe</b><small>5 Sekunden</small></li>
-        <li><img src="assets/powerups/widen.webp" alt=""><b>Breite Lücken</b><small>7 Sekunden</small></li>
+        <li><img src="assets/powerups/helmet.webp" alt=""><b data-i18n="powerup.helmet">Helm</b><small data-i18n="legend.helmet">1 Crash frei</small></li>
+        <li><img src="assets/powerups/slowmo.webp" alt=""><b data-i18n="powerup.slowmo">Zeitlupe</b><small data-i18n="legend.slowmo">5 Sekunden</small></li>
+        <li><img src="assets/powerups/widen.webp" alt=""><b data-i18n="powerup.widen">Breite Lücken</b><small data-i18n="legend.widen">7 Sekunden</small></li>
       </ul>
-      <p class="small">Rekord: <span id="best-start">0</span></p>
+      <p class="small"><span data-i18n="hud.best">Rekord</span>: <span id="best-start">0</span></p>
     </section>
 
     <section id="over" class="overlay">
-      <h2>Autsch!</h2>
-      <p class="result"><span id="final">0</span> Mauern</p>
+      <h2 data-i18n="over.title">Autsch!</h2>
+      <p class="result"><span id="final">0</span> <span data-i18n="hud.walls">Mauern</span></p>
       <p id="over-note"></p>
-      <p class="small">Rekord: <span id="best">0</span></p>
-      <button id="submit-score" type="button" hidden>In Bestenliste eintragen</button>
-      <button id="change-figure" type="button">Figur wechseln</button>
-      <p class="tap">Tippen für nächste Runde</p>
+      <p class="small"><span data-i18n="hud.best">Rekord</span>: <span id="best">0</span></p>
+      <button id="submit-score" type="button" hidden data-i18n="over.submitScore">In Bestenliste eintragen</button>
+      <button id="change-figure" type="button" data-i18n="over.changeFigure">Figur wechseln</button>
+      <p class="tap" data-i18n="over.retry">Tippen für nächste Runde</p>
     </section>
 
     <div id="ideas">
-      <button id="idea-btn" type="button">Idee?</button>
+      <button id="idea-btn" type="button" data-i18n="ideas.button">Idee?</button>
       <div class="backdrop"></div>
       <form id="idea-form" class="sheet" autocomplete="off">
         <div class="sheet-head">
-          <h3>Was fehlt im Spiel?</h3>
-          <button id="idea-close" type="button" aria-label="Schließen">✕</button>
+          <h3 data-i18n="ideas.title">Was fehlt im Spiel?</h3>
+          <button id="idea-close" type="button" aria-label="Schließen" data-i18n-aria="sheet.close">✕</button>
         </div>
         <textarea name="text" rows="4" maxlength="1000" minlength="5" required
-          placeholder="Neues Powerup, andere Jahreszeit, Bug gefunden …"></textarea>
-        <input name="name" maxlength="40" placeholder="Dein Name (optional)">
+          placeholder="Neues Powerup, andere Jahreszeit, Bug gefunden …" data-i18n-placeholder="ideas.placeholder"></textarea>
+        <input name="name" maxlength="40" placeholder="Dein Name (optional)" data-i18n-placeholder="ideas.namePlaceholder">
         <input name="website" class="hp" tabindex="-1" aria-hidden="true">
-        <button type="submit">Abschicken</button>
+        <button type="submit" data-i18n="ideas.submit">Abschicken</button>
         <p id="idea-status" role="status"></p>
       </form>
     </div>
 
     <div id="board">
-      <button id="board-btn" type="button">Bestenliste</button>
+      <button id="board-btn" type="button" data-i18n="board.button">Bestenliste</button>
       <div class="backdrop"></div>
       <form id="board-form" class="sheet" autocomplete="off">
         <div class="sheet-head">
-          <h3>Bestenliste</h3>
-          <button id="board-close" type="button" aria-label="Schließen">✕</button>
+          <h3 data-i18n="board.title">Bestenliste</h3>
+          <button id="board-close" type="button" aria-label="Schließen" data-i18n-aria="sheet.close">✕</button>
         </div>
         <div id="board-entry" hidden>
-          <input name="name" maxlength="20" required placeholder="Dein Name">
+          <input name="name" maxlength="20" required placeholder="Dein Name" data-i18n-placeholder="board.namePlaceholder">
           <div id="board-turnstile"></div>
           <button type="submit"></button>
         </div>

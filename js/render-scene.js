@@ -9,6 +9,7 @@ import { drawIceSheen, drawSkidMarks, drawSpray } from './render-slip.js';
 import { sceneryAt } from './scenery.js';
 import { recordGoal, recordWall } from './scoring.js';
 import { drawRecordMark } from './render-record.js';
+import { t as tr } from './i18n.js';
 import { drawGate } from './render-gate.js';
 import { drawGallery } from './render-gallery.js';
 import { drawOberbaum } from './render-oberbaum.js';
@@ -51,7 +52,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
   const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1, pose };
   const goal = state === 'playing' ? recordGoal(game.passed, game.best, game.worldBest) : null;
   look.record = goal ? recordWall(game.walls, game.passed, goal.target, PLAYER_Z) : null;
-  look.recordLabel = goal?.world ? 'Weltrekord' : 'Rekord';
+  look.recordLabel = tr(goal?.world ? 'record.worldSign' : 'record.ownSign');
   drawList.length = 0;
   const galleryZ = game.walls.filter((w) => PLANT_BEHIND_LANDMARKS.includes(landmarkFor(game, w, gateSprites))).map((w) => w.z);
   for (const o of sceneryAt(game.travelled)) {

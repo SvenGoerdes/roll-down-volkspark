@@ -1,5 +1,6 @@
 import { WORKER_URL } from './config.js';
 import { readName, writeName, netError, FETCH_TIMEOUT } from './name.js';
+import { t } from './i18n.js';
 
 // Wires the idea button and the idea form. `context()` returns { score, season } of the last run.
 export function setupIdeas(context) {
@@ -29,7 +30,7 @@ export function setupIdeas(context) {
     const name = form.elements.name.value.trim();
     writeName(name);
     send.disabled = true;
-    status.textContent = 'Wird gesendet …';
+    status.textContent = t('status.sending');
     status.className = '';
     try {
       const res = await fetch(`${WORKER_URL}/ideas`, {
@@ -39,9 +40,9 @@ export function setupIdeas(context) {
         body: JSON.stringify({ text: text.value, name, website: form.elements.website.value, ...context() }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Senden fehlgeschlagen');
+      if (!res.ok) throw new Error(data.error || t('ideas.error'));
       text.value = '';
-      status.textContent = 'Danke! Deine Idee ist im Backlog.';
+      status.textContent = t('ideas.thanks');
       status.className = 'ok';
       setTimeout(close, 1600);
     } catch (err) {

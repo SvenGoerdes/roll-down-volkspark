@@ -2,12 +2,8 @@ import { WORKER_URL } from './config.js';
 import { validWorldBest } from './scoring.js';
 import { createTurnstile } from './turnstile.js';
 import { readName, writeName, netError, FETCH_TIMEOUT } from './name.js';
+import { t } from './i18n.js';
 
-const DONE = {
-  added: 'Eingetragen!',
-  exists: 'Dein Eintrag steht schon drin – mit gleich vielen oder mehr Mauern.',
-  too_low: 'Zu wenig für die Top 20 – nächstes Mal!',
-};
 const same = (a, b) => a.toLowerCase() === b.toLowerCase();
 
 async function call(path, body) {
@@ -15,7 +11,7 @@ async function call(path, body) {
   if (body) Object.assign(init, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const res = await fetch(`${WORKER_URL}${path}`, init);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Bestenliste nicht erreichbar');
+  if (!res.ok) throw new Error(data.error || t('board.unreachable'));
   return data;
 }
 
@@ -56,12 +52,12 @@ export function setupLeaderboard() {
 
   async function load() {
     list.replaceChildren();
-    message('Lädt …');
+    message(t('status.loading'));
     try {
       let { entries } = await call('/leaderboard');
       // KV reads can lag behind our own write: keep the list the POST gave us until the GET catches up
       if (mine && !entries.some((e) => same(e.name, mine.name) && e.score >= mine.score)) entries = mine.entries;
-      message(entries.length ? '' : 'Noch keine Einträge – sei der Erste!');
+      message(entries.length ? '' : t('board.empty'));
       render(entries);
     } catch (err) {
       message(netError(err), 'err');
@@ -73,7 +69,7 @@ export function setupLeaderboard() {
     entry.hidden = !pending;
     if (pending) {
       form.elements.name.value = readName();
-      send.textContent = `Eintragen · ${pending.score} Mauern`;
+      send.textContent = t('board.submitScore', { score: pending.score });
       turnstile.show().catch((err) => message(err.message, 'err'));
     }
     load();
@@ -93,18 +89,18 @@ export function setupLeaderboard() {
     const name = form.elements.name.value.trim();
     writeName(name);
     if (turnstile.enabled && !turnstile.token()) {
-      message('Die Prüfung läuft noch – gleich nochmal drücken', 'err');
+      message(t('board.checking'), 'err');
       return;
     }
     send.disabled = true;
-    message('Wird gesendet …');
+    message(t('status.sending'));
     try {
       const data = await call('/scores', { name, ...pending, token: turnstile.token() });
       if (data.status !== 'too_low') mine = { name, score: pending.score, entries: data.entries };
       pending = null;
       entry.hidden = true;
       offerBtn.hidden = true;
-      message(DONE[data.status], data.status === 'too_low' ? '' : 'ok');
+      message(t(`board.${data.status}`), data.status === 'too_low' ? '' : 'ok');
       render(data.entries);
     } catch (err) {
       message(netError(err), 'err');

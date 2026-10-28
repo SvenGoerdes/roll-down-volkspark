@@ -1,5 +1,6 @@
 import { POWERUPS, WALLS_PER_SEASON } from './config.js';
 import { STREAK_NEED } from './scoring.js';
+import { seasonName, t } from './i18n.js';
 
 export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
   let shownStreak = 0;
@@ -46,7 +47,7 @@ export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
       hud.streak.classList.toggle('active', shownStreak > 0);
     }
     hud.speed.textContent = `${Math.round(speed * 1.6)} km/h`;
-    hud.season.textContent = getSeason().name;
+    hud.season.textContent = seasonName(getSeason());
     const parts = [];
     for (let i = 0; i < game.player.helmets; i++) parts.push(`<span class="pw helmet"><img src="${POWERUPS.helmet.img}" alt=""></span>`);
     for (const key of ['slowmo', 'widen']) {
@@ -58,7 +59,8 @@ export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
     }
     hud.powers.innerHTML = parts.join(''); // only our own icons, never player text
     const dir = windArrow(game.wind);
-    hud.wind.textContent = dir > 0 ? 'Wind →' : dir < 0 ? '← Wind' : '';
+    const wind = t('hud.wind');
+    hud.wind.textContent = dir > 0 ? `${wind} →` : dir < 0 ? `← ${wind}` : '';
     hud.wind.classList.toggle('warn', game.wind.warn > 0);
   }
   function showOver(best, note, passed) {

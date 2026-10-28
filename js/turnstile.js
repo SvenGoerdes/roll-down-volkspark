@@ -1,4 +1,5 @@
 import { TURNSTILE_SITEKEY } from './config.js';
+import { t } from './i18n.js';
 
 const SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 let loading = null;
@@ -9,7 +10,7 @@ const load = () => (loading ||= new Promise((resolve, reject) => {
   s.src = SRC;
   s.async = true;
   s.onload = resolve;
-  s.onerror = () => { loading = null; s.remove(); reject(new Error('Prüfung konnte nicht geladen werden – probier es gleich nochmal')); };
+  s.onerror = () => { loading = null; s.remove(); reject(new Error(t('error.turnstile'))); };
   document.head.append(s);
 }));
 
