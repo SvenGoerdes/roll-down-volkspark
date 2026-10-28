@@ -2,6 +2,12 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-28: Turnstile für Bestenliste aktiviert und Fake-Score entfernt (#77)
+- `TURNSTILE_SECRET` im produktiven Cloudflare Worker `roll-down-ideas` gesetzt und Worker mit `turnstile.js`-Prüfung (`siteverify` für `svengoerdes.github.io`, Action `score`) ausgerollt.
+- Öffentlichen Sitekey `TURNSTILE_SITEKEY` in `js/config.js` eingetragen.
+- Gefälschten Bestenlisten-Eintrag (`Ben`, 2941 Mauern) aus dem produktiven KV-Namespace `LEADERBOARD` entfernt; die übrigen 15 Einträge blieben unverändert.
+- Beauftragt vom Nutzer; umgesetzt in der Hauptsession.
+
 ## 2026-10-26: Oberbaumbrücke – gestützte Bögen bei aktuellen Spiellücken
 - Nutzerfeedback zu frei hängenden Bogenfüßen im echten Browser bestätigt: der feste Bogen folgte den verbreiterten/versetzten Pfeilern nicht; der bisherige Mauerhöhen-Clip berührte das Bogenbild nicht.
 - Bestehenden detaillierten Bogen pro tatsächlicher Öffnung horizontal an deren Pfeilern ausgerichtet; Doppel-/überlappende Lücken und ↔️ an/aus berücksichtigt. Modellgrafiken, Höhe, Kollisionsregeln, Abstände und Schwierigkeit unverändert.
