@@ -172,3 +172,58 @@ test('a syringe without a helmet follows the normal fatal crash flow', () => {
   expect(getState()).toBe('over');
   expect(calls.filter(([kind]) => kind === 'offer')).toHaveLength(1);
 });
+
+test('crashing across the 140-wall threshold unlocks Alaska once and shows the game-over notice', () => {
+  const unlocked = [];
+  const below = fixture({ readBest: () => 138, onUnlock: (b) => unlocked.push(b) });
+  below.game.passed = 139;
+  below.game.best = 138;
+  below.flow.crash();
+  expect(unlocked).toEqual([]);
+  expect(below.calls.find(([k]) => k === 'over')[4]).toBe('');
+
+  const crossed = fixture({ readBest: () => 139, onUnlock: (b) => unlocked.push(b) });
+  crossed.game.passed = 140;
+  crossed.game.best = 139;
+  crossed.flow.crash();
+  expect(unlocked).toEqual([140]);
+  expect(crossed.calls.find(([k]) => k === 'over')[4]).toBe('Alaska freigeschaltet!');
+
+  const already = fixture({ readBest: () => 140, onUnlock: (b) => unlocked.push(b) });
+  already.game.passed = 155;
+  already.game.best = 140;
+  already.flow.crash();
+  expect(unlocked).toEqual([140]);
+  expect(already.calls.find(([k]) => k === 'over')[4]).toBe('');
+});
+
+test('choose falls back to default when Alaska is locked and loads Alaska when unlocked', async () => {
+  const picked = [];
+  const loaded = [];
+  const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: { activeElement: { blur() {} } } });
+  try {
+    const locked = fixture({
+      readBest: () => 139,
+      pick: (id) => picked.push(id),
+      sheetsFor: async (id) => { loaded.push(id); return {}; },
+    });
+    locked.setState('start');
+    await locked.flow.choose('alaska');
+    expect(picked).toEqual(['kalle']);
+    expect(loaded).toEqual(['kalle']);
+
+    const open = fixture({
+      readBest: () => 140,
+      pick: (id) => picked.push(id),
+      sheetsFor: async (id) => { loaded.push(id); return {}; },
+    });
+    open.setState('start');
+    await open.flow.choose('alaska');
+    expect(picked).toEqual(['kalle', 'alaska']);
+    expect(loaded).toEqual(['kalle', 'alaska']);
+  } finally {
+    if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
+    else delete globalThis.document;
+  }
+});

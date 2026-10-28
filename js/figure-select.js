@@ -1,14 +1,14 @@
 // Figure picker on the start overlay: one card per figure with its breathing select sprite, and the saved choice.
-import { FIGURES, pickFigure } from './figure.js';
+import { FIGURES, isFigureUnlocked, pickFigure, unlockHint } from './figure.js';
 import { SHEETS } from './figure-sheets.js';
 
 const KEY = 'rollDownFigure';
 
-export const readFigure = () => {
+export const readFigure = (best = 0) => {
   try {
-    return pickFigure(localStorage.getItem(KEY));
+    return pickFigure(localStorage.getItem(KEY), best);
   } catch {
-    return pickFigure(null);
+    return pickFigure(null, best);
   }
 };
 
@@ -20,9 +20,11 @@ export const saveFigure = (id) => {
   }
 };
 
-// Builds the cards in root. onPick(id) runs when a card is tapped; select(id) moves the mark to another card.
-export function setupFigureSelect(root, current, onPick) {
-  const cards = FIGURES.map(({ id, name, tag }) => {
+// Builds the cards in root. onPick(id) runs when an unlocked card is tapped; select(id) moves the mark to another card.
+export function setupFigureSelect(root, current, onPick, best = 0) {
+  let currentBest = best;
+  const entries = FIGURES.map((fig) => {
+    const { id, name } = fig;
     const { n, w, h, cols } = SHEETS[id].select;
     const sprite = document.createElement('span');
     sprite.className = 'fig-sprite';
@@ -38,26 +40,46 @@ export function setupFigureSelect(root, current, onPick) {
     const label = document.createElement('b');
     label.textContent = name;
     const note = document.createElement('small');
-    note.textContent = tag;
 
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'fig';
     card.dataset.id = id;
     card.append(sprite, label, note);
-    card.addEventListener('click', () => onPick(id));
-    return card;
+    card.addEventListener('click', () => {
+      if (!isFigureUnlocked(id, currentBest)) {
+        card.classList.remove('nudge');
+        void card.offsetWidth;
+        card.classList.add('nudge');
+        return;
+      }
+      onPick(id);
+    });
+    return { fig, card, note };
   });
 
-  root.replaceChildren(...cards);
+  root.replaceChildren(...entries.map(({ card }) => card));
+
+  const refresh = (nextBest = currentBest) => {
+    currentBest = nextBest;
+    for (const { fig, card, note } of entries) {
+      const unlocked = isFigureUnlocked(fig.id, currentBest);
+      card.classList.toggle('locked', !unlocked);
+      card.setAttribute('aria-disabled', String(!unlocked));
+      note.textContent = unlocked ? fig.tag : unlockHint(fig.unlockWalls);
+    }
+  };
 
   const select = (id) => {
-    for (const card of cards) {
-      const on = card.dataset.id === id;
+    const active = pickFigure(id, currentBest);
+    for (const { card } of entries) {
+      const on = card.dataset.id === active;
       card.classList.toggle('on', on);
       card.setAttribute('aria-pressed', on);
     }
+    return active;
   };
+  refresh(best);
   select(current);
-  return { select };
+  return { select, refresh };
 }

@@ -1,8 +1,10 @@
 import { test, expect } from 'bun:test';
+import { ALASKA_UNLOCK_WALLS } from '../js/config.js';
 import { SHEETS, PPU } from '../js/figure-sheets.js';
 import {
   FIGURES, DEFAULT_FIGURE, GAME_CLIPS, DAZED_FPS,
-  frameIndex, rollFrame, introAt, pickFigure, poseFor, spriteScale, FIG_UNIT, loadFigure, drawFrame,
+  frameIndex, rollFrame, introAt, pickFigure, isFigureUnlocked, justUnlockedFigure,
+  unlockWallsFor, unlockHint, unlockNotice, poseFor, spriteScale, FIG_UNIT, loadFigure, drawFrame,
 } from '../js/figure.js';
 
 test('looping frames wrap and one-shot frames hold the last one', () => {
@@ -57,11 +59,47 @@ test('human intro metadata describes a complete short contact-to-roll clip', () 
   }
 });
 
-test('pickFigure keeps known ids and falls back to the default', () => {
-  for (const f of FIGURES) expect(pickFigure(f.id)).toBe(f.id);
+test('pickFigure keeps unlocked ids and falls back to the default when unknown or locked', () => {
+  expect(pickFigure('kalle')).toBe('kalle');
+  expect(pickFigure('tine')).toBe('tine');
+  expect(pickFigure('alaska')).toBe(DEFAULT_FIGURE);
+  expect(pickFigure('alaska', ALASKA_UNLOCK_WALLS - 1)).toBe(DEFAULT_FIGURE);
+  expect(pickFigure('alaska', ALASKA_UNLOCK_WALLS)).toBe('alaska');
+  for (const f of FIGURES) expect(pickFigure(f.id, ALASKA_UNLOCK_WALLS)).toBe(f.id);
   for (const bad of [null, undefined, '', 'nobody', 'KALLE', 'constructor', 42, {}]) {
-    expect(pickFigure(bad)).toBe(DEFAULT_FIGURE);
+    expect(pickFigure(bad, ALASKA_UNLOCK_WALLS)).toBe(DEFAULT_FIGURE);
   }
+});
+
+test('Alaska unlocks at the configured local record threshold (139 locked, 140 unlocked)', () => {
+  expect(ALASKA_UNLOCK_WALLS).toBe(140);
+  expect(unlockWallsFor('kalle')).toBe(0);
+  expect(unlockWallsFor('tine')).toBe(0);
+  expect(unlockWallsFor('alaska')).toBe(140);
+  expect(unlockWallsFor('nobody')).toBe(0);
+
+  for (const badBest of [undefined, null, 0, -5, NaN, '140', {}]) {
+    expect(isFigureUnlocked('kalle', badBest)).toBe(true);
+    expect(isFigureUnlocked('tine', badBest)).toBe(true);
+    expect(isFigureUnlocked('alaska', badBest)).toBe(false);
+    expect(isFigureUnlocked('nobody', badBest)).toBe(false);
+  }
+  expect(isFigureUnlocked('alaska', 139)).toBe(false);
+  expect(isFigureUnlocked('alaska', 140)).toBe(true);
+  expect(isFigureUnlocked('alaska', 250)).toBe(true);
+});
+
+test('justUnlockedFigure detects crossing the threshold and unlock texts match', () => {
+  expect(justUnlockedFigure(0, 139)).toBe(false);
+  expect(justUnlockedFigure(139, 139)).toBe(false);
+  expect(justUnlockedFigure(0, 140)).toBe(true);
+  expect(justUnlockedFigure(139, 140)).toBe(true);
+  expect(justUnlockedFigure(95, 180)).toBe(true);
+  expect(justUnlockedFigure(140, 140)).toBe(false);
+  expect(justUnlockedFigure(140, 200)).toBe(false);
+  expect(justUnlockedFigure(160, 100)).toBe(false);
+  expect(unlockHint()).toBe('Knack 140 Mauern');
+  expect(unlockNotice()).toBe('Alaska freigeschaltet!');
 });
 
 test('poseFor intro uses the selected intro sheet', () => {
