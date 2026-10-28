@@ -10,6 +10,8 @@ import { buildGroundTiles } from './surfaces.js';
 import { loadGroundArt } from './surface-art.js';
 import { setupIdeas } from './ideas.js';
 import { setupLeaderboard } from './leaderboard.js';
+import { setupShareCard } from './share-card.js';
+import { gabionFaces } from './environment-sprites.js';
 import { computeView, project } from './render.js';
 import { followCamera, shiftCameraEffects } from './view.js';
 import { loadFigure, introAt } from './figure.js';
@@ -41,7 +43,7 @@ const hud = {
   score: $('score'), speed: $('speed'), season: $('season'), powers: $('powers'),
   wind: $('wind'), banner: $('banner'), start: $('start'), over: $('over'),
   final: $('final'), best: $('best'), bestStart: $('best-start'),
-  figures: $('figures'), changeFigure: $('change-figure'),
+  figures: $('figures'), changeFigure: $('change-figure'), share: $('share-run'),
   streak: $('streak'), pop: $('pop'), overNote: $('over-note'),
 };
 
@@ -413,6 +415,11 @@ async function init() {
   hud.streak.innerHTML = '<i></i>'.repeat(STREAK_NEED) + `<img src="${POWERUPS.helmet.img}" alt="">`; // only our own markup
   board = setupLeaderboard();
   setupIdeas(() => ({ score: game.passed, season: season().name }));
+  setupShareCard(() => ({
+    state, passed: game.passed, best: game.best, worldBest: game.worldBest,
+    season: season(), themeId: game.theme || themeId, figureId, figure,
+    background: backgrounds?.[season().id], gabion: gabionFaces(season()).front,
+  }));
   setupThemeSelect($('themes'), themeId, (id) => {
     themeId = id;
     game.theme = id;

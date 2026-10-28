@@ -52,6 +52,7 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 | `seasons.js` | Loads current horizon/forest first, others in idle time; blends horizon fog once |
 | `environment-preview.js` | Deterministic environment fixture at `?preview=<season>#debug`, excluded from normal play |
 | `fx.js` | Short-lived effects: stones, dust, sparkles |
+| `share-card.js` | On-demand 1080×1350 share card after game over (painted horizon, gabions, figure sprite, record badge) and Web Share API / PNG download fallback. Unit tested |
 | `ideas.js`, `leaderboard.js`, `name.js` | Bottom sheets for ideas and leaderboard, shared name storage and network errors |
 
 **Game rules in short.** Difficulty follows the walls passed, not the time (ADR 0024): speed eases from 16 toward 28 units/s, the time between walls from 1.2 toward 0.65 s, the gap from 3.2 toward 1.95; the first five walls of each season are a breather, and after the first year (80 walls) gaps and intervals keep tightening slowly. Autumn gusts are announced 0.7 s ahead. Seasons change every 20 walls (spring: puddles, summer: faster and two gaps, autumn: wind gusts, winter: ice). Path surfaces change every 120–220 units (dirt normal, gravel bumpy, grass slower). Power-ups: helmet (extra life, stacks to 3), slow-mo (5 s), wider gaps (7 s).

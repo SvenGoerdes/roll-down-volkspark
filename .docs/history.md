@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-28: #62 – Dezente Teilen-Karte nach Game Over
+- Kleiner „Teilen“-Knopf (`#share-run`) auf dem Game-Over-Screen ohne Popup oder automatisches Teilen; bei neuem Rekord (`note.record`) dezent goldfarben hervorgehoben. Ein Tipp startet keine neue Runde.
+- `js/share-card.js` baut das Kartenmodell (`buildShareCardModel`) und rendert erst beim Tippen einmalig eine 1080×1350-Karte (`renderShareCard`) im Art-Bible-Look mit gemaltem Jahreszeiten-Horizont, Gabionen-Lücke, gewählter Figur, Mauer-Anzahl, optionalem „Neuer Rekord!“-Abzeichen sowie Spielname und URL.
+- Teilen per Web Share API mit PNG-Datei (`navigator.canShare({ files })`), sonst Text+URL, sonst PNG-Download. Nutzerabbruch (`AbortError`) und Fehler werden still behandelt.
+- Geprüft: 190 Bun-Tests grün (`tests/share-card.test.js`); Chrome 390×844 DPR 2 (Normal- und Rekord-Game-Over sowie erzeugte 1080×1350-Kartenbilder). Echtes Teilen über native iOS-/Android-Share-Sheets (WhatsApp, Instagram) nicht auf physischen Geräten geprüft.
+- Entschieden vom Nutzer (#62), gebaut von Claude Opus 4.6 (Subagent).
+
 ## 2026-10-26: Oberbaumbrücke – gestützte Bögen bei aktuellen Spiellücken
 - Nutzerfeedback zu frei hängenden Bogenfüßen im echten Browser bestätigt: der feste Bogen folgte den verbreiterten/versetzten Pfeilern nicht; der bisherige Mauerhöhen-Clip berührte das Bogenbild nicht.
 - Bestehenden detaillierten Bogen pro tatsächlicher Öffnung horizontal an deren Pfeilern ausgerichtet; Doppel-/überlappende Lücken und ↔️ an/aus berücksichtigt. Modellgrafiken, Höhe, Kollisionsregeln, Abstände und Schwierigkeit unverändert.

@@ -66,6 +66,7 @@ export function createHud(hud, { getGame, getSeason, playerSpot, windArrow }) {
     hud.best.textContent = best;
     hud.overNote.textContent = note.text;
     hud.overNote.className = note.record ? 'record' : '';
+    if (hud.share) hud.share.classList.toggle('record', Boolean(note.record));
     setTimeout(() => hud.over.classList.add('show'), 500);
     hud.over.dataset.ready = '0';
     setTimeout(() => { hud.over.dataset.ready = '1'; }, 1100);
