@@ -3,7 +3,7 @@ import { project } from './view.js';
 
 // Glossy ice: a light sheen over the path plus streaks that scroll with the ground.
 let sheenGrad = null, sheenKey = '';
-let sheenView, sheenPath;
+let sheenView, sheenCameraX, sheenPath;
 
 export function drawIceSheen(ctx, view, travelled, alpha = 1) {
   const { H, horizonY } = view;
@@ -17,8 +17,8 @@ export function drawIceSheen(ctx, view, travelled, alpha = 1) {
   }
   ctx.save();
   ctx.globalAlpha = alpha;
-  if (sheenView !== view) {
-    sheenView = view; sheenPath = new Path2D();
+  if (sheenView !== view || sheenCameraX !== view.cameraX) {
+    sheenView = view; sheenCameraX = view.cameraX; sheenPath = new Path2D();
     const edge = (y, side) => {
       const p = project(view, side * (CORRIDOR / 2 - 0.2), view.groundRows[y]);
       sheenPath.lineTo(p.sx, y);

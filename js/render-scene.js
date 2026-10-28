@@ -1,6 +1,7 @@
 import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS, TOUR_LANDMARKS, GALLERY_PLANT_BEHIND, PLANT_BEHIND_LANDMARKS, VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY } from './config.js';
 import { seasonAhead, widened, seasonIndexAt, landmarkAt, volksparkLandmarkAt, plantDepth } from './logic.js';
 import { drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup } from './render.js';
+import { drawSyringe, drawSyringeImpact } from './render-syringes.js';
 import { drawPlayer } from './render-player.js';
 import { poseFor } from './figure.js';
 import { drawScenery, drawParticles, drawSpeedLines, drawGrade, drawFx } from './render-fx.js';
@@ -58,6 +59,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
   }
   for (const o of game.puddles) { o.layer = 'puddle'; o.depth = o.z + 0.01; drawList.push(o); }
   for (const o of game.walls) { o.layer = 'wall'; o.depth = o.z; drawList.push(o); }
+  for (const o of game.syringes) { o.layer = 'syringe'; o.depth = o.z; drawList.push(o); }
   for (const o of game.pickups) { o.layer = 'pickup'; o.depth = o.z; drawList.push(o); }
   // The crashed wall stays behind the player so the dazed pose remains visible.
   for (const w of game.walls) if (w.broken) w.depth = PLAYER_Z + 0.5;
@@ -85,6 +87,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
         if (o === look.record) drawRecordMark(ctx, view, o, look.recordLabel);
         break;
       }
+      case 'syringe': drawSyringe(ctx, view, o); break;
       case 'pickup': drawPickup(ctx, view, o, POWERUPS[o.type], game.time, powerIcons[o.type]); break;
       default: drawPlayer(ctx, view, o, game.time, state === 'playing' ? look.speed : 0, figure, look.pose);
     }
@@ -102,5 +105,6 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
     ctx.fillStyle = `rgba(255,40,40,${game.flash * 0.6})`;
     ctx.fillRect(0, 0, view.W, view.H);
   }
+  drawSyringeImpact(ctx, view, game.player, game.syringeImpact);
   ctx.restore();
 }

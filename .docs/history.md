@@ -2,6 +2,24 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-26: Oberbaumbrücke – gestützte Bögen bei aktuellen Spiellücken
+- Nutzerfeedback zu frei hängenden Bogenfüßen im echten Browser bestätigt: der feste Bogen folgte den verbreiterten/versetzten Pfeilern nicht; der bisherige Mauerhöhen-Clip berührte das Bogenbild nicht.
+- Bestehenden detaillierten Bogen pro tatsächlicher Öffnung horizontal an deren Pfeilern ausgerichtet; Doppel-/überlappende Lücken und ↔️ an/aus berücksichtigt. Modellgrafiken, Höhe, Kollisionsregeln, Abstände und Schwierigkeit unverändert.
+- 169 Tests grün; Original-WebP-Rasterprüfung 45/45 ohne ungestützte Fußpixel, identischer Altstand 39 Fehlerfälle. Handygröße 390×844 in Cua, zusätzlich vollständige Herbst-Spielszene. [Ursache, Fixture, Bilder und Grenzen](oberbaum-opening-fix-2026-10-26.md).
+- Beauftragt vom Nutzer; umgesetzt und lokal geprüft durch GPT-6.1 Sol High. Commit: dieser Fix. Kein Push, Merge oder Deploy.
+
+## 2026-10-26: Begrenzte seitlich folgende Kamera
+- Nutzerauftrag: Die Position der Figur vor versetzten Lücken soll leichter einschätzbar sein. Kamera folgt weich zu 45 Prozent und maximal ±1,4 Welt-Einheiten; keine Änderung an Physik, Steuerung oder Spielregeln.
+- Projektion, gemalter Boden, alle fünf Bauwerke, Wintereis und Effekte bleiben aufeinander abgestimmt; inverse Bodentiefen werden weiterhin nur beim Resize berechnet. Neue Runde/Figurenwechsel setzt die Kamera zurück. Details: [camera-follow.md](camera-follow.md).
+- 174 Tests grün; echte Chrome-Handyansichten in beiden Themen, allen Jahreszeiten und beiden Lenkrichtungen bei 390×844/320×568, Wintervorschauen bei 375×667; Intro, Crash und mittiger Retry geprüft. Keine JS-Fehler. Keine echten Mobilgeräte oder Safari geprüft.
+- Entschieden vom Nutzer, implementiert durch GPT-6.1 Sol (High) im Branch `codex/camera-follow`; Commit: dieser Kamera-Commit.
+
+## 2026-10-26: Spritzen als seltener Randhindernis-Entwurf (#34, #35, #36)
+- Nutzerpriorität Kamera/Oberbaum/Spritzen im eigenen Branch umgesetzt: konservative Platzierung außerhalb der maximal verbreiterten Verbindungen zweier Nachbarlücken, Ausschlüsse für überlagerte Rutsch-/Windgefahren und nahe Pickups, einmalige Treffer nach bestehenden Helmregeln.
+- Kleiner vorberechneter Canvas-Sprite und 0,85 s Trefferhinweis; keine neue Lenk-/Sichtstörung. Grafik als lokaler Entwurf für die Nutzerfreigabe, nichts gemergt oder veröffentlicht. Regeln, Vorschau und Prüfgrenzen stehen in [syringe-obstacles.md](syringe-obstacles.md).
+- 177 Tests grün, 50 Browsermodule gebündelt; 1.000 Balance-Runden je Variante: Median 123 / p90 201 identisch mit und ohne Spritzen, 1,12 Spritzen je 100 gespawnte Mauern. Echter Browser bei 390×844 und 320×568 ohne Konsolenfehler; keine neue Geräte-/FPS-Prüfung.
+- Beauftragt vom Nutzer; gebaut durch GPT-6.1 Sol High. Commit: dieser Featurecommit auf `codex/syringe-obstacles`.
+
 ## 2026-10-25: Alle offenen PRs nach Nutzerfreigabe zusammengeführt
 - Grafik-Sammel-PR #97 mit enthaltenen PRs #87/#89/#91/#92 unter Erhalt ihrer Commit-Historie gemergt. Danach #90 (Performance-Werkzeug), #93 (optionale Token-Prüfung), #94 (Balance), #95 (Herbstlaub), #96 (Weltrekord); dieser Dokumentations-PR #98 hält den Abschluss fest.
 - Fünf nach dem ersten Merge entstandene Konfliktstände aufgelöst. Historien und ADR-Einträge erhalten; `main.js` behält das Bauwerk-Vorladen mit der neuen Pickup-Auswahl, die Bestenliste beide Funktionen für Weltrekord und Token. Keine Branches erzwungen überschrieben, keine Schutzregeln umgangen.

@@ -4,6 +4,8 @@ Roll Down Volkspark is a browser game for phones. A kid tumbles down the hill in
 
 ## Aktueller Wiedereinstieg: 25. Oktober 2026
 
+Review vom **26. Oktober**: [Brücke, folgende Kamera und Spritzenentwurf](playability-review-2026-10-26.md) im gemeinsamen Prüfbranch, mit drei getrennten Sol-High-Umsetzungen. Die Spritzenoptik wartet auf Sichtfreigabe; dieser Stand ist noch kein Produktionsrollout.
+
 Für die Fortsetzung in einer neuen Session zuerst [handoff.md](handoff.md) lesen. Dort stehen die aktuellen Nutzerentscheidungen, lokalen Blender-/Bildquellen, Worktree-Vorarbeiten und die [elf Tickets](plans/art-integration-2026-10-18/README.md). Die neuen Grafik-/Feinschliff-Features und das Performance-Werkzeug sind in `main` übernommen (PRs #87, #89–#97). PR #98 dokumentiert den Merge-Abschluss. Turnstile ist im Code vorbereitet, aber ohne Sitekey/Secret weiterhin nicht aktiviert; es gab keinen Worker-Deploy.
 
 | File | What's in it |
@@ -11,6 +13,7 @@ Für die Fortsetzung in einer neuen Session zuerst [handoff.md](handoff.md) lese
 | [handoff.md](handoff.md) | Current handoff: decisions, assets, worktrees and next steps |
 | [plans/art-integration-2026-10-18/](plans/art-integration-2026-10-18/README.md) | Eleven ticket drafts, approved and published on GitHub (#28, #47, #24, #20, #71–#77) |
 | [art-review-sources-2026-10-18.md](art-review-sources-2026-10-18.md) | Local gallery, actual Blender sources, references and renders |
+| [syringe-obstacles.md](syringe-obstacles.md) | Local syringe obstacle draft, safety rules, art review fixtures and balance |
 | [architecture.md](architecture.md) | How the game and the worker are built today |
 | [art-bible.md](art-bible.md) | The art style and rules for making game art |
 | [operations.md](operations.md) | Run, test, deploy, secrets, infrastructure IDs |

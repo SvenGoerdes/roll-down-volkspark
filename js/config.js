@@ -11,6 +11,8 @@ export const HORIZON = 0.42;
 // Smooth descending hill, anchored at the player's collision plane.
 export const HILL_DROP = 12;
 export const HILL_RUN = 14;
+// Visual camera translation: partial follow, bounded in world units, seconds to ease.
+export const CAMERA_FOLLOW = { gain: 0.45, limit: 1.4, response: 0.2 };
 
 // Steering spring toward the finger; ice and puddles make it loose, and gravel stones knock less there.
 export const SPRING = { k: 320, c: 36 };
@@ -130,3 +132,10 @@ export const POWERUP_CHANCES = { helmet: 0.05, slowmo: 0.1, widen: 0.1 };
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
 // Public Turnstile sitekey for leaderboard entries. Empty = no widget (the worker then must not have the secret).
 export const TURNSTILE_SITEKEY = '';
+
+// Rare side obstacles; never add a second steering challenge on slippery/windy stretches.
+export const SYRINGES = {
+  from: 8, introChance: 0.08, chance: 0.18, cooldown: 5,
+  radius: 0.32, driftMargin: 0.35, wallClearance: 6,
+  puddleClearance: 45, effectDuration: 0.85,
+};

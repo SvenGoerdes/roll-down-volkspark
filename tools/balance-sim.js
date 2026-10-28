@@ -1,5 +1,6 @@
 // Balance check: a human-like bot plays many runs against the real difficulty curve (js/logic.js).
 // bun tools/balance-sim.js [runs] [--no-streak]   → survival stats, crash share per season, crash rate per wall.
+// --no-syringes: same planning and surface probes, but no syringe objects/collisions.
 // --no-streak: the 6-perfect streak gives no helmet, to see what the streak adds.
 // The bot was tuned so that on the old curve (ADR 0024) it got stuck around wall 50 like our testers.
 // Spring, ice and wind come from js/config.js and js/logic.js; the rest of the steering copies js/main.js, keep both in step.
@@ -9,9 +10,11 @@ import {
 import {
   speedAt, spacingAt, makeGaps, widened, passesWall, seasonIndexAt, windAt, addHelmet, stepWind, createSurfaceTrack, selectPowerup,
 } from '../js/logic.js';
+import { syringeFor, stepSyringes, syringeContextSafe } from '../js/syringes.js';
 import { judgePass, nextStreak } from '../js/scoring.js';
 
 // Drag precision by Fitts' law (a, b), feedback delay, pull against drift, rare sloppy swipes, more noise at speed.
+const NO_SYRINGES = process.argv.includes('--no-syringes');
 const NO_STREAK = process.argv.includes('--no-streak');
 const BOT = { a: 0.05, b: 0.13, sigma0: 0.1, delay: 0.22, gain: 3.5, lapse: 0.01, speedNoise: 0.12 };
 const DT = 1 / 60, MAX_WALLS = 400;
@@ -37,9 +40,9 @@ function aimSigma(d, T, speed) {
 }
 
 function run(rng) {
-  const g = { time: 0, dist: 0, passed: 0, streak: 0, perfects: 0, spawned: 0, nextSpawnIn: 0, nextKick: 0, lastGapX: 0, pace: speedAt(0), eligibleWalls: 0, pickupSpawned: 0, helmetSpawned: 0, slowmoSpawned: 0, widenSpawned: 0, pickupCollected: 0, normalHelmetSpawned: 0, normalHelmetCollected: 0, normalHelmetGranted: 0, normalHelmetWaste: 0, streakHelmetGranted: 0, streakHelmetWaste: 0 };
+  const g = { time: 0, dist: 0, passed: 0, streak: 0, perfects: 0, spawned: 0, nextSpawnIn: 0, nextKick: 0, lastGapX: 0, pace: speedAt(0), syringeSpawned: 0, syringeEncountered: 0, syringeHits: 0, lastSyringeIndex: -Infinity, eligibleWalls: 0, pickupSpawned: 0, helmetSpawned: 0, slowmoSpawned: 0, widenSpawned: 0, pickupCollected: 0, normalHelmetSpawned: 0, normalHelmetCollected: 0, normalHelmetGranted: 0, normalHelmetWaste: 0, streakHelmetGranted: 0, streakHelmetWaste: 0 };
   const track = createSurfaceTrack(rng);
-  const walls = [], pickups = [], puddles = [];
+  const walls = [], pickups = [], puddles = [], syringes = [];
   const p = { x: 0, vx: 0, target: 0, slippery: 0, helmets: 0 };
   const eff = { slowmo: 0, widen: 0 };
   const wind = { force: 0, target: 0, next: 0, warn: 0, nextGust: 4, drift: 0 };
@@ -62,6 +65,12 @@ function run(rng) {
     }
     if (s.id === 'spring' && n > 2 && rng() < 0.6) {
       puddles.push({ z: SPAWN_Z + spacing * (0.3 + rng() * 0.4), x: (rng() - 0.5) * (CORRIDOR - 2), r: 0.9 + rng() * 0.6 });
+    }
+    const syringe = syringeFor({ index: n, season: s.id, previous: walls.at(-2), wall: walls.at(-1), puddles, pickups,
+      surfaceAt: (z) => SURFACES[track(g.dist + z)], lastIndex: g.lastSyringeIndex });
+    if (syringe) {
+      g.lastSyringeIndex = n;
+      if (!NO_SYRINGES) { syringes.push(syringe); g.syringeSpawned++; }
     }
     g.spawned++;
     g.nextSpawnIn = spacing;
@@ -133,6 +142,13 @@ function run(rng) {
       } else if (p.helmets > 0) { p.helmets--; g.streak = 0; w.broken = true; }
       else return result();
     }
+    if (!syringeContextSafe(seasonAt(g.passed).id, p.slippery, under.id)) syringes.length = 0;
+    g.syringeEncountered += syringes.filter((item) => !item.resolved && item.z > PLAYER_Z && item.z - dz <= PLAYER_Z).length;
+    if (stepSyringes(syringes, dz, p.x)) {
+      g.syringeHits++;
+      if (p.helmets > 0) { p.helmets--; g.streak = 0; }
+      else return result();
+    }
     for (const it of pickups) {
       const before = it.z;
       it.z -= dz;
@@ -151,14 +167,14 @@ function run(rng) {
       pd.z -= dz;
       if (before > PLAYER_Z && pd.z <= PLAYER_Z && Math.abs(pd.x - p.x) < pd.r) p.slippery = 1.4;
     }
-    for (const list of [walls, pickups, puddles]) {
+    for (const list of [walls, pickups, puddles, syringes]) {
       for (let i = list.length - 1; i >= 0; i--) if (list[i].z < 0.6 || list[i].broken || list[i].taken) list.splice(i, 1);
     }
   }
   return result();
 
   function result() {
-    return { score: g.passed, season: g.passed >= MAX_WALLS ? -1 : seasonIndexAt(g.passed, WALLS_PER_SEASON, SEASONS.length), time: g.time, perfects: g.perfects,
+    return { spawned: g.spawned, syringeEncountered: g.syringeEncountered, syringeSpawned: g.syringeSpawned, syringeHits: g.syringeHits, score: g.passed, season: g.passed >= MAX_WALLS ? -1 : seasonIndexAt(g.passed, WALLS_PER_SEASON, SEASONS.length), time: g.time, perfects: g.perfects,
       eligibleWalls: g.eligibleWalls, pickupSpawned: g.pickupSpawned, helmetSpawned: g.helmetSpawned, slowmoSpawned: g.slowmoSpawned, widenSpawned: g.widenSpawned, pickupCollected: g.pickupCollected, normalHelmetSpawned: g.normalHelmetSpawned, normalHelmetCollected: g.normalHelmetCollected,
       normalHelmetGranted: g.normalHelmetGranted, normalHelmetWaste: g.normalHelmetWaste, streakHelmetGranted: g.streakHelmetGranted, streakHelmetWaste: g.streakHelmetWaste };
   }
@@ -189,3 +205,5 @@ console.log(`Pickup-Häufigkeit je 100 berechtigte Mauern (${eligible}): Helm ${
 console.log(`Normale Helme je 100 berechtigte Mauern: ${(sum('normalHelmetGranted') / eligible * 100).toFixed(2)} vergeben, ${(sum('normalHelmetWaste') / eligible * 100).toFixed(2)} verfallen`);
 console.log(`Normale Helme je Runde: ${perRun('normalHelmetSpawned')} gespawnt, ${perRun('normalHelmetCollected')} eingesammelt, ${perRun('normalHelmetGranted')} vergeben, ${perRun('normalHelmetWaste')} am Limit verfallen`);
 console.log(`Streak-Helme je Runde: ${perRun('streakHelmetGranted')} vergeben, ${perRun('streakHelmetWaste')} am Limit verfallen`);
+
+console.log(`Spritzen: ${perRun('syringeSpawned')} gespawnt / ${perRun('syringeEncountered')} passiert je Runde, ${(sum('syringeSpawned') / sum('spawned') * 100).toFixed(2)} je 100 gespawnte Mauern, ${sum('syringeHits')} Treffer (${perRun('syringeHits')} je Runde)`);

@@ -1,6 +1,7 @@
 # 0054: Oberbaum-Türme außerhalb des Wegs, Folgelücke lesbar
 
 - **Status:** Implemented; wartet auf Nutzerfreigabe
+- **Fixed arch placement superseded by:** [ADR 0077](0077-readable-passages-and-syringe-draft.md); Turmplatzierung bleibt erhalten
 - **Date:** 2026-10-18
 - **Decided by:** Nutzer (Ticket #72: verdeckte Außenbereiche der Folgelücke sichtbar machen, ohne Abstand oder Tempo zu ändern); Platzierung Claude Sonnet 5.5
 - **Built by:** Claude Sonnet 5.5

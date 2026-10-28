@@ -1,0 +1,61 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oberbaumbrücke – Lückenprüfung</title>
+<style>
+body{margin:0;background:#252a24;color:#fff;font:14px system-ui}header{padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}button,select{font:inherit;padding:6px}canvas{display:block;width:390px;height:844px;max-width:100%;margin:auto}label{white-space:nowrap}#status{width:100%;font-size:12px}
+</style>
+<header>
+<select id="gaps" aria-label="Lücken"><option value="center">Mittig</option><option value="left">Links</option><option value="right">Rechts</option><option value="double">Doppelt</option><option value="merge">Überlappend</option></select>
+<label><input id="wide" type="checkbox">↔️ Breite Lücken</label>
+<select id="depth" aria-label="Abstand"><option value="14">Fern</option><option value="10" selected>Mittel</option><option value="6">Nah</option></select>
+<label id="before-label" hidden><input id="before" type="checkbox">Vorher</label>
+<div id="status"></div><output id="checks">Rasterprüfung läuft …</output></header>
+<canvas width="390" height="844"></canvas>
+<script type="module">
+import { drawOberbaum } from '../js/render-oberbaum.js';
+import { loadOberbaumSprites } from '../js/oberbaum-sprites.js';
+import { computeView, project } from '../js/view.js';
+import { widened, gateLayout } from '../js/logic.js';
+const art=await loadOberbaumSprites(src=>new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src='../'+src}));
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),view=computeView(390,844),wall={z:10};
+const fixtures={center:[{x:0,w:3.2}],left:[{x:-1.8,w:2}],right:[{x:1.8,w:2}],double:[{x:-2,w:2.2},{x:2,w:2.2}],merge:[{x:-1,w:2.8},{x:1,w:2.8}]};
+function unsupportedFeet(draw) {
+  let failures=0, cases=0, unsupported=0;
+  const layer=(part,gaps)=>{
+    const c=document.createElement('canvas');c.width=390;c.height=844;
+    const cx=c.getContext('2d'),image=cx.drawImage.bind(cx);
+    cx.drawImage=(img,...args)=>{if((img===art.arch.image)===part)image(img,...args)};
+    draw(cx,view,wall,gaps,art);return cx.getImageData(0,0,390,844).data;
+  };
+  for(const base of Object.values(fixtures))for(const z of [14,10,6])for(const factor of [1,1.6,1]){
+    wall.z=z;const gaps=base.map(g=>widened(g,factor)),arch=layer(true,gaps),piers=layer(false,gaps),p=project(view,0,z);
+    let missing=0;
+    // The low arch feet must lie on masonry, using actual WebP alpha, not draw-call rectangles.
+    for(let y=Math.ceil(p.sy-3.3*p.s);y<Math.floor(p.sy-2.05*p.s);y++)for(let x=0;x<390;x++){
+      const at=(y*390+x)*4+3;if(arch[at]<96)continue;
+      let supported=false;for(let dx=-1;dx<=1;dx++)if(piers[at+dx*4]>=96)supported=true;
+      if(!supported)missing++;
+    }
+    cases++;if(missing)failures++;unsupported+=missing;
+  }
+  return {cases,failures,unsupported};
+}
+const current=unsupportedFeet(drawOberbaum);
+let before;
+if(new URLSearchParams(location.search).has('before')){before=(await import('../.claude/review/oberbaum/render-before.js')).drawOberbaum;document.querySelector('#before-label').hidden=false;}
+const old=before&&unsupportedFeet(before);document.querySelector('#checks').textContent=`Rasterprüfung: ${current.cases-current.failures}/${current.cases} gestützt · ${current.unsupported} freie Fußpixel${old?` · Vorher: ${old.failures} Fehlerfälle (${old.unsupported} Pixel)`:''}`;document.querySelector('#checks').dataset.failures=current.failures;
+function render(){
+wall.z=Number(document.querySelector('#depth').value);
+const wide=document.querySelector('#wide').checked,gaps=fixtures[document.querySelector('#gaps').value].map(g=>widened(g,wide?1.6:1));
+ctx.fillStyle='#a5bdba';ctx.fillRect(0,0,390,844);ctx.fillStyle='#b39163';ctx.fillRect(0,view.horizonY,390,844-view.horizonY);
+// Road edges and the following wall provide depth context; no passage guides or frames.
+const far=project(view,0,wall.z+19),near=project(view,0,4);
+ctx.fillStyle='#7b8955';ctx.beginPath();ctx.moveTo(0,view.horizonY);ctx.lineTo(view.cx-4*far.s,far.sy);ctx.lineTo(view.cx-4*near.s,near.sy);ctx.lineTo(0,844);ctx.fill();
+ctx.beginPath();ctx.moveTo(390,view.horizonY);ctx.lineTo(view.cx+4*far.s,far.sy);ctx.lineTo(view.cx+4*near.s,near.sy);ctx.lineTo(390,844);ctx.fill();
+ctx.fillStyle='#675944';for(const [a,b] of gateLayout([{x:-1.4,w:2.5}]).solids)ctx.fillRect(view.cx+a*far.s,far.sy-1.65*far.s,(b-a)*far.s,1.65*far.s);
+(document.querySelector('#before').checked?before:drawOberbaum)(ctx,view,wall,gaps,art);
+document.querySelector('#status').textContent=`390 × 844 · z=${wall.z} · ${wide?'↔️ aktiv':'normal'} · ${gaps.map(g=>`x=${g.x}, Breite=${g.w.toFixed(2)}`).join(' / ')}`;
+}
+document.querySelectorAll('input,select').forEach(el=>el.addEventListener('change',render));render();
+</script>

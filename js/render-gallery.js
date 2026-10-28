@@ -26,9 +26,9 @@ export function drawGallery(ctx, view, wall, gaps, art) {
       const item = art[GALLERY_BAYS[bay]], w = item.worldWidth * p.s, h = item.worldHeight * p.s;
       ctx.save();
       ctx.beginPath();
-      ctx.rect(view.cx + from * p.s, 0, (to - from) * p.s, view.H);
+      ctx.rect(p.sx + from * p.s, 0, (to - from) * p.s, view.H);
       ctx.clip();
-      ctx.drawImage(item.image, view.cx + x * p.s - w / 2, p.sy - item.bottom * p.s - h, w, h);
+      ctx.drawImage(item.image, p.sx + x * p.s - w / 2, p.sy - item.bottom * p.s - h, w, h);
       ctx.restore();
     }
   }

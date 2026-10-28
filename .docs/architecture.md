@@ -26,6 +26,7 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 |---|---|
 | `config.js` | All tuning constants: sizes, seasons, surfaces, power-ups, worker URL |
 | `logic.js` | Pure game rules (difficulty curve, gaps, seasons, surfaces, slip, helmets). Fully unit tested |
+| `syringes.js`, `render-syringes.js`, `impact-effect.js` | Conservative side-obstacle placement/crossing rules, cached comic object art and a short visual impact cue; see [syringe-obstacles.md](syringe-obstacles.md) |
 | `scoring.js` | Pure pass judging: Perfekt / Knapp, the streak toward a free helmet, the record wall. Unit tested |
 | `main.js` | Update loop, collisions, spawning and wiring |
 | `game-state.js` | Initial game state and surface track |
