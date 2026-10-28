@@ -20,6 +20,8 @@ export const ICE = { k: 70, c: 8, kick: 0.3 };
 export const WIND_WARN = 0.7; // seconds a gust is announced before it pushes
 
 export const WALLS_PER_SEASON = 20;
+// Local record (walls passed) required to unlock Alaska.
+export const ALASKA_UNLOCK_WALLS = 140;
 
 // Difficulty curve: the gap eases toward a wider late-run floor without changing its opening width.
 export const GAP_WIDTH = { start: 3.2, target: 1.95, floor: 2.0, tau: 35, lateTightening: 0.003, relief: 0.5 };
