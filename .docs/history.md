@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-10-28: Issue #14 – Cache-Busting per `?v=<commit>`-Stempel im Pages-CI-Deploy
+- Nutzerentscheidung: kleines Skript stempelt `?v=<commit>` in alle lokalen Datei-Imports und läuft in CI vor dem GitHub-Pages-Deploy; lokal bleibt alles ohne Build-Schritt. → [ADR 0080](decisions/0080-cache-busting-version-stamp.md)
+- Neu: `tools/stamp-version.mjs` mit den reinen Funktionen `stampHtml`, `stampCss`, `stampJs`, `stampDirectory` und `buildPagesBundle` sowie CLI (`--bundle <outDir> [version]` und `<version> [targetDir]`). Stempelt idempotent alle lokalen Datei-URLs in `index.html`, `style.css` und `js/*.js` (statische/dynamische ES-Modul-Imports, Re-Exports sowie lokale `.webp`-/.png`-/.jpg`-Pfade in Strings, Template-Literals und `url(...)`), lässt externe URLs (`https://…` wie Turnstile, `data:…`, `#…`) unverändert und kopiert für `_site` nur die Laufzeit-Dateien ohne `.docs`, `tests`, `tools`, `worker` oder `assets/src`.
+- `.github/workflows/ci.yml`: neuer `deploy`-Job bei Push auf `main` (nach grünem `test`-Job) baut `_site` mit `${GITHUB_SHA::7}` und veröffentlicht das Artefakt per `actions/upload-pages-artifact@v3` und `actions/deploy-pages@v4`.
+- Geprüft: `bun test tests` grün (`tests/cache-busting.test.js` prüft `stampHtml`, `stampCss`, `stampJs`, Idempotenz, CLI und `buildPagesBundle` gegen das echte Repo). Nicht geprüft: Live-Lauf des GitHub-Actions-Pages-Deploys auf GitHub (setzt `Source: GitHub Actions` in den Repo-Pages-Einstellungen voraus).
+- Entschieden vom Nutzer (#14); gebaut durch Gemini 3.1 Pro (Subagent) auf `feat/cache-busting`.
+
 ## 2026-10-28: Issue #70 – Englische Übersetzung und DE/EN-Schalter
 - Nutzerentscheidung: automatische Sprachwahl nach Browsersprache (`en*` → Englisch, sonst Deutsch als Standard/Fallback) plus kleiner `DE | EN`-Schalter oben rechts auf dem Startscreen (`localStorage` `rollDownLang`), der sofort ohne Neuladen wirkt und `<html lang>` mitzieht. → [ADR 0079](decisions/0079-english-translation-mini-i18n.md)
 - Neu: `js/i18n.js` mit `STRINGS.de`/`STRINGS.en`, `t(key, vars)`, `applyI18n()` (`data-i18n`, `data-i18n-placeholder`, `data-i18n-aria`) und `setupLangSwitch()`. Alle sichtbaren Spieltexte inklusive der neuen Texte aus #21 (Alaska-Freischaltung), #64 (Superattacke) und #62 (Teilen-Karte) zweisprachig angebunden.

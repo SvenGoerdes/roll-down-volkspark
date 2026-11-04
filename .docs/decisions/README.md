@@ -50,3 +50,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0077](0077-readable-passages-and-syringe-draft.md) | Folgende Kamera, an Öffnungen ausgerichtete Brückenbögen und vorsichtiger Spritzenentwurf | Nutzer (Auftrag), GPT-6.1 Sol High (Umsetzung) |
 | [0078](0078-superattack-replaces-streak-helmet.md) | Superattacke (10 s Mauern durchbrechen, 1,3× Größe mit Aura) ersetzt den Streak-Helm nach 6× Perfekt (#64, #10) | Nutzer (Entscheidung), Gemini 4 Argon (Umsetzung) |
 | [0079](0079-english-translation-mini-i18n.md) | Englische Übersetzung über eigenes Mini-Modul (`js/i18n.js`), Auto-Sprachwahl und DE/EN-Schalter | Nutzer (Auftrag/Regeln), Gemini 4 Argon (Umsetzung) |
+| [0080](0080-cache-busting-version-stamp.md) | Cache-Busting per `?v=<commit>`-Stempel im GitHub-Pages-CI-Deploy (`tools/stamp-version.mjs`), lokal ohne Build-Schritt | Nutzer (Entscheidung, #14), Gemini 3.1 Pro (Umsetzung) |
