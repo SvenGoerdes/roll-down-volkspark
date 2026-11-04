@@ -3,7 +3,7 @@ import { solidSegments, stripSource } from './logic.js';
 import { TILE_W, TILE_H, TILE_UNITS, TILE_LEVELS } from './surfaces.js';
 import { softDot, slab } from './sprites.js';
 import { project, terrainDrop } from './view.js';
-import { gabionFaces, horizonVeil, groundLight, valleySprite } from './environment-sprites.js';
+import { gabionFaces, horizonVeil, groundLight, valleySprite, puddleSprite } from './environment-sprites.js';
 import { arrivalAlpha, wallAlpha, depthMist } from './atmosphere.js';
 import { star } from './render-fx.js';
 
@@ -202,25 +202,20 @@ export function drawWall(ctx, view, z, gaps, season) {
 
 export function drawPuddle(ctx, view, p) {
   const { sx, sy, s } = project(view, p.x, p.z);
-  ctx.globalAlpha = fadeIn(p.z) * 0.8;
-  ctx.fillStyle = '#6f8fa8';
-  ctx.beginPath();
-  ctx.ellipse(sx, sy, p.r * s, p.r * s * 0.22, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.beginPath();
-  ctx.ellipse(sx - p.r * s * 0.3, sy - p.r * s * 0.04, p.r * s * 0.35, p.r * s * 0.05, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // wet look: dark rim and a sky reflection streak
-  ctx.strokeStyle = 'rgba(30,60,90,0.5)';
-  ctx.lineWidth = Math.max(1, p.r * s * 0.05);
-  ctx.beginPath();
-  ctx.ellipse(sx, sy, p.r * s, p.r * s * 0.22, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.beginPath();
-  ctx.ellipse(sx + p.r * s * 0.25, sy + p.r * s * 0.06, p.r * s * 0.5, p.r * s * 0.035, 0, 0, Math.PI * 2);
-  ctx.fill();
+  const fade = fadeIn(p.z);
+  const variant = p.variant ?? Math.abs(Math.round(p.x * 13 + p.r * 29)) % 3;
+  const sprite = puddleSprite(variant);
+  const w = p.r * s * 2.2, h = w * (sprite.height / sprite.width);
+  const shimmer = 0.5 + 0.5 * Math.sin(p.z * 3 + (view.cameraX || 0) * 2);
+  ctx.globalAlpha = fade * (0.88 + shimmer * 0.12);
+  ctx.drawImage(sprite, sx - w / 2, sy - h / 2, w, h);
+  if (ctx.ellipse && ctx.beginPath && ctx.fill) {
+    ctx.globalAlpha = fade * (0.12 + shimmer * 0.2);
+    ctx.fillStyle = 'rgba(235, 247, 255, 0.75)';
+    ctx.beginPath();
+    ctx.ellipse(sx + w * (0.07 - shimmer * 0.14), sy - h * 0.05, w * 0.14, Math.max(0.7, h * 0.045), 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.globalAlpha = 1;
 }
 

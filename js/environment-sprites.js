@@ -202,3 +202,104 @@ export const groundLight = (season) => memo(`ground-light:${season.id}`, () => {
   light.addColorStop(1, css(season.shadow, 0.39));
   g.fillStyle = light; g.fillRect(0, 0, 256, 192); return c;
 });
+
+const PUDDLE_LOBES = [
+  [[-30, -2, 72, 24, -0.07], [26, 3, 76, 25, 0.06], [-4, -7, 64, 22, 0.03], [52, -3, 46, 17, -0.11]],
+  [[-38, 3, 66, 23, 0.08], [20, -4, 74, 25, -0.05], [48, 5, 50, 18, 0.1], [-10, 6, 62, 21, -0.04]],
+  [[-24, -4, 76, 25, -0.05], [34, 2, 68, 23, 0.07], [-50, 4, 48, 17, -0.1], [6, 6, 64, 22, 0.04]],
+];
+
+function puddleOutline(lobes, rnd, n = 32) {
+  const raw = Array.from({ length: n }, (_, i) => {
+    const a = (i / n) * TAU, ux = Math.cos(a), uy = Math.sin(a);
+    let reach = 20;
+    for (const [ox, oy, rx, ry, rot] of lobes) {
+      const cos = Math.cos(rot), sin = Math.sin(rot);
+      const A = ux * cos + uy * sin, B = ox * cos + oy * sin;
+      const C = -ux * sin + uy * cos, D = -ox * sin + oy * cos;
+      const qa = (A * A) / (rx * rx) + (C * C) / (ry * ry);
+      const qb = (A * B) / (rx * rx) + (C * D) / (ry * ry);
+      const qc = (B * B) / (rx * rx) + (D * D) / (ry * ry) - 1;
+      const disc = qb * qb - qa * qc;
+      if (disc >= 0) reach = Math.max(reach, (qb + Math.sqrt(disc)) / qa);
+    }
+    return reach * (0.95 + rnd() * 0.09);
+  });
+  return raw.map((r, i) => {
+    const smooth = (raw[(i + n - 1) % n] + r * 2 + raw[(i + 1) % n]) * 0.25;
+    const a = (i / n) * TAU;
+    return [Math.cos(a) * smooth, Math.sin(a) * smooth];
+  });
+}
+
+function tracePuddle(g, pts, sx = 1, sy = 1, dx = 0, dy = 0) {
+  const n = pts.length;
+  const px = (i) => 128 + dx + pts[i % n][0] * sx;
+  const py = (i) => 48 + dy + pts[i % n][1] * sy;
+  g.beginPath();
+  g.moveTo((px(n - 1) + px(0)) * 0.5, (py(n - 1) + py(0)) * 0.5);
+  for (let i = 0; i < n; i++) {
+    g.quadraticCurveTo(px(i), py(i), (px(i) + px(i + 1)) * 0.5, (py(i) + py(i + 1)) * 0.5);
+  }
+  g.closePath();
+}
+
+export function puddleSprite(variant = 0) {
+  const v = ((variant | 0) % 3 + 3) % 3;
+  return memo(`puddle:${v}`, () => {
+    const c = makeCanvas(256, 96), g = c.getContext('2d'), rnd = seeded(v * 97 + 41);
+    const pts = puddleOutline(PUDDLE_LOBES[v], rnd);
+    // Layer 1: wet muddy verge blending the puddle into the earth path.
+    tracePuddle(g, pts, 1.09, 1.2, 0, 2);
+    g.fillStyle = 'rgba(58, 46, 35, 0.55)'; g.fill();
+    tracePuddle(g, pts, 1.03, 1.09, 0, 1);
+    g.fillStyle = '#4a3d2f'; g.fill();
+    // Layer 2: water body with slate shadow, spring sky reflection and canopy tint.
+    const water = g.createLinearGradient(104, 18, 152, 78);
+    water.addColorStop(0, '#3d5a73');
+    water.addColorStop(0.52, '#6e9bc0');
+    water.addColorStop(0.85, '#8bb8d9');
+    water.addColorStop(1, '#6e9bc0');
+    tracePuddle(g, pts);
+    g.fillStyle = water; g.fill();
+    g.save();
+    tracePuddle(g, pts); g.clip();
+    g.fillStyle = 'rgba(92, 130, 88, 0.32)';
+    leaf(g, 92 + v * 12, 33, 46, 14, -0.08, rnd);
+    leaf(g, 148 - v * 10, 31, 38, 12, 0.06, rnd);
+    // Layer 3: recessed upper shoreline shadow and sunlit lower wet lip.
+    tracePuddle(g, pts, 1, 1, 0, 3.5);
+    g.strokeStyle = 'rgba(28, 48, 66, 0.65)'; g.lineWidth = 4.5; g.stroke();
+    tracePuddle(g, pts, 1, 1, 0, -2.5);
+    g.strokeStyle = 'rgba(198, 224, 242, 0.45)'; g.lineWidth = 2.6; g.stroke();
+    // Layer 4: subtle concentric ripple ring and painterly sky highlight streaks.
+    const rx = 118 + (v - 1) * 14, ry = 49 + (v % 2 ? 2 : -1);
+    g.strokeStyle = 'rgba(225, 243, 255, 0.36)'; g.lineWidth = 1.3;
+    g.beginPath(); g.ellipse(rx, ry, 28 + v * 4, 7.5, -0.04, 0, TAU); g.stroke();
+    g.strokeStyle = 'rgba(225, 243, 255, 0.22)';
+    g.beginPath(); g.ellipse(rx, ry, 14 + v * 2, 3.8, -0.04, 0, TAU); g.stroke();
+    g.fillStyle = 'rgba(235, 247, 255, 0.65)';
+    for (const [sx, sy, srX, srY, rot] of [
+      [96 - v * 6, 42, 34, 3.6, -0.06],
+      [148 + v * 5, 53, 42, 4.2, -0.04],
+      [118 + v * 4, 60, 22, 2.5, 0.03],
+    ]) {
+      g.beginPath(); g.ellipse(sx, sy, srX, srY, rot, 0, TAU); g.fill();
+    }
+    g.restore();
+    tracePuddle(g, pts);
+    g.strokeStyle = 'rgba(28, 48, 66, 0.65)'; g.lineWidth = 1.8; g.stroke();
+    // Layer 5: floating cherry-blossom petals near the puddle rim.
+    for (const [px, py, rot, color] of [
+      [76 + v * 9, 39 + (v % 2) * 4, 0.4, '#f4c9cc'],
+      [168 - v * 7, 44 + v * 2, -0.5, '#fff0dc'],
+      [152 - v * 11, 61 - (v % 2) * 3, 1.1, '#f4c9cc'],
+    ]) {
+      g.fillStyle = 'rgba(28, 48, 66, 0.32)';
+      leaf(g, px + 0.8, py + 1.2, 4.4, 3.1, rot, rnd);
+      g.fillStyle = color;
+      leaf(g, px, py, 4.4, 3.1, rot, rnd);
+    }
+    return c;
+  });
+}

@@ -177,7 +177,7 @@ function spawnWall() {
   const type = game.spawned > 1 ? selectPowerup(Math.random) : null;
   if (type) game.pickups.push({ z: SPAWN_Z + spacing / 2, type, x: (Math.random() - 0.5) * (CORRIDOR - 2) });
   if (s.id === 'spring' && game.spawned > 2 && Math.random() < 0.6) {
-    game.puddles.push({ z: SPAWN_Z + spacing * (0.3 + Math.random() * 0.4), x: (Math.random() - 0.5) * (CORRIDOR - 2), r: 0.9 + Math.random() * 0.6 });
+    game.puddles.push({ z: SPAWN_Z + spacing * (0.3 + Math.random() * 0.4), x: (Math.random() - 0.5) * (CORRIDOR - 2), r: 0.9 + Math.random() * 0.6, variant: game.spawned % 3 });
   }
   const syringe = syringeFor({ index: game.spawned, season: s.id,
     previous: game.walls.at(-2), wall: game.walls.at(-1), puddles: game.puddles, pickups: game.pickups,

@@ -114,3 +114,5 @@ export function paintGrade(season, w, h) {
   g.fillRect(0, 0, w, h);
   return c;
 }
+
+export { puddleSprite } from './environment-sprites.js';

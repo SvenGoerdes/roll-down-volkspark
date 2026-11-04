@@ -2,7 +2,7 @@ import { SCENERY_FAR, hash } from './scenery.js';
 import { project } from './view.js';
 import { softDot, superAura, stoneSprite, paintGrade } from './sprites.js';
 import { STONES } from './fx.js';
-import { forestSprite, gabionFaces, horizonVeil, groundLight, valleySprite } from './environment-sprites.js';
+import { forestSprite, gabionFaces, horizonVeil, groundLight, valleySprite, puddleSprite } from './environment-sprites.js';
 import { arrivalAlpha, depthMist } from './atmosphere.js';
 
 // Scene-wide extras: roadside plants, weather particles, speed lines, season light, debris.
@@ -97,6 +97,7 @@ export function drawParticles(ctx, particles) {
 export function warmUp(seasons) {
   superAura();
   for (const color of STONES) stoneSprite(color);
+  for (const v of [0, 1, 2]) puddleSprite(v);
   for (const s of seasons) {
     if (s.id === 'autumn') for (const color of s.particle.colors) {
       if (!leafSprites.has(color)) paintLeaf(color);
