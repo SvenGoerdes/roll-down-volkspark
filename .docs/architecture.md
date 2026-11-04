@@ -40,8 +40,8 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 | `render-record.js` | The "Rekord" sign above the wall that would beat your best |
 | `render-fx.js` | Plants, particles, speed lines, color grade, debris |
 | `render-slip.js` | Ice sheen, skid marks, spray |
-| `sprites.js` | Shared offscreen canvas helpers, pickup symbols, grade |
-| `environment-sprites.js` | Cached painted woodland clusters, silhouette fog copies, seasonal stone/wire faces and ground light |
+| `sprites.js` | Shared offscreen canvas helpers, pickup symbols, grade, re-exported puddle sprites |
+| `environment-sprites.js` | Cached painted woodland clusters, silhouette fog copies, seasonal stone/wire faces, spring puddles and ground light |
 | `atmosphere.js` | Shared depth mist and arrival/fade curves (pure, unit tested) |
 | `figure.js` | Figures: unlock rule (`ALASKA_UNLOCK_WALLS`), which frame when (intro, roll, dazed), loading and drawing sheets. Unit tested |
 | `figure-select.js` | Figure cards on the start screen (locked state and hint), stored choice |
