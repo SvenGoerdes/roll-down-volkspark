@@ -1,6 +1,7 @@
 import { CORRIDOR, PLAYER_R, PLAYER_Z } from './config.js';
+import { swipeMove } from './moves.js';
 
-export function bindInput({ input, hud, getState, getGame, getView, choose, start, newGame, setGame, getBoard, readBest, setState, beginPlay, resize, setLast }) {
+export function bindInput({ input, hud, getState, getGame, getView, choose, start, newGame, setGame, getBoard, readBest, setState, beginPlay, resize, setLast, move }) {
   const onPointerDown = (e) => {
     if (e.target?.closest?.('#ideas, #board, #over button, #figures, #themes, #lang')) return;
     if (getState() === 'start') { choose(); return; }
@@ -11,6 +12,7 @@ export function bindInput({ input, hud, getState, getGame, getView, choose, star
     if (getState() === 'intro') beginPlay();
     input.dragging = true;
     input.lastX = e.clientX;
+    input.swipe = { x: e.clientX, y: e.clientY, t: e.timeStamp };
   };
   const onPointerMove = (e) => {
     if (!input.dragging || getState() !== 'playing') return;
@@ -20,6 +22,9 @@ export function bindInput({ input, hud, getState, getGame, getView, choose, star
     const limit = CORRIDOR / 2 - PLAYER_R;
     const p = getGame().player;
     p.target = Math.max(-limit, Math.min(limit, p.target + dx * unitsPerPx * 1.4));
+    // Swipe up jumps, swipe down slides; steering goes on meanwhile.
+    const kind = swipeMove(input.swipe, e.clientX, e.clientY, e.timeStamp);
+    if (kind) move(kind);
   };
   window.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('pointermove', onPointerMove);
@@ -28,6 +33,10 @@ export function bindInput({ input, hud, getState, getGame, getView, choose, star
   window.addEventListener('keydown', (e) => {
     if (e.target.closest?.('#ideas, #board, #over button, #figures, #themes, #lang')) return;
     input.keys.add(e.key);
+    if (getState() === 'playing') {
+      if (['ArrowUp', 'w', ' '].includes(e.key)) move('jump');
+      if (['ArrowDown', 's'].includes(e.key)) move('slide');
+    }
     if ((e.key === ' ' || e.key === 'Enter') && getState() !== 'playing') {
       onPointerDown({ clientX: 0 });
       input.dragging = false; // keys steer on their own; no finger to follow

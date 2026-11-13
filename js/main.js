@@ -1,9 +1,12 @@
 import {
   CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, SUPERATTACK, WALLS_PER_SEASON, SPRING, ICE, VOLKSPARK_LANDMARK_PRELOAD,
+  VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY, TOUR_LANDMARKS, TRUNKS,
 } from './config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, resolveWall, superattackActive, stepSuperattack, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow, selectPowerup,
+  speedAt, spacingAt, makeGaps, widened, resolveWall, superattackActive, stepSuperattack, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow, selectPowerup, volksparkLandmarkAt,
 } from './logic.js';
+import { startMove, stepMoves, resolveTrunk, trunkFor } from './moves.js';
+import { warmTrunks } from './render-trunk.js';
 import { loadSeasonBackgrounds } from './seasons.js';
 import { environmentPreview, preparePreview } from './environment-preview.js';
 import { buildGroundTiles } from './surfaces.js';
@@ -170,16 +173,21 @@ function updateCamera(dt) {
 
 function spawnWall() {
   const s = SEASONS[seasonIndexAt(game.spawned, WALLS_PER_SEASON, SEASONS.length)];
-  const gaps = makeGaps(game.spawned, game.lastGapX, s, Math.random);
-  game.lastGapX = gaps[0].x;
-  game.walls.push({ z: SPAWN_Z, gaps, index: game.spawned, snowy: s.id === 'winter' });
+  // Some walls are a tree trunk across the whole path instead: no gap, jump or slide (not on Volkspark landmark walls).
+  const landmark = themeId === 'volkspark' && volksparkLandmarkAt(game.spawned, VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY, TOUR_LANDMARKS, WALLS_PER_SEASON);
+  const trunk = trunkFor(game.spawned, game.lastTrunkIndex, landmark, Math.random);
+  const gaps = trunk ? [{ x: 0, w: CORRIDOR }] : makeGaps(game.spawned, game.lastGapX, s, Math.random);
+  if (trunk) game.lastTrunkIndex = game.spawned;
+  else game.lastGapX = gaps[0].x;
+  game.walls.push({ z: SPAWN_Z, gaps, trunk, index: game.spawned, snowy: s.id === 'winter' });
   const spacing = spacingAt(game.spawned + 1); // distance to the next wall
   const type = game.spawned > 1 ? selectPowerup(Math.random) : null;
   if (type) game.pickups.push({ z: SPAWN_Z + spacing / 2, type, x: (Math.random() - 0.5) * (CORRIDOR - 2) });
   if (s.id === 'spring' && game.spawned > 2 && Math.random() < 0.6) {
     game.puddles.push({ z: SPAWN_Z + spacing * (0.3 + Math.random() * 0.4), x: (Math.random() - 0.5) * (CORRIDOR - 2), r: 0.9 + Math.random() * 0.6, variant: game.spawned % 3 });
   }
-  const syringe = syringeFor({ index: game.spawned, season: s.id,
+  // A trunk lets the player be anywhere across the path, so no syringe next to one.
+  const syringe = !trunk && !game.walls.at(-2)?.trunk && syringeFor({ index: game.spawned, season: s.id,
     previous: game.walls.at(-2), wall: game.walls.at(-1), puddles: game.puddles, pickups: game.pickups,
     surfaceAt: (z) => game.surfaceAt(game.travelled + z), lastIndex: game.lastSyringeIndex });
   if (syringe) { game.syringes.push(syringe); game.lastSyringeIndex = game.spawned; }
@@ -223,6 +231,7 @@ function updatePlayer(dt, speed) {
   if (Math.abs(p.x) > limit) { p.x = Math.sign(p.x) * limit; p.vx *= -0.3; }
   p.spin += (speed * dt) / PLAYER_R * 0.35 + p.vx * dt * 0.8;
   p.slippery = Math.max(0, p.slippery - dt);
+  stepMoves(p, dt);
   p.slip = slipAmount(season().id === 'winter', p.slippery);
 }
 
@@ -312,15 +321,19 @@ function update(dt) {
   for (const w of game.walls) {
     const before = w.z;
     w.z -= dz;
+    if (w.trunk && !game.trunkHint[w.trunk] && w.z < TRUNKS.hintZ) {
+      game.trunkHint[w.trunk] = true; // once per run and kind: say which swipe it needs
+      showBanner(t(`trunk.${w.trunk}`), t(`trunk.${w.trunk}.hint`));
+    }
     if (before > PLAYER_Z && w.z <= PLAYER_Z) {
       const gaps = w.gaps.map((g) => widened(g, widenFactor));
-      const res = resolveWall(p.x, PLAYER_R * 0.75, gaps, eff.superattack);
+      const res = w.trunk ? resolveTrunk(w.trunk, p, eff.superattack) : resolveWall(p.x, PLAYER_R * 0.75, gaps, eff.superattack);
       if (res.passed) {
         if (res.broken) w.broken = true;
         game.passed++;
         preloadLandmarks();
         setSeason(seasonIndexAt(game.passed, WALLS_PER_SEASON, SEASONS.length));
-        onPass(res.broken ? 'smash' : judgePass(p.x, PLAYER_R * 0.75, gaps));
+        onPass(res.broken ? 'smash' : w.trunk ? 'trunk' : judgePass(p.x, PLAYER_R * 0.75, gaps));
       } else {
         crash();
         w.broken = true;
@@ -394,7 +407,8 @@ function pick(id) {
 function bindInput() {
   setupInput({ input, hud, getState: () => state, getGame: () => game, getView: () => view,
     choose: () => choose(figureId), start, newGame, setGame: replaceGame, getBoard: () => board,
-    readBest, setState, beginPlay, resize, setLast: (value) => { last = value; } });
+    readBest, setState, beginPlay, resize, setLast: (value) => { last = value; },
+    move: (kind) => { if (state === 'playing') startMove(game.player, kind); } });
 }
 
 function syncLang() {
@@ -422,6 +436,7 @@ async function init() {
     groundTiles = { volkspark: buildGroundTiles(SEASONS, preview?.idx ?? 0) };
     warmUp(SEASONS);
     warmSyringes();
+    warmTrunks();
   } catch (err) {
     hud.start.querySelector('.tap').textContent = t('start.loadError');
     console.error(err);

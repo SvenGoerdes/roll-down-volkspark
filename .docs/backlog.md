@@ -10,6 +10,13 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - **Später, nicht in dieser Grafikarbeit:** ungeprüfte Bestenlisten-Schreibzugriffe absichern. Turnstile mit serverseitiger Prüfung ist ein noch nicht freigegebener Vorschlag. Anti-Bot-Tokens allein validieren keine erspielten Scores; weitergehende Laufprüfung ist nicht beauftragt. Siehe [Ticket 11](plans/art-integration-2026-10-18/11-bestenliste-token.md).
 
 
+## Springen/Ducken (ADR 0082, 13.11.2026)
+- Auf echten Handys prüfen: Wisch-Schwelle (`MOVES.swipe`), Fehlauslösungen beim schrägen Lenken, Sprungfenster bei spätem Tempo. Zahlen in `config.js` (`TRUNKS`, `MOVES`) sind Startwerte ohne Nutzerabnahme.
+- `tools/balance-sim.js` spawnt keine Stämme und der Bot springt nicht; Mediane/Crash-Raten gelten ohne Stämme. Bei Balance-Arbeit nachziehen.
+- Keine eigenen Sprung-/Rutsch-Frames: der Rollball wird angehoben bzw. gestaucht. Echte Posen aus Blender wären der nächste Schritt.
+- Helle Birke auf Winterschnee hat wenig Kontrast (nur Umriss und Pfähle). Stämme sind prozedural gemalt, nicht im Blender-/Art-Bible-Look abgenommen.
+- Eine Wischgeste während einer laufenden Bewegung verfällt (kein Puffer).
+
 ## Open questions for the user
 - Close issue #2 (Hendrik: slippery look, different ground)? Both parts shipped on 2026-10-12.
 

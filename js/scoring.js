@@ -16,7 +16,9 @@ export function judgePass(px, radius, gaps) {
 
 // Perfect streak after one pass. Every `need`th perfect in a row triggers the superattack and starts the count over.
 // While the superattack is active, no new streak builds up.
+// A cleared tree trunk ('trunk') has no gap to judge: it neither adds to the streak nor breaks it.
 export function nextStreak(streak, kind, need = STREAK_NEED, active = false) {
+  if (kind === 'trunk' && !active) return { streak, reward: false };
   if (active || kind !== 'perfect') return { streak: 0, reward: false };
   const s = streak + 1;
   return s >= need ? { streak: 0, reward: true } : { streak: s, reward: false };

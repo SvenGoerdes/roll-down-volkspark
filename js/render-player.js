@@ -1,6 +1,7 @@
 // The chosen figure (ADR 0018): sprite frames from Blender, anchored on the ball centre.
-import { PLAYER_R, PLAYER_Z } from './config.js';
+import { PLAYER_R, PLAYER_Z, MOVES } from './config.js';
 import { superattackActive, superattackBlink, superattackScale } from './logic.js';
+import { jumpHeight, slideAmount } from './moves.js';
 import { softDot, superAura } from './sprites.js';
 import { project } from './view.js';
 import { star } from './render-fx.js';
@@ -26,20 +27,24 @@ export function drawPlayer(ctx, view, player, time, speed, figure, pose, superLe
   const sheet = figure[pose.clip];
   const rolling = pose.clip.startsWith('roll');
   const hopMax = 0.18 + (player.bump || 0);
-  const hop = rolling ? Math.abs(Math.sin(player.spin * 0.5)) * hopMax : 0;
+  // Jump lifts the ball, slide presses it flat on the ground; the rolling hop pauses for both.
+  const lift = rolling ? jumpHeight(player.jump) : 0;
+  const flat = rolling ? slideAmount(player.slide) * MOVES.slide.flat : 0;
+  const hop = rolling && !lift && !flat ? Math.abs(Math.sin(player.spin * 0.5)) * hopMax : 0;
   const active = superattackActive(superLeft);
   const scale = superattackScale(superLeft);
   const blink = superattackBlink(superLeft);
   const ground = project(view, player.x, PLAYER_Z);
-  const { sx, sy, s } = project(view, player.x, PLAYER_Z, PLAYER_R * scale + hop);
+  const { sx, sy, s } = project(view, player.x, PLAYER_Z, PLAYER_R * scale + hop + lift);
   const r = PLAYER_R * scale * s;
   const k = spriteScale(s * scale, sheet);
   // Intro and roll anchors already sit on the ball centre; only dazed needs a visual offset.
   let dy = 0;
   if (pose.clip === 'dazed') dy = ground.sy - r * 0.2 - sy - (sheet.h / 2 - sheet.ay) * k;
 
-  ctx.globalAlpha = 0.6 - hop * 1.5;
-  ctx.drawImage(softDot('0,0,0'), ground.sx - r * 1.15, ground.sy - r * 0.32, r * 2.3, r * 0.64);
+  const shade = 1 - lift * 0.3; // the shadow shrinks and fades as the ball leaves the ground
+  ctx.globalAlpha = (0.6 - hop * 1.5) * shade;
+  ctx.drawImage(softDot('0,0,0'), ground.sx - r * 1.15 * shade, ground.sy - r * 0.32 * shade, r * 2.3 * shade, r * 0.64 * shade);
   ctx.globalAlpha = 1;
 
   if (active) {
@@ -51,16 +56,16 @@ export function drawPlayer(ctx, view, player, time, speed, figure, pose, superLe
 
   // squash on every touchdown, stretch when swerving
   const introSquash = pose.clip === 'intro' ? clamp(((pose.trip || 0) - 0.8) / 0.2, 0, 1) * 0.11 : 0;
-  const squash = rolling ? (1 - hop / hopMax) ** 6 * 0.11 : introSquash;
+  const squash = rolling ? (lift || flat ? 0 : (1 - hop / hopMax) ** 6 * 0.11) : introSquash;
   const swerve = rolling ? clamp(Math.abs(player.vx) * 0.008, 0, 0.08) : 0;
   const blur = rolling ? clamp((speed - 17) / 13, 0, 1) : 0;
   const lean = rolling ? -clamp(player.vx * 0.05, -0.4, 0.4) * (player.slip || 0) : 0;
   const tilt = rolling ? clamp(player.vx * 0.03, -0.25, 0.25) : 0;
   ctx.save();
-  ctx.translate(sx, sy + dy + r * 0.8 * squash);
+  ctx.translate(sx, sy + dy + r * (0.8 * squash + flat));
   ctx.rotate(tilt);
   ctx.transform(1, 0, lean, 1, 0, 0); // lean into the slide
-  ctx.scale(1 + squash + swerve, 1 - squash - swerve * 0.5);
+  ctx.scale(1 + squash + swerve + flat * 0.5, 1 - squash - swerve * 0.5 - flat);
   if (blink) ctx.globalAlpha = 0.55;
   drawFrame(ctx, sheet, pose.frame, 0, 0, k);
   ctx.globalAlpha = 1;

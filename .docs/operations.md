@@ -47,7 +47,7 @@ in `assets/environment/material-prompts.json` and that folder's README.md.
 
 Visual fixture: `http://127.0.0.1:8765/?preview=spring#debug`. Other seasons:
 `summer`, `autumn`, `winter`; optional `&surface=gravel` or `&surface=grass`.
-The view is frozen with consistent walls for comparisons. Add `&width=390&height=844` or `&width=375&height=667` for exact game-frame dimensions (the in-app browser sometimes reports a different layout viewport from its capture size). Use `/#debug` for real play.
+The view is frozen with consistent walls for comparisons; `&trunk=low` / `&trunk=high` shows the tree trunks. Add `&width=390&height=844` or `&width=375&height=667` for exact game-frame dimensions (the in-app browser sometimes reports a different layout viewport from its capture size). Use `/#debug` for real play.
 
 ## Generate 3D models
 

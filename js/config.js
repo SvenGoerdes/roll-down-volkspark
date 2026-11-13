@@ -140,6 +140,17 @@ export const SUPERATTACK = {
   hint: '6× Perfekt – 10 s durch jede Mauer',
 };
 
+// Full-width tree trunks that replace a wall (ADR 0082): jump over the low one, slide under the high one.
+// World heights: the low log is lowH tall; the high birch hangs from highY up, `thick` tall.
+export const TRUNKS = { from: 6, chance: 0.2, cooldown: 3, lowH: 0.7, highY: 1.0, thick: 0.55, hintZ: 45 };
+// Jump: parabola up to `height`, clears a low trunk while at least `clear` high. Slide: flat for its whole duration.
+// Swipe: a vertical finger move of `px` within `ms`, at least `slope` times steeper than sideways.
+export const MOVES = {
+  jump: { duration: 0.55, height: 1.5, clear: 0.7 },
+  slide: { duration: 0.55, ease: 0.08, flat: 0.45 },
+  swipe: { px: 26, ms: 300, slope: 1.2 },
+};
+
 // Cloudflare Worker: ideas → GitHub issues, shared leaderboard (see worker/)
 export const WORKER_URL = 'https://roll-down-ideas.roll-down-ideas.workers.dev';
 // Public Turnstile sitekey for leaderboard entries. Empty = no widget (the worker then must not have the secret).

@@ -91,3 +91,37 @@ test('theme controls do not trigger gameplay, while Enter still activates gamepl
     else delete globalThis.document;
   }
 });
+
+test('while playing, a swipe up or the up key jumps and a swipe down slides, with steering still on', () => {
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  const events = {}, moves = [];
+  const game = { player: { target: 0 } };
+  try {
+    Object.defineProperty(globalThis, 'window', { configurable: true, value: { addEventListener: (name, fn) => { events[name] = fn; } } });
+    Object.defineProperty(globalThis, 'document', { configurable: true, value: { addEventListener() {} } });
+    bindInput({
+      input: { dragging: false, lastX: 0, keys: new Set() },
+      hud: { over: { dataset: {} }, changeFigure: { addEventListener() {} } },
+      getState: () => 'playing', getGame: () => game, getView: () => ({ F: 100 }),
+      choose() {}, start() {}, newGame: () => ({}), setGame() {}, getBoard: () => ({ offer() {} }), readBest: () => 0,
+      setState() {}, beginPlay() {}, resize() {}, setLast() {}, move: (kind) => moves.push(kind),
+    });
+    events.pointerdown({ clientX: 100, clientY: 400, timeStamp: 0 });
+    events.pointermove({ clientX: 110, clientY: 360, timeStamp: 50 });
+    expect(moves).toEqual(['jump']);
+    expect(game.player.target).toBeGreaterThan(0);
+    events.pointermove({ clientX: 110, clientY: 400, timeStamp: 100 });
+    expect(moves).toEqual(['jump', 'slide']);
+    events.pointermove({ clientX: 160, clientY: 402, timeStamp: 150 });
+    expect(moves.length).toBe(2);
+    events.keydown({ target: { closest: () => null }, key: 'ArrowUp' });
+    events.keydown({ target: { closest: () => null }, key: 's' });
+    expect(moves).toEqual(['jump', 'slide', 'jump', 'slide']);
+  } finally {
+    if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow);
+    else delete globalThis.window;
+    if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
+    else delete globalThis.document;
+  }
+});

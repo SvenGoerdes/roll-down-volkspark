@@ -2,6 +2,13 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-11-13: Springen und Ducken – Baumstämme über die ganze Breite
+- Nutzerauftrag (Sprache): Neben dem Lenken soll es Hindernisse zum Überspringen und Drunter-durch-Rutschen geben; hochwischen = springen, runterwischen = ducken. → [ADR 0082](decisions/0082-jump-and-slide-tree-trunks.md)
+- Neu: `js/moves.js` (Sprungparabel, Ducken, Stamm-Kollision, Spawn-Regel, Wisch-Erkennung; pur, `tests/moves.test.js`), `js/render-trunk.js` (dunkler liegender Stamm mit Aststummeln, helle Birke auf gekreuzten Pfählen; einmal gemalt). `TRUNKS`/`MOVES` in `config.js`. `main.js` ersetzt ca. jede fünfte Mauer ab Mauer 7 durch einen Stamm; `input.js` erkennt Wischgesten und `↑/W/Leertaste`, `↓/S`; `render-player.js` hebt den Ball an bzw. drückt ihn flach. Intro-Hinweis und Banner zweisprachig.
+- Fixture: `?preview=summer&trunk=low#debug` (oder `high`) zeigt beide Stämme eingefroren.
+- Geprüft: 219 Bun-Tests grün. Headless Chromium 390×844: Stämme in Sommer/Herbst/Winter, Sprung über den Stamm, Ducken unter der Birke, falsche Bewegung und keine Bewegung kosten den Helm bzw. beenden die Runde, Wischen hoch/runter per Pointer-Events, ein Bot-Lauf über 40 Mauern ohne Konsolenfehler. **Nicht geprüft:** echte Handys/Safari (Wisch-Schwelle, Gefühl bei hohem Tempo), FPS unter Drosselung, Balance-Simulation (kennt Stämme nicht).
+- Entschieden vom Nutzer; Startwerte und Umsetzung: Claude Code (Cloud-Session) auf `claude/exciting-cray-1giu7j`.
+
 ## 2026-10-28: Issue #43 – Gemalte Frühlingspfützen im Art-Bible-Stil
 - Nutzerauftrag (#43, Teil von Epic #42): Die bisherigen Frühlingspfützen aus drei flachen prozeduralen Ellipsen wirkten billig und widersprachen dem Paint-Once-Prinzip. → [ADR 0081](decisions/0081-painted-spring-puddles.md)
 - `puddleSprite(variant = 0)` in `js/environment-sprites.js` (re-exportiert in `js/sprites.js`, beim Start in `warmUp` in `js/render-fx.js` für alle drei Varianten vorberechnet) malt drei mehrlappige Pfützen-Varianten einmalig in `256×96`-Offscreen-Canvases (`puddle:0..2`): feuchter Erdrand (`rgba(58, 46, 35, 0.55)`, `#4a3d2f`), Wasserkörper mit Verlauf (`#3d5a73` → `#6e9bc0` → `#8bb8d9`) und grüner Laubspiegelung (`rgba(92, 130, 88, 0.32)`), dunkle Uferkante (`rgba(28, 48, 66, 0.65)`) samt heller Unterlippe, konzentrischer Wellenring, gemalte Himmels-Glanzstreifen (`rgba(235, 247, 255, 0.65)`) und schwimmende Kirschblütenblätter (`#f4c9cc`, `#fff0dc`).

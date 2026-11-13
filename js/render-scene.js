@@ -15,6 +15,7 @@ import { drawGallery } from './render-gallery.js';
 import { drawOberbaum } from './render-oberbaum.js';
 import { drawReichstag } from './render-reichstag.js';
 import { drawRathaus } from './render-rathaus.js';
+import { drawTrunk } from './render-trunk.js';
 
 const drawList = [];
 const byDepth = (a, b) => b.depth - a.depth;
@@ -54,7 +55,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
   look.record = goal ? recordWall(game.walls, game.passed, goal.target, PLAYER_Z) : null;
   look.recordLabel = tr(goal?.world ? 'record.worldSign' : 'record.ownSign');
   drawList.length = 0;
-  const galleryZ = game.walls.filter((w) => PLANT_BEHIND_LANDMARKS.includes(landmarkFor(game, w, gateSprites))).map((w) => w.z);
+  const galleryZ = game.walls.filter((w) => !w.trunk && PLANT_BEHIND_LANDMARKS.includes(landmarkFor(game, w, gateSprites))).map((w) => w.z);
   for (const o of sceneryAt(game.travelled)) {
     o.layer = 'plant'; o.depth = plantDepth(o.z, galleryZ, GALLERY_PLANT_BEHIND); drawList.push(o);
   }
@@ -77,8 +78,9 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
       case 'wall': {
         const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
         const wallSeason = SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)];
-        const id = landmarkFor(game, o, gateSprites);
-        if (id) {
+        const id = o.trunk ? null : landmarkFor(game, o, gateSprites);
+        if (o.trunk) drawTrunk(ctx, view, o, wallSeason);
+        else if (id) {
           if (id === 'east-side-gallery') drawGallery(ctx, view, o, gaps, gateSprites[id]);
           else if (id === 'oberbaum-bridge') drawOberbaum(ctx, view, o, gaps, gateSprites[id]);
           else if (id === 'reichstag') drawReichstag(ctx, view, o, gaps, gateSprites[id]);
