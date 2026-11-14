@@ -2,7 +2,7 @@
 
 Two parts, both small:
 
-1. **The game:** a static site (HTML, CSS, vanilla JS ES modules) on GitHub Pages. No build step, no npm dependencies at runtime.
+1. **The game:** a static site (HTML, CSS, vanilla JS ES modules) on GitHub Pages. No build step locally, no npm dependencies at runtime; on push to `main`, CI (`tools/stamp-version.mjs`, [ADR 0080](decisions/0080-cache-busting-version-stamp.md)) bundles only runtime files into `_site` and stamps `?v=<commit>` onto all local file URLs so deploys never mix cached versions.
 2. **The worker:** one Cloudflare Worker (`worker/`) that turns ideas into GitHub issues and stores the leaderboard in Workers KV.
 
 ```

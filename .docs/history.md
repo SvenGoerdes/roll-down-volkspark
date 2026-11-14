@@ -7,6 +7,11 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Geprüft: Bun-Tests grün, Sichtprüfung in Headless Chromium 390×844. Nicht auf echten Handys.
 - Entschieden vom Nutzer; gebaut von Claude Code (Cloud-Session).
 
+## 2026-11-14: Cache-Busting (#14, PR #106) übernommen
+- Der seit 4.11. offene PR #106 ist in `main`: `tools/stamp-version.mjs` baut im Deploy ein `_site` aus Laufzeitdateien und stempelt `?v=<commit>` an alle lokalen URLs (ADR 0080, Eintrag vom 28.10. unten). Abweichung vom PR: der Deploy läuft in `pages.yml` statt als zweiter Job in `ci.yml`.
+- Geprüft: 225 Bun-Tests grün; gestempeltes Bundle lokal ausgeliefert und in Headless Chromium gespielt (beide Themen, alle Figuren, vier Jahreszeiten): 101 Anfragen, keine 404, alle mit `?v=`. Nicht geprüft: echtes Update-Verhalten auf Handys mit altem Cache.
+- PR gebaut von Gemini 3.1 Pro (Subagent); übernommen und angepasst von Claude Code (Cloud-Session), Freigabe Nutzer („du übernimmst Verantwortung“).
+
 ## 2026-11-14: Pages-Deploy per Actions-Workflow
 - Seit dem 4.11. löste kein Push auf `main` mehr einen Pages-Build aus; Springen/Ducken (`8ca19ff`, direkt auf `main` auf Nutzerwunsch, ohne PR) war deshalb nicht live. Ursache: Pages-Quelle steht auf „GitHub Actions“, ein Deploy-Workflow fehlte. Neu: `.github/workflows/pages.yml` (Tests, dann Repo-Root ausliefern). → [ADR 0083](decisions/0083-pages-deploy-via-actions.md)
 - Entschieden vom Nutzer; gebaut von Claude Code (Cloud-Session).
@@ -24,6 +29,12 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - `drawPuddle(ctx, view, p)` in `js/render.js` blittet den gecachten Sprite in projizierter Größe (`w = p.r * s * 2.2`, `h = w * (sprite.height / sprite.width)`) mit `arrivalAlpha(p.z)` und dezentem Kamera-/Tiefen-Schimmer (`Math.sin(p.z * 3 + (view.cameraX || 0) * 2)`). `spawnWall` in `js/main.js` vergibt `variant: game.spawned % 3`; bestehende `{ z, x, r }`-Objekte ohne `variant` wählen ihre Variante deterministisch.
 - Geprüft: 209 Bun-Tests in 29 Dateien grün (`tests/puddles.test.js` prüft Offscreen-Größe, Caching je Variante, Re-Export, Art-Bible-Farbschichten, `drawImage`-Blit, Schimmer und `globalAlpha`-Wiederherstellung); Sichtprüfung in Headless Chrome bei 390×844 (DPR 2) ohne Konsolenfehler. Keine echten Mobilgeräte oder Safari geprüft.
 - Entschieden vom Nutzer (#43); gebaut von Gemini 3.1 Pro (Subagent) auf `feat/puddles-art-bible`.
+## 2026-10-28: Issue #14 – Cache-Busting per `?v=<commit>`-Stempel im Pages-CI-Deploy
+- Nutzerentscheidung: kleines Skript stempelt `?v=<commit>` in alle lokalen Datei-Imports und läuft in CI vor dem GitHub-Pages-Deploy; lokal bleibt alles ohne Build-Schritt. → [ADR 0080](decisions/0080-cache-busting-version-stamp.md)
+- Neu: `tools/stamp-version.mjs` mit den reinen Funktionen `stampHtml`, `stampCss`, `stampJs`, `stampDirectory` und `buildPagesBundle` sowie CLI (`--bundle <outDir> [version]` und `<version> [targetDir]`). Stempelt idempotent alle lokalen Datei-URLs in `index.html`, `style.css` und `js/*.js` (statische/dynamische ES-Modul-Imports, Re-Exports sowie lokale `.webp`-/.png`-/.jpg`-Pfade in Strings, Template-Literals und `url(...)`), lässt externe URLs (`https://…` wie Turnstile, `data:…`, `#…`) unverändert und kopiert für `_site` nur die Laufzeit-Dateien ohne `.docs`, `tests`, `tools`, `worker` oder `assets/src`.
+- `.github/workflows/ci.yml`: neuer `deploy`-Job bei Push auf `main` (nach grünem `test`-Job) baut `_site` mit `${GITHUB_SHA::7}` und veröffentlicht das Artefakt per `actions/upload-pages-artifact@v3` und `actions/deploy-pages@v4`.
+- Geprüft: `bun test tests` grün (`tests/cache-busting.test.js` prüft `stampHtml`, `stampCss`, `stampJs`, Idempotenz, CLI und `buildPagesBundle` gegen das echte Repo). Nicht geprüft: Live-Lauf des GitHub-Actions-Pages-Deploys auf GitHub (setzt `Source: GitHub Actions` in den Repo-Pages-Einstellungen voraus).
+- Entschieden vom Nutzer (#14); gebaut durch Gemini 3.1 Pro (Subagent) auf `feat/cache-busting`.
 
 ## 2026-10-28: Issue #70 – Englische Übersetzung und DE/EN-Schalter
 - Nutzerentscheidung: automatische Sprachwahl nach Browsersprache (`en*` → Englisch, sonst Deutsch als Standard/Fallback) plus kleiner `DE | EN`-Schalter oben rechts auf dem Startscreen (`localStorage` `rollDownLang`), der sofort ohne Neuladen wirkt und `<html lang>` mitzieht. → [ADR 0079](decisions/0079-english-translation-mini-i18n.md)

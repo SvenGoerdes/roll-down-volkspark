@@ -14,11 +14,13 @@ Bis 4.11.2026 baute GitHub Pages automatisch aus `main` („Deploy from a branch
 
 `.github/workflows/pages.yml` liefert bei jedem Push auf `main` (und per Hand über „Run workflow“) das Repo-Root als Pages-Artefakt aus, nach grünem `bun test tests`.
 
+**Nachtrag, gleicher Tag:** Die Ursache ist gefunden. PR #106 (Cache-Busting, ADR 0080) sah den Actions-Deploy vor; die Pages-Quelle wurde dafür am 4.11. umgestellt, der PR aber nie gemergt. Er ist jetzt übernommen: der Workflow baut mit `tools/stamp-version.mjs` ein `_site` nur aus Laufzeitdateien mit `?v=<commit>` an allen lokalen URLs. Der Deploy-Job aus dem PR in `ci.yml` entfällt zugunsten von `pages.yml` (ein Deploy-Pfad).
+
 ## Alternatives
 
 - **Einstellung zurück auf „Deploy from a branch“:** ein Klick, kein Workflow. Gleichwertig; verworfen nur, weil die Einstellung bereits auf Actions steht und der Workflow zusätzlich Tests vor den Deploy setzt.
 
 ## Consequences
 
-- Ein roter Test verhindert den Deploy. Kein Jekyll-Lauf mehr: Dateien werden unverändert ausgeliefert, auch `.docs/` (das Repo ist ohnehin öffentlich).
+- Ein roter Test verhindert den Deploy. Kein Jekyll-Lauf mehr. Seit dem Nachtrag werden nur Laufzeitdateien ausgeliefert (kein `.docs/`, `tests/`, `tools/`, `worker/`).
 - Stellt jemand die Quelle wieder auf „Deploy from a branch“, läuft dieser Workflow ins Leere bzw. schlägt fehl und kann gelöscht werden.
