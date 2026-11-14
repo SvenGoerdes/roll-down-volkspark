@@ -1,5 +1,5 @@
 import { PLAYER_Z, WALLS_PER_SEASON, SEASONS, POWERUPS, TOUR_LANDMARKS, GALLERY_PLANT_BEHIND, PLANT_BEHIND_LANDMARKS, VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY } from './config.js';
-import { seasonAhead, widened, seasonIndexAt, landmarkAt, volksparkLandmarkAt, plantDepth } from './logic.js';
+import { seasonAhead, widened, widenGhost, seasonIndexAt, landmarkAt, volksparkLandmarkAt, plantDepth } from './logic.js';
 import { drawBackground, drawGround, drawHorizon, drawWall, drawPuddle, drawPickup } from './render.js';
 import { drawSyringe, drawSyringeImpact } from './render-syringes.js';
 import { drawPlayer } from './render-player.js';
@@ -50,7 +50,7 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
   const mode = { intro: 'intro', over: 'dazed' }[state] ?? 'roll';
   const t = mode === 'intro' ? game.introT : game.time - game.crashAt;
   const pose = showPlayer ? poseFor({ mode, t, spin: game.player.spin, helmet: game.player.helmets > 0 }, figure) : null;
-  const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1, pose };
+  const look = { s, aheadZ: ahead.z, aheadId: SEASONS[ahead.idx].id, speed, widen: game.effects.widen > 0 ? 1.6 : 1, ghost: widenGhost(game.effects.widen), pose };
   const goal = state === 'playing' ? recordGoal(game.passed, game.best, game.worldBest) : null;
   look.record = goal ? recordWall(game.walls, game.passed, goal.target, PLAYER_Z) : null;
   look.recordLabel = tr(goal?.world ? 'record.worldSign' : 'record.ownSign');
@@ -76,7 +76,9 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
       case 'plant': drawScenery(ctx, view, o, o.z > look.aheadZ ? look.aheadId : look.s.id); break;
       case 'puddle': drawPuddle(ctx, view, o); break;
       case 'wall': {
-        const gaps = look.widen > 1 ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
+        // Landmarks have no see-through pass: in the warning blink they show their real openings instead.
+        const wide = look.widen > 1 && !(look.ghost > 0 && !o.trunk && landmarkFor(game, o, gateSprites));
+        const gaps = wide ? o.gaps.map((g) => widened(g, look.widen)) : o.gaps;
         const wallSeason = SEASONS[seasonIndexAt(o.index, WALLS_PER_SEASON, SEASONS.length)];
         const id = o.trunk ? null : landmarkFor(game, o, gateSprites);
         if (o.trunk) drawTrunk(ctx, view, o, wallSeason);
@@ -86,7 +88,10 @@ export function renderScene(ctx, view, game, state, figure, backgrounds, groundT
           else if (id === 'reichstag') drawReichstag(ctx, view, o, gaps, gateSprites[id]);
           else if (id === 'red-town-hall') drawRathaus(ctx, view, o, gaps, gateSprites[id]);
           else drawGate(ctx, view, o, gaps, wallSeason, gateSprites[id]);
-        } else drawWall(ctx, view, o.z, gaps, wallSeason);
+        } else {
+          if (look.ghost > 0) drawWall(ctx, view, o.z, o.gaps, wallSeason, look.ghost);
+          drawWall(ctx, view, o.z, gaps, wallSeason);
+        }
         if (o === look.record) drawRecordMark(ctx, view, o, look.recordLabel);
         break;
       }

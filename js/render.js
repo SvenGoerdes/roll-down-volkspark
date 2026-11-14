@@ -124,7 +124,8 @@ function facePattern(ctx, img, sx, sy, x, y) {
   return p;
 }
 
-export function drawWall(ctx, view, z, gaps, season) {
+// fade < 1 draws the whole wall see-through (the ghost of the pieces returning after the widen pickup).
+export function drawWall(ctx, view, z, gaps, season, fade = 1) {
   const { top, front, side, fh, tileW } = gabionFaces(season);
   const f = project(view, 0, z), b = project(view, 0, z + WALL_D);
   // Gabion lids stay level; their rear foundation follows the falling terrain.
@@ -133,7 +134,7 @@ export function drawWall(ctx, view, z, gaps, season) {
   const yB2 = b.sy, h = yB - yT;
   const X = (x, p) => p.sx + x * p.s;
   const origin = -CORRIDOR * 2;
-  const alpha = wallAlpha(z), mist = depthMist(z) * 0.9;
+  const alpha = wallAlpha(z) * fade, mist = depthMist(z) * 0.9;
   const snowy = season.id === 'winter';
   const groundAhead = Math.min(view.H, project(view, 0, Math.max(0.4, z - 0.7)).sy);
   const segs = solidSegments(gaps);

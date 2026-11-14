@@ -299,3 +299,20 @@ test('resolveWall: smashing through a wall during superattack counts as passed a
   expect(resolveWall(2.5, 0.4, gaps, 5)).toEqual({ passed: true, broken: true });
   expect(resolveWall(0, 0.4, gaps, 5)).toEqual({ passed: true, broken: false });
 });
+
+test('the returning wall pieces blink only in the last seconds of the wider gaps, more solid toward the end', async () => {
+  const { widenGhost } = await import('../js/logic.js');
+  const { WIDEN_WARN } = await import('../js/config.js');
+  expect(widenGhost(0)).toBe(0);
+  expect(widenGhost(WIDEN_WARN + 0.01)).toBe(0);
+  expect(widenGhost(7)).toBe(0);
+  let on = 0, off = 0, last = 0;
+  for (let left = WIDEN_WARN; left > 0; left -= 0.01) {
+    const a = widenGhost(left);
+    expect(a).toBeLessThanOrEqual(0.7);
+    if (a > 0) { on++; expect(a).toBeGreaterThanOrEqual(last - 1e-9); last = a; } else off++;
+  }
+  expect(on).toBeGreaterThan(40);
+  expect(off).toBeGreaterThan(40);
+  expect(widenGhost(0.05)).toBeGreaterThan(0.6); // solid-ish right before the wall is back
+});

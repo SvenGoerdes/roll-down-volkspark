@@ -2,6 +2,11 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-11-14: Breite Lücken – Vorwarnung vor dem Ende
+- Nutzerauftrag: Man sah nicht, dass die Mauer nach dem Pickup „Breite Lücken“ gleich zurückkommt. Neu: in den letzten 1,5 s (`WIDEN_WARN`) blinken die zurückkehrenden Mauerstücke halb durchsichtig und werden zum Ende hin deckender (`widenGhost()` in `logic.js`, `drawWall(..., fade)`). Bauwerke haben keinen durchsichtigen Durchgang und zeigen im Blinktakt ihre echte Öffnung. Die Kollision bleibt bis zum Ablauf verbreitert.
+- Geprüft: Bun-Tests grün, Sichtprüfung in Headless Chromium 390×844. Nicht auf echten Handys.
+- Entschieden vom Nutzer; gebaut von Claude Code (Cloud-Session).
+
 ## 2026-11-14: Pages-Deploy per Actions-Workflow
 - Seit dem 4.11. löste kein Push auf `main` mehr einen Pages-Build aus; Springen/Ducken (`8ca19ff`, direkt auf `main` auf Nutzerwunsch, ohne PR) war deshalb nicht live. Ursache: Pages-Quelle steht auf „GitHub Actions“, ein Deploy-Workflow fehlte. Neu: `.github/workflows/pages.yml` (Tests, dann Repo-Root ausliefern). → [ADR 0083](decisions/0083-pages-deploy-via-actions.md)
 - Entschieden vom Nutzer; gebaut von Claude Code (Cloud-Session).

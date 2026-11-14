@@ -126,6 +126,8 @@ export const POWERUPS = {
   slowmo: { id: 'slowmo', img: 'assets/powerups/slowmo.webp', icon: '⏳', name: 'Zeitlupe', hint: 'Alles langsamer', duration: 5, color: '#2f7de1', glow: '90,160,255' },
   widen: { id: 'widen', img: 'assets/powerups/widen.webp', icon: '↔️', name: 'Breite Lücken', hint: 'Lücken größer', duration: 7, color: '#1f9d55', glow: '80,220,140' },
 };
+// Seconds before the wider gaps end during which the returning wall pieces blink as a see-through ghost.
+export const WIDEN_WARN = 1.5;
 export const MAX_HELMETS = 3;
 // Per-wall chance for each pickup type; the combined chance is 25%.
 export const POWERUP_CHANCES = { helmet: 0.05, slowmo: 0.1, widen: 0.1 };

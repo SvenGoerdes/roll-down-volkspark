@@ -1,4 +1,4 @@
-import { CORRIDOR, WALL_EXT, SURFACE_FIRST, SURFACE_LEN, SURFACE_ORDER, WALLS_PER_SEASON, SEASONS, WIND_WARN, GAP_WIDTH, POWERUP_CHANCES, SUPERATTACK } from './config.js';
+import { CORRIDOR, WALL_EXT, SURFACE_FIRST, SURFACE_LEN, SURFACE_ORDER, WALLS_PER_SEASON, SEASONS, WIND_WARN, GAP_WIDTH, POWERUP_CHANCES, SUPERATTACK, WIDEN_WARN } from './config.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -117,6 +117,13 @@ export function makeGaps(n, prevX, season, rng) {
 }
 
 export const widened = (gap, factor) => ({ x: gap.x, w: Math.min(gap.w * factor, CORRIDOR * 0.6) });
+
+// Opacity of the wall pieces that return when the wider gaps run out: 0 until the last `warn` seconds,
+// then a blink that gets more solid toward the end. Collision stays widened until the timer is at 0.
+export function widenGhost(left = 0, warn = WIDEN_WARN) {
+  if (left <= 0 || left > warn || Math.floor(left * 5) % 2) return 0;
+  return 0.3 + 0.4 * (1 - left / warn);
+}
 
 export function passesWall(px, radius, gaps) {
   return gaps.some((g) => px - radius >= g.x - g.w / 2 && px + radius <= g.x + g.w / 2);
