@@ -52,3 +52,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0079](0079-english-translation-mini-i18n.md) | Englische Übersetzung über eigenes Mini-Modul (`js/i18n.js`), Auto-Sprachwahl und DE/EN-Schalter | Nutzer (Auftrag/Regeln), Gemini 4 Argon (Umsetzung) |
 | [0081](0081-painted-spring-puddles.md) | Gemalte mehrlappige Frühlingspfützen mit Spiegelung und Kirschblüten als Paint-Once-Sprites (#43) | Nutzer (Auftrag), Gemini 3.1 Pro (Umsetzung) |
 | [0082](0082-jump-and-slide-tree-trunks.md) | Springen/Ducken: quer liegende Baumstämme ersetzen manche Mauern; hoch-/runterwischen | Nutzer (Auftrag), Claude Code (Startwerte, Umsetzung) |
+| [0083](0083-pages-deploy-via-actions.md) | GitHub Pages per Actions-Workflow aus `main` (Quelle steht auf „GitHub Actions“) | Nutzer (Einstellung/Auftrag), Claude Code (Umsetzung) |

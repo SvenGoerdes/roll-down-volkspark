@@ -2,6 +2,10 @@
 
 Newest first. "Built by" names the model that wrote the code. "Main session" is Claude Opus 5.5 (1M context), which talks to the user, plans, merges and deploys. Agents ran in their own git worktrees. Decisions are in [decisions/](decisions/).
 
+## 2026-11-14: Pages-Deploy per Actions-Workflow
+- Seit dem 4.11. löste kein Push auf `main` mehr einen Pages-Build aus; Springen/Ducken (`8ca19ff`, direkt auf `main` auf Nutzerwunsch, ohne PR) war deshalb nicht live. Ursache: Pages-Quelle steht auf „GitHub Actions“, ein Deploy-Workflow fehlte. Neu: `.github/workflows/pages.yml` (Tests, dann Repo-Root ausliefern). → [ADR 0083](decisions/0083-pages-deploy-via-actions.md)
+- Entschieden vom Nutzer; gebaut von Claude Code (Cloud-Session).
+
 ## 2026-11-13: Springen und Ducken – Baumstämme über die ganze Breite
 - Nutzerauftrag (Sprache): Neben dem Lenken soll es Hindernisse zum Überspringen und Drunter-durch-Rutschen geben; hochwischen = springen, runterwischen = ducken. → [ADR 0082](decisions/0082-jump-and-slide-tree-trunks.md)
 - Neu: `js/moves.js` (Sprungparabel, Ducken, Stamm-Kollision, Spawn-Regel, Wisch-Erkennung; pur, `tests/moves.test.js`), `js/render-trunk.js` (dunkler liegender Stamm mit Aststummeln, helle Birke auf gekreuzten Pfählen; einmal gemalt). `TRUNKS`/`MOVES` in `config.js`. `main.js` ersetzt ca. jede fünfte Mauer ab Mauer 7 durch einen Stamm; `input.js` erkennt Wischgesten und `↑/W/Leertaste`, `↓/S`; `render-player.js` hebt den Ball an bzw. drückt ihn flach. Intro-Hinweis und Banner zweisprachig.
