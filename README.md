@@ -12,4 +12,4 @@ Spielen: https://svengoerdes.github.io/roll-down-volkspark/
 bun test tests   # Tests
 ```
 
-Alles Weitere – Architektur, Betrieb, Entscheidungen, Verlauf – steht in [`.docs/`](.docs/README.md).
+Alles Weitere – Architektur, Betrieb, Entscheidungen, Verlauf – steht in [`.docs/`](.docs/README.md)
