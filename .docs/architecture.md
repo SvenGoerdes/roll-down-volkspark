@@ -29,8 +29,10 @@ Phone browser ──static files──▶ GitHub Pages (repo SvenGoerdes/roll-do
 | `syringes.js`, `render-syringes.js`, `impact-effect.js` | Conservative side-obstacle placement/crossing rules, cached comic object art and a short visual impact cue; see [syringe-obstacles.md](syringe-obstacles.md) |
 | `moves.js`, `render-trunk.js` | Jump and slide, full-width tree trunks that replace some walls, swipe detection (pure, unit tested) and the cached trunk art; see [ADR 0082](decisions/0082-jump-and-slide-tree-trunks.md) |
 | `scoring.js` | Pure pass judging: Perfekt / Knapp, the streak toward a superattack, the record wall. Unit tested |
-| `main.js` | Update loop, collisions, spawning and wiring |
+| `main.js` | Update loop, collisions and wiring |
 | `game-state.js` | Initial game state and surface track |
+| `spawn.js` | Puts the next wall or trunk with its pickup, puddle and syringe into the game; all track randomness from `game.rng` |
+| `daily.js` | Daily challenge: Berlin calendar day, per-day seeded random streams, hours left, local daily best (pure, unit tested; [ADR 0084](decisions/0084-daily-track-from-berlin-date.md)) |
 | `input.js` | Pointer and keyboard controls, figure-change action |
 | `hud.js` | HUD updates, banners, pass text and game-over display |
 | `game-flow.js` | Start, intro, retry, pass rewards and crash flow |

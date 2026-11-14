@@ -7,6 +7,11 @@ Newest first. "Built by" names the model that wrote the code. "Main session" is 
 - Geprüft: Bun-Tests grün, Sichtprüfung in Headless Chromium 390×844. Nicht auf echten Handys.
 - Entschieden vom Nutzer; gebaut von Claude Code (Cloud-Session).
 
+## 2026-11-14: Tagesstrecke aus dem Datum (#59)
+- Neu: `js/daily.js` (Berliner Tag, Seed, Reststunden, Tagesbestwert; pur) und `js/spawn.js` (Spawn-Code aus `main.js` ausgelagert, zieht aus `game.rng`). Schalter „📅 Tagesstrecke“ im Startscreen; Banner beim Start; Tagesbestwert lokal. → [ADR 0084](decisions/0084-daily-track-from-berlin-date.md)
+- Geprüft: 231 Bun-Tests grün (`tests/daily.test.js`: gleicher Tag = gleiche Strecke über 200 Mauern, Tageswechsel um Mitternacht Berlin in Winter- und Sommerzeit). Headless Chromium 390×844: Schalter startet kein Spiel, zwei Läufe nach Neuladen zeigen dieselben ersten zwölf Hindernisse, Tagesbestwert bleibt gespeichert. Nicht geprüft: echte Handys; Rangliste/Platz (#60, #61) gibt es noch nicht.
+- Entschieden vom Nutzer (#59); Schalter und Umsetzung: Claude Code (Cloud-Session).
+
 ## 2026-11-14: Cache-Busting (#14, PR #106) übernommen
 - Der seit 4.11. offene PR #106 ist in `main`: `tools/stamp-version.mjs` baut im Deploy ein `_site` aus Laufzeitdateien und stempelt `?v=<commit>` an alle lokalen URLs (ADR 0080, Eintrag vom 28.10. unten). Abweichung vom PR: der Deploy läuft in `pages.yml` statt als zweiter Job in `ci.yml`.
 - Geprüft: 225 Bun-Tests grün; gestempeltes Bundle lokal ausgeliefert und in Headless Chromium gespielt (beide Themen, alle Figuren, vier Jahreszeiten): 101 Anfragen, keine 404, alle mit `?v=`. Nicht geprüft: echtes Update-Verhalten auf Handys mit altem Cache.

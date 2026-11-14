@@ -9,7 +9,8 @@ export function createGameFlow({ hud, getState, getLoadingFigure, setLoadingFigu
   function beginPlay() {
     setState('playing');
     const s = season();
-    showBanner(seasonName(s), seasonHint(s));
+    if (getGame().daily) showBanner(`📅 ${t('daily.name')}`, t('daily.banner'));
+    else showBanner(seasonName(s), seasonHint(s));
   }
   // The world record may arrive after the run began: it counts only while no wall is passed yet.
   function loadWorld() {

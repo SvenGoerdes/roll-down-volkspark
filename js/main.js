@@ -1,11 +1,13 @@
 import {
-  CORRIDOR, PLAYER_R, PLAYER_Z, SPAWN_Z, SEASONS, POWERUPS, SUPERATTACK, WALLS_PER_SEASON, SPRING, ICE, VOLKSPARK_LANDMARK_PRELOAD,
-  VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY, TOUR_LANDMARKS, TRUNKS,
+  CORRIDOR, PLAYER_R, PLAYER_Z, SEASONS, POWERUPS, SUPERATTACK, WALLS_PER_SEASON, SPRING, ICE, VOLKSPARK_LANDMARK_PRELOAD,
+  TRUNKS,
 } from './config.js';
 import {
-  speedAt, spacingAt, makeGaps, widened, resolveWall, superattackActive, stepSuperattack, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow, selectPowerup, volksparkLandmarkAt,
+  speedAt, widened, resolveWall, superattackActive, stepSuperattack, seasonIndexAt, slipAmount, skidStrength, windAt, stepWind, windArrow,
 } from './logic.js';
-import { startMove, stepMoves, resolveTrunk, trunkFor } from './moves.js';
+import { startMove, stepMoves, resolveTrunk } from './moves.js';
+import { spawnWall as spawn } from './spawn.js';
+import { berlinDay, dailyRngs, dailyBest, withDailyBest, hoursLeft } from './daily.js';
 import { warmTrunks } from './render-trunk.js';
 import { loadSeasonBackgrounds } from './seasons.js';
 import { environmentPreview, preparePreview } from './environment-preview.js';
@@ -28,7 +30,7 @@ import { loadRathausSprites } from './rathaus-sprites.js';
 import {
   primeGrade, warmUp,
 } from './render-fx.js';
-import { syringeFor, stepSyringes, syringeContextSafe } from './syringes.js';
+import { stepSyringes, syringeContextSafe } from './syringes.js';
 import { impactLeft } from './impact-effect.js';
 import { warmSyringes } from './render-syringes.js';
 import { stepFx } from './fx.js';
@@ -73,7 +75,24 @@ let figureId = readFigure(readBest()), figure = null, picker, loadingFigure = fa
 let themeId = 'volkspark', gateSprites, gateLoad, groundLoad;
 const figureSheets = new Map();
 
-const newGame = () => ({ ...createGameState(readBest, board?.world()), theme: themeId });
+// Daily challenge (#59): while switched on, every run of a Berlin day gets the same track.
+const DAILY_KEY = 'rollDownDaily';
+let dailyOn = false;
+const readDaily = () => { try { return JSON.parse(localStorage.getItem(DAILY_KEY)); } catch { return null; } };
+function showDaily() {
+  const best = dailyBest(readDaily(), berlinDay());
+  $('daily').setAttribute('aria-pressed', String(dailyOn));
+  $('daily').textContent = `📅 ${t('daily.name')} · ${best ? t('daily.best', { best }) : t('daily.left', { hours: hoursLeft() })}`;
+}
+function saveDaily(day, score) {
+  try { localStorage.setItem(DAILY_KEY, JSON.stringify(withDailyBest(readDaily(), day, score))); } catch { /* private mode */ }
+  showDaily();
+}
+
+const newGame = () => {
+  const daily = dailyOn ? berlinDay() : null;
+  return { ...createGameState(readBest, board?.world(), daily && dailyRngs(daily)), theme: themeId, daily };
+};
 
 function gatesFor() {
   gateLoad ??= Promise.all([loadGateSprites(loadImage), loadGallerySprites(loadImage), loadOberbaumSprites(loadImage), loadReichstagSprites(loadImage), loadRathausSprites(loadImage)])
@@ -159,7 +178,8 @@ const flow = createGameFlow({ hud, getState: () => state, getGame: () => game, g
   newGame, getBoard: () => board, setState, updateHud, speedAt, showBanner, season, sheetsFor: sheetsForRound,
   figureSheets, pick,
   setFigure: (value) => { figure = value; }, playerSpot,
-  popText: showPopText, showOver, readBest, writeBest, onUnlock: (best) => picker?.refresh(best) });
+  popText: showPopText, showOver, readBest,
+  writeBest: (best) => { writeBest(best); if (game.daily) saveDaily(game.daily, game.passed); }, onUnlock: (best) => picker?.refresh(best) });
 const { beginIntro, beginPlay, choose, start, collect, onPass, crash } = flow;
 
 function replaceGame(next) {
@@ -171,29 +191,7 @@ function updateCamera(dt) {
   shiftCameraEffects(game, view, followCamera(view, game.player.x, dt));
 }
 
-function spawnWall() {
-  const s = SEASONS[seasonIndexAt(game.spawned, WALLS_PER_SEASON, SEASONS.length)];
-  // Some walls are a tree trunk across the whole path instead: no gap, jump or slide (not on Volkspark landmark walls).
-  const landmark = themeId === 'volkspark' && volksparkLandmarkAt(game.spawned, VOLKSPARK_LANDMARK_FROM, VOLKSPARK_LANDMARK_EVERY, TOUR_LANDMARKS, WALLS_PER_SEASON);
-  const trunk = trunkFor(game.spawned, game.lastTrunkIndex, landmark, Math.random);
-  const gaps = trunk ? [{ x: 0, w: CORRIDOR }] : makeGaps(game.spawned, game.lastGapX, s, Math.random);
-  if (trunk) game.lastTrunkIndex = game.spawned;
-  else game.lastGapX = gaps[0].x;
-  game.walls.push({ z: SPAWN_Z, gaps, trunk, index: game.spawned, snowy: s.id === 'winter' });
-  const spacing = spacingAt(game.spawned + 1); // distance to the next wall
-  const type = game.spawned > 1 ? selectPowerup(Math.random) : null;
-  if (type) game.pickups.push({ z: SPAWN_Z + spacing / 2, type, x: (Math.random() - 0.5) * (CORRIDOR - 2) });
-  if (s.id === 'spring' && game.spawned > 2 && Math.random() < 0.6) {
-    game.puddles.push({ z: SPAWN_Z + spacing * (0.3 + Math.random() * 0.4), x: (Math.random() - 0.5) * (CORRIDOR - 2), r: 0.9 + Math.random() * 0.6, variant: game.spawned % 3 });
-  }
-  // A trunk lets the player be anywhere across the path, so no syringe next to one.
-  const syringe = !trunk && !game.walls.at(-2)?.trunk && syringeFor({ index: game.spawned, season: s.id,
-    previous: game.walls.at(-2), wall: game.walls.at(-1), puddles: game.puddles, pickups: game.pickups,
-    surfaceAt: (z) => game.surfaceAt(game.travelled + z), lastIndex: game.lastSyringeIndex });
-  if (syringe) { game.syringes.push(syringe); game.lastSyringeIndex = game.spawned; }
-  game.spawned++;
-  game.nextSpawnIn = spacing;
-}
+const spawnWall = () => spawn(game);
 
 function setSeason(idx) {
   if (idx === game.seasonIdx) return;
@@ -414,6 +412,7 @@ function bindInput() {
 function syncLang() {
   applyI18n();
   picker?.refresh(readBest());
+  showDaily();
   if (game) {
     updateHud(game.speed);
     hud.overNote.textContent = overNote(game.passed, game.best, game.worldBest).text;
@@ -457,6 +456,8 @@ async function init() {
     game.theme = id;
     if (id === 'berlin-tour') { gatesFor().catch(() => {}); berlinGroundFor().catch(() => {}); }
   });
+  $('daily').addEventListener('click', () => { dailyOn = !dailyOn; showDaily(); });
+  showDaily();
   // a card only picks the figure; the button (or a tap anywhere else) starts
   const initialBest = readBest();
   picker = setupFigureSelect(hud.figures, figureId, (id) => {

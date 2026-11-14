@@ -54,3 +54,4 @@ One file per decision. Never edit an old decision. Write a new ADR and mark the 
 | [0081](0081-painted-spring-puddles.md) | Gemalte mehrlappige Frühlingspfützen mit Spiegelung und Kirschblüten als Paint-Once-Sprites (#43) | Nutzer (Auftrag), Gemini 3.1 Pro (Umsetzung) |
 | [0082](0082-jump-and-slide-tree-trunks.md) | Springen/Ducken: quer liegende Baumstämme ersetzen manche Mauern; hoch-/runterwischen | Nutzer (Auftrag), Claude Code (Startwerte, Umsetzung) |
 | [0083](0083-pages-deploy-via-actions.md) | GitHub Pages per Actions-Workflow aus `main` (Quelle steht auf „GitHub Actions“) | Nutzer (Einstellung/Auftrag), Claude Code (Umsetzung) |
+| [0084](0084-daily-track-from-berlin-date.md) | Tagesstrecke aus dem Berliner Datum (Seed), Schalter im Startscreen, zählt wie ein normaler Lauf (#59) | Nutzer (Issue), Claude Code (Schalter, Umsetzung) |

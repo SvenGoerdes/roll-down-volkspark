@@ -10,6 +10,10 @@ Open work and known weak spots. Remove an entry in the commit that fixes it.
 - **Später, nicht in dieser Grafikarbeit:** ungeprüfte Bestenlisten-Schreibzugriffe absichern. Turnstile mit serverseitiger Prüfung ist ein noch nicht freigegebener Vorschlag. Anti-Bot-Tokens allein validieren keine erspielten Scores; weitergehende Laufprüfung ist nicht beauftragt. Siehe [Ticket 11](plans/art-integration-2026-10-18/11-bestenliste-token.md).
 
 
+## Tageschallenge (ADR 0084, 14.11.2026)
+- #60 Tagesrangliste und der Rest von #61 (Platz anzeigen) brauchen D1 und einen Worker-Deploy mit dem Nutzer.
+- Vor einer Rangliste klären: ein Thema für die Tagesstrecke festlegen (Volkspark/Berlin-Tour weichen ab Mauer 41 ab) und ob Tagesläufe weiter für den normalen Rekord zählen.
+
 ## Springen/Ducken (ADR 0082, 13.11.2026)
 - Auf echten Handys prüfen: Wisch-Schwelle (`MOVES.swipe`), Fehlauslösungen beim schrägen Lenken, Sprungfenster bei spätem Tempo. Zahlen in `config.js` (`TRUNKS`, `MOVES`) sind Startwerte ohne Nutzerabnahme.
 - `tools/balance-sim.js` spawnt keine Stämme und der Bot springt nicht; Mediane/Crash-Raten gelten ohne Stämme. Bei Balance-Arbeit nachziehen.
